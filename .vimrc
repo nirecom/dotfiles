@@ -9,3 +9,11 @@ set smartcase
 execute pathogen#infect()
 syntax on
 filetype plugin indent on
+
+colorscheme solarized
+let g:solarized_termcolors=256
+let g:solarized_contrast = "high"
+let g:solarized_visibility="low"
+let g:vim_json_syntax_conceal = 0
+set background=dark
+call togglebg#map("<F5>")
