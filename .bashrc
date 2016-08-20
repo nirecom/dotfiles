@@ -18,4 +18,4 @@ ssh-add -l >& /dev/null || ssh-add
 
 keychain --nogui --quiet ~/.ssh/id_rsa
 
-[[ $TERM != "screen" ]] && exec tmux -u
+#[[ $TERM != "screen" ]] && exec tmux -u
