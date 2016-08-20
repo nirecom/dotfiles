@@ -7,6 +7,8 @@
     showInvisibles: true
   "exception-reporting":
     userId: "2682d8b4-b34d-acbd-a958-152714feac26"
+  linter:
+    errorPanelHeight: 83
   term3:
     autoRunCommand: "login -f nire"
   welcome:
