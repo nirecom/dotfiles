@@ -1,4 +1,5 @@
 alias ll='ls -al'
+alias tmux='tmux -u'
 # git settings
 source /usr/local/git/contrib/completion/git-prompt.sh
 source /usr/local/git/contrib/completion/git-completion.bash
@@ -17,4 +18,4 @@ ssh-add -l >& /dev/null || ssh-add
 
 keychain --nogui --quiet ~/.ssh/id_rsa
 
-[[ $TERM != "screen" ]] && exec tmux -f ~/.tmux.conf
+#[[ $TERM != "screen" ]] && exec tmux -u
