@@ -6,4 +6,6 @@ set list listchars=tab:\▸\-
 set ignorecase
 set smartcase
 
+execute pathogen#infect()
 syntax on
+filetype plugin indent on
