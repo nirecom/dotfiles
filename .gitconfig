@@ -1,2 +1,23 @@
-[include]
-	path = ~/dotfiles/.gitconfig.common
+# This is Git's per-user configuration file.
+[color]
+	ui = auto
+[alias]
+	br = branch
+	ch = checkout
+	st = status
+	co = commit
+	fe = fetch
+	gr = log --graph --date-order -C -M --pretty=format:\"<%h> %ad [%an] %Cgreen%d%Creset %s\" --all --date=short
+	difff = diff --word-diff
+[push]
+	default = simple
+[core]
+	excludesfile = /Users/nire/.gitignore_global
+[credential]
+        helper = osxkeychain
+[difftool "sourcetree"]
+        cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+        path =
+[mergetool "sourcetree"]
+        cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+        trustExitCode = true
