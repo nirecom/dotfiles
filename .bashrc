@@ -5,6 +5,9 @@ source ~/dotfiles/git-prompt.sh
 source ~/dotfiles/git-completion.bash
 GIT_PS1_SHOWDIRTYSTATE=true
 export PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[1;34m\]\w\[\033[0;31m\]$(__git_ps1)\[\033[00m\]\$ '
+if [ -f ~/dotfiles/git-values.sh ]; then
+	source ~/dotfiles/git-values.sh
+fi
 
 # Setup ssh-agent
 keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
