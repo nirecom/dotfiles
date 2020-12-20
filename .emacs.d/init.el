@@ -2,6 +2,11 @@
 ;(setq load-path (append
 ;		 '("~/.emacs.d"
 ;		   "~/.emacs.d/packages")))
+(add-to-list 'load-path "~/.emacs.d/packages")
+
+;; yaml-mode
+(require 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
 
 ;; Japanese, UTF-8
 (set-locale-environment nil)
