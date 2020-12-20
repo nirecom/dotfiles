@@ -40,10 +40,15 @@
 ;; Remove Tool Bar
 ;(tool-bar-mode -1)
 
-;; Display Column / Line Numbers
-;(column-number-mode t)
-;(global-linum-mode t)
+;; Display Column
+(column-number-mode t)
 
+; Display Line Number
+;(global-linum-mode t)
+; ref. https://qiita.com/mamo3gr/items/1c6862cba09d5876e52c
+(if (version<= "26.0.50" emacs-version)
+    (global-display-line-numbers-mode))
+ 
 ;; Show corresponding parenthesis
 (show-paren-mode 1)
 
@@ -56,14 +61,13 @@
 ;; dired
 ;(require 'dired-x)
 
-;; Visible bell instead of beep
+;; Disable ring
 (setq visible-bell t)
+;(setq ring-bell-function 'ignore)
 
 ;; Mac keybind
 ;(mac-key-mode 1)
 
 ;; Mac option key is meta key
 ;(setq mac-option-modifier 'meta)
-
-
-					       
+			       

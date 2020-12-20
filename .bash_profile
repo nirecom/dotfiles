@@ -1,4 +1,5 @@
 alias ll='ls -al'
+alias em='emacs'
 alias tmux='~/dotfiles/tmux.sh'
 # git settings
 source ~/dotfiles/git-prompt.sh
