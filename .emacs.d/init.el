@@ -1,12 +1,17 @@
 ;; configure load path
-;(setq load-path (append
-;		 '("~/.emacs.d"
-;		   "~/.emacs.d/packages")))
+
+; adding default .emacs.d causes error
+;(add-to-list 'load-path "~/.emacs.d")
 (add-to-list 'load-path "~/.emacs.d/packages")
 
-;; yaml-mode
+;; yaml-mode: highlighter
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+
+;; flymake-yaml for syntax check
+;; ref. https://dev.classmethod.jp/articles/emacs-edit-yaml-cloudformation/
+;(require 'flymake-yaml)
+;(add-hook 'yaml-mode-hook 'flymake-yaml-load)
 
 ;; Japanese, UTF-8
 (set-locale-environment nil)
