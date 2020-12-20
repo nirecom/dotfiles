@@ -1,13 +1,27 @@
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f ~/google-cloud-sdk/path.bash.inc ]; then
-	source ~/google-cloud-sdk/path.bash.inc
+alias ll='ls -al'
+alias tmux='~/dotfiles/tmux.sh'
+# git settings
+source ~/dotfiles/git-prompt.sh
+source ~/dotfiles/git-completion.bash
+GIT_PS1_SHOWDIRTYSTATE=true
+export PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[1;34m\]\w\[\033[0;31m\]$(__git_ps1)\[\033[00m\]\$ '
+if [ -f ~/dotfiles/git-values.sh ]; then
+	source ~/dotfiles/git-values.sh
 fi
 
-# The next line enables shell command completion for gcloud.
-if [ -f ~/google-cloud-sdk/completion.bash.inc ]; then
-	source ~/google-cloud-sdk/completion.bash.inc
+# Setup ssh-agent
+keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
+if [ -f ~/.ssh-agent ]; then
+	. ~/.ssh-agent >/dev/null
+fi
+if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID; then
+	ssh-agent > ~/.ssh-agent
+	. ~/.ssh-agent >/dev/null
+fi
+ssh-add -l >& /dev/null || ssh-add
+
+if [ $HOSTNAME = "lab.nire.com" ]; then
+	~/dotfiles/tmux.sh
 fi
 
-if [ -f ~/.bashrc ]; then
-	. ~/.bashrc
-fi
+#[[ $TERM != "screen" ]] && exec tmux -u
