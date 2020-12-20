@@ -2,6 +2,7 @@
 #ln -sf ~/dotfiles/.bashrc ~/
 ln -sf ~/dotfiles/.bash_profile ~/
 ln -sf ~/dotfiles/.vimrc ~/
+ln -sf ~/dotfiles/.vim ~/
 ln -sf ~/dotfiles/.editorconfig ~/
 ln -sf ~/dotfiles/.tmux.conf ~/
 ln -sf ~/dotfiles/.gitconfig ~/
