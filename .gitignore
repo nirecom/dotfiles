@@ -1,1 +1,5 @@
 git-values.sh
+# Backup files
+*~
+*.bak
+
