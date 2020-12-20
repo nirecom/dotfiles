@@ -10,5 +10,5 @@ if [ -d ~/.atom/ ]; then
     ln -sf ~/dotfiles/.atom/keymap.cson ~/.atom/
 fi
 if [ -d ~/.emacs.d/ ]; then
-    ln -sf ~/dotfiles/.init.el ~/.emacs.d/
+    ln -sf ~/dotfiles/init.el ~/.emacs.d/
 fi
