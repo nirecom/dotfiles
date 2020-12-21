@@ -7,6 +7,7 @@
 ;; yaml-mode: highlighter
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+(add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
 
 ;; flymake-yaml for syntax check
 ;; ref. https://dev.classmethod.jp/articles/emacs-edit-yaml-cloudformation/

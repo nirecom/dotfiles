@@ -1,5 +1,6 @@
 alias ll='ls -al'
 alias em='emacs'
+alias dc='docker-compose'
 alias tmux='~/dotfiles/tmux.sh'
 # git settings
 source ~/dotfiles/git-prompt.sh
