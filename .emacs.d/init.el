@@ -14,6 +14,9 @@
 ;(require 'flymake-yaml)
 ;(add-hook 'yaml-mode-hook 'flymake-yaml-load)
 
+;; js-mode
+(setq js-indent-level 2)
+
 ;; Japanese, UTF-8
 (set-locale-environment nil)
 (set-language-environment "Japanese")
