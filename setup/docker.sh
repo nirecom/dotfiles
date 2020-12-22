@@ -1,6 +1,7 @@
 #!/bin/bash
 # install docker
 # ref. https://docs.docker.com/engine/install/ubuntu/
+# TODO: Latest docker version does not work with Kubernetes. See setup-kubernetes.sh
 echo "Install docker ....."
 sudo apt-get update
 sudo apt-get install \
