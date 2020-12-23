@@ -1,9 +1,17 @@
 ;; configure load path
-
 ; adding default .emacs.d causes error
 ;(add-to-list 'load-path "~/.emacs.d")
 (add-to-list 'load-path "~/.emacs.d/packages")
 
+;; Use editorconfig (elisp version)
+(setq editorconfig-get-properties-function
+      'editorconfig-core-get-properties-hash)
+
+;;
+;; Highlighters
+;;
+;; Define general major modes
+(require 'generic-x)
 ;; yaml-mode: highlighter
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
