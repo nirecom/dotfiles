@@ -1,3 +1,5 @@
+export TERM=xterm-256color
+
 alias ll='ls -al'
 alias em='emacs'
 alias dc='docker-compose'
