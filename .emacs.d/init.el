@@ -7,6 +7,9 @@
 (setq editorconfig-get-properties-function
       'editorconfig-core-get-properties-hash)
 
+;; Theme
+(load-theme 'misterioso t)
+
 ;;
 ;; Highlighters
 ;;
