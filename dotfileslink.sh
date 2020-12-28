@@ -6,6 +6,7 @@ ln -sf ~/dotfiles/.vim ~/
 ln -sf ~/dotfiles/.editorconfig ~/
 ln -sf ~/dotfiles/.tmux.conf ~/
 ln -sf ~/dotfiles/.gitconfig ~/
+ln -sf ~/dotfiles/.inputrc ~/
 if [ -d ~/.atom/ ]; then
     ln -sf ~/dotfiles/.atom/config.cson ~/.atom/
     ln -sf ~/dotfiles/.atom/keymap.cson ~/.atom/
