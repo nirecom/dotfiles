@@ -14,7 +14,10 @@ if [ -f ~/dotfiles/git-values.sh ]; then
 fi
 
 # Setup ssh-agent
-keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
+if type keychain >/dev/null 2>&1
+then
+    keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
+fi
 if [ -f ~/.ssh-agent ]; then
 	. ~/.ssh-agent >/dev/null
 fi
@@ -24,8 +27,6 @@ if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID; then
 fi
 ssh-add -l >& /dev/null || ssh-add
 
-if [ $HOSTNAME = "lab.nire.com" ]; then
+if [ $HOSTNAME = "lab" ]; then
 	~/dotfiles/tmux.sh
 fi
-
-#[[ $TERM != "screen" ]] && exec tmux -u
