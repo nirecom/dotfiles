@@ -1,6 +1,6 @@
 scriptencoding utf-8
 set encoding=utf-8
-set visualbell
+set visualbell t_vb=
 set number
 set list listchars=tab:\▸\-
 set ignorecase
