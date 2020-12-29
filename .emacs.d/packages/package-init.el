@@ -1,4 +1,4 @@
-;; Installed listed packages in my/favorite-packages
+;; Installed listed
 ;; ref. https://emacs-jp.github.io/packages/package
 
 (require 'package)
@@ -13,8 +13,8 @@
 ;; TODO: solarized-theme actually isn't included in melpa list any more...?
 (defvar my/favorite-packages
   '(
-    solarized-theme
-    ))
+    markdown-preview-mode
+   ))
 
 (dolist (package my/favorite-packages)
   (unless (package-installed-p package)
