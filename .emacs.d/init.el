@@ -23,6 +23,7 @@
 ;;
 ;; Define general major modes
 (require 'generic-x)
+
 ;; yaml-mode: highlighter
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
@@ -35,6 +36,17 @@
 
 ;; js-mode
 (setq js-indent-level 2)
+
+;; Markdown
+;; ref. https://qiita.com/howking/items/bcc4e05bfb16777747fa
+(package-install 'markdown-mode)
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
+;; Highlighten code block
+(setq markdown-fontify-code-blocks-natively t)
+(autoload 'markdown-preview-mode "markdown-preview-mode.el" t)
 
 ;; Japanese, UTF-8
 (set-locale-environment nil)
