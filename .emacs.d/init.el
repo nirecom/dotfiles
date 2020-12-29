@@ -46,6 +46,9 @@
 (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
 ;; Highlighten code block
 (setq markdown-fontify-code-blocks-natively t)
+
+;; Markdown Preview Mode
+;; ref. https://qiita.com/No_217/items/afd39b0828b444a160da
 (autoload 'markdown-preview-mode "markdown-preview-mode.el" t)
 
 ;; Japanese, UTF-8
@@ -113,5 +116,24 @@
 ;; Mac keybind
 ;(mac-key-mode 1)
 
-;; Mac option key is meta key
-;(setq mac-option-modifier 'meta)
+;; ref. https://stackoverflow.com/questions/5052088/what-is-custom-set-variables-and-faces-in-my-emacs
+;(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+;(load custom-file)
+
+;;
+;; Auto added part by emacs
+;;
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (markdown-mode uuidgen solarized-theme markdown-preview-mode))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
