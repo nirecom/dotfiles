@@ -2,6 +2,7 @@ export TERM=xterm-256color
 
 alias ll='ls -al'
 alias em='emacs'
+alias d='docker'
 alias dc='docker-compose'
 alias tmux='~/dotfiles/tmux.sh'
 # git settings
