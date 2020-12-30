@@ -12,6 +12,7 @@
 (add-to-list 'load-path "~/.emacs.d/packages")
 
 ;; Use editorconfig (elisp version)
+;; ref. https://qiita.com/ticonz/items/5e2d5f12b991076710a5
 (setq editorconfig-get-properties-function
       'editorconfig-core-get-properties-hash)
 
