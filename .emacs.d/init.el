@@ -116,6 +116,8 @@
 
 ;; Mac keybind
 ;(mac-key-mode 1)
+(when (eq system-type 'darwin)
+  (setq ns-command-modifier (quote meta)))
 
 ;; ref. https://stackoverflow.com/questions/5052088/what-is-custom-set-variables-and-faces-in-my-emacs
 ;(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
