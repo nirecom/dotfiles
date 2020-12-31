@@ -31,3 +31,7 @@ ssh-add -l >& /dev/null || ssh-add
 if [ $HOSTNAME = "lab" ]; then
 	~/dotfiles/tmux.sh
 fi
+
+# Added by iTerm
+test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
+
