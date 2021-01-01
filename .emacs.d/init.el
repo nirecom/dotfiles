@@ -65,8 +65,20 @@
 ;; Do not display startup message
 (setq inhibit-startup-message t)
 
-;; Do not display backup file
-(setq make-backup-files nil)
+;; Do not create backup files
+;(setq make-backup-files nil)
+
+;; Create backup files under specific folder
+;; ref. https://emacs.tsutomuonoda.com/file-settings-that-emacs-automatically-creates/
+(setq backup-directory-alist '((".*" . "~/.emacs_backup")))
+(setq version-control t)
+(setq kept-new-versions 5)
+(setq kept-old-versions 1)
+(setq delete-old-versions t)
+
+;; Create auto-save files, but do not create auto-save list file
+(setq auto-save-file-name-transforms   '((".*" "~/tmp/" t)))
+(setq auto-save-list-file-prefix nil)
 
 ;; Remove auto save file when quit
 (setq delete-auto-save-files t)
