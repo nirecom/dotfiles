@@ -15,6 +15,8 @@
   '(
     ;; markdown-preview-mode
     markdown-preview-mode websocket web-server uuidgen
+    ;; dockerfile-mode
+    dockerfile-mode
    ))
 
 (dolist (package my/favorite-packages)
