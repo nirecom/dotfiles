@@ -131,6 +131,23 @@
 (when (eq system-type 'darwin)
   (setq ns-command-modifier (quote meta)))
 
+;; Copy & Paste synchronization (macOS)
+;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
+(if (eq system-type 'darwin)
+    (progn
+      (defun copy-from-osx ()
+    (shell-command-to-string "reattach-to-user-namespace pbpaste"))
+      (defun paste-to-osx (text &optional push)
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "pbcopy" "*Messages*" "reattach-to-user-namespace" "pbcopy")))
+        (process-send-string proc text)
+        (process-send-eof proc))))
+      (setq interprogram-cut-function 'paste-to-osx)
+      (setq interprogram-paste-function 'copy-from-osx)
+    )
+    (message "This platform is not mac")
+)
+
 ;; ref. https://stackoverflow.com/questions/5052088/what-is-custom-set-variables-and-faces-in-my-emacs
 ;(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 ;(load custom-file)
