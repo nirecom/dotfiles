@@ -24,3 +24,5 @@
 [user]
 	email = hideaki@nire.com
 	name = Hideaki Nire (nirecom)
+[fetch]
+	prune = true
