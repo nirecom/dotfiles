@@ -166,7 +166,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (dockerfile-mode markdown-mode uuidgen solarized-theme markdown-preview-mode))))
+    (php-mode dockerfile-mode markdown-mode uuidgen solarized-theme markdown-preview-mode))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
