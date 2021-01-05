@@ -17,6 +17,8 @@
     markdown-preview-mode websocket web-server uuidgen
     ;; dockerfile-mode
     dockerfile-mode
+    ;; php-mode
+    php-mode
    ))
 
 (dolist (package my/favorite-packages)
