@@ -130,11 +130,6 @@
 (setq visible-bell t)
 ;(setq ring-bell-function 'ignore)
 
-;; Mac keybind
-;(mac-key-mode 1)
-(when (eq system-type 'darwin)
-  (setq ns-command-modifier (quote meta)))
-
 ;; Copy & Paste synchronization (macOS)
 ;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
 ;; required to run: brew install reattach-to-user-namespace
