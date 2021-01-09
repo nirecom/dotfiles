@@ -137,6 +137,7 @@
 
 ;; Copy & Paste synchronization (macOS)
 ;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
+;; required to run: brew install reattach-to-user-namespace
 (if (eq system-type 'darwin)
     (progn
       (defun copy-from-osx ()
