@@ -6,6 +6,7 @@ alias d='docker'
 alias dx='docker exec -it'
 alias dc='docker-compose'
 alias dcu='docker-compose up -d'
+alias dcub='docker-compose up -d --build'
 alias dcd='docker-compose down'
 alias tmux='~/dotfiles/tmux.sh'
 # git settings
