@@ -31,5 +31,6 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 # Start Docker on boot
 sudo systemctl enable docker
+# Remove unnecessary packages
 sudo apt autoremove
 echo Finished Docker setup
