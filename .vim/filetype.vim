@@ -1,0 +1,1 @@
+/home/nire/dotfiles/filetype.vim
