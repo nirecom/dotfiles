@@ -31,6 +31,5 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 # Start Docker on boot
 sudo systemctl enable docker
+sudo apt autoremove
 echo Finished Docker setup
-echo You may want to run following command to cleanup unnecessary libs
-echo sudo apt autoremove
