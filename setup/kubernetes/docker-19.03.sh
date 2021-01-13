@@ -33,4 +33,6 @@ sudo systemctl restart docker
 sudo systemctl enable docker
 # Remove unnecessary packages
 sudo apt autoremove
+# Get $USER to run docker without password
+sudo gpasswd -a $USER docker
 echo Finished Docker setup
