@@ -29,7 +29,10 @@ if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID; then
 	ssh-agent > ~/.ssh-agent
 	. ~/.ssh-agent >/dev/null
 fi
-ssh-add -l >& /dev/null || ssh-add
+if [ ! ssh-add -l >& /dev/null ]; then
+	ssh-add
+	ssh-add ~/.ssh/id_ed25519
+fi
 
 if [ $HOSTNAME = "lab" ]; then
 	~/dotfiles/tmux.sh
