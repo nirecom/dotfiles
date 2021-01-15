@@ -1,18 +1,8 @@
 #!/bin/bash
 #
 # Install Kubernetes
+# Part2 - master only
 # ref. https://qiita.com/nnagashima/items/d7deb00d086b6e276eea
-#
-# Run docker-19.03.sh first to match with this version of Kubernetes
-echo Install Kubernetes .....
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-#sudo apt install apt-transport-https curl
-# was not required on Ubuntu 20.04
-sudo apt update
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
-sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
-sudo apt install kubeadm kubelet kubectl kubernetes-cni
-swapoff -a
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 # You will see Docker version error with 20.0.1. Need to use 19.03
 # ref. https://qiita.com/soumi/items/7736ac3aabbbe4fb474a
