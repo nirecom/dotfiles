@@ -16,3 +16,4 @@ if [ -d ~/.emacs.d/ ]; then
     ln -sf ~/dotfiles/.emacs.d/init.el ~/.emacs.d/
     ln -sf ~/dotfiles/.emacs.d/packages ~/.emacs.d/packages
 fi
+chmod +x ~/.ssh/ssh-add-all
