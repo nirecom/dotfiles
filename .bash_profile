@@ -9,6 +9,7 @@ alias dcu='docker-compose up -d'
 alias dcub='docker-compose up -d --build'
 alias dcd='docker-compose down'
 alias tmux='~/dotfiles/tmux.sh'
+alias k='kubectl'
 # git settings
 source ~/dotfiles/git-prompt.sh
 source ~/dotfiles/git-completion.bash

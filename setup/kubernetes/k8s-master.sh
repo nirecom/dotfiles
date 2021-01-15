@@ -2,6 +2,9 @@
 #
 # Install Kubernetes
 # Part2 - master only
+#
+# Hostname cannot be changed after kubeadm
+sudo hostnamectl set-hostname k8s-master
 # ref. https://qiita.com/nnagashima/items/d7deb00d086b6e276eea
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 # You will see Docker version error with 20.0.1. Need to use 19.03
