@@ -15,7 +15,8 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 # Edit iptables for flannel
-sudo sysctl net.bridge.bridge-nf-call-iptables=1
+# not necessary for Ubuntu 20.04 LTS
+#sudo sysctl net.bridge.bridge-nf-call-iptables=1
 # Apply Flannel
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 # See if STATUS is ready
