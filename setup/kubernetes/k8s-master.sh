@@ -8,8 +8,7 @@ echo "Changing Hostname ..."
 sudo hostnamectl set-hostname k8s-master
 # ref. https://qiita.com/nnagashima/items/d7deb00d086b6e276eea
 echo "Initializing with kubeadm init ..."
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16 \
-    --ignore-preflight-errors=Mem
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=Mem
 # You will see Docker version error with 20.0.1. Need to use 19.03
 # ref. https://qiita.com/soumi/items/7736ac3aabbbe4fb474a
 # If succeeded, you will see messages:
@@ -22,7 +21,7 @@ fi
 # Copy Kubernetes config files as instructed
 echo "Copying config to $HOME/.kube ..."
 mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo cp -f -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 aws s3 cp $HOME/.kube/config s3://nirecom-home/.kube/
 
