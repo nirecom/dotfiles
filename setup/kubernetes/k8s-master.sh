@@ -31,9 +31,9 @@ aws s3 cp $HOME/.kube/config s3://nirecom-home/.kube/
 # Apply Flannel
 echo "Applying flannel ..."
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-# Untaint: Enable control planes
-echo "Untainging master node ..."
-kubectl taint nodes --all node-role.kubernetes.io/master-
+# Untaint: Enable control planes to install pods
+#echo "Untainging master node ..."
+#kubectl taint nodes --all node-role.kubernetes.io/master-
 # See if STATUS is ready
 kubectl get nodes
 echo If STATUS is "Ready", you finished to install master node!

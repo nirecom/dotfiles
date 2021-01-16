@@ -1,5 +1,5 @@
 #!/bin/bash
 echo "Running kubeadm ..."
-kubeadm reset
+sudo kubeadm reset
 echo "Removing .kube folder ..."
 rm -rf $HOME/.kube
