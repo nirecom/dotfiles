@@ -40,10 +40,9 @@ fi
 if "$ISCLIENTOS"; then
     echo "You are on client: $(uname -s)."
     if [ -f ~/.ssh-agent ]; then
-	echo "Sourcing ~/.ssh-agent ..."
 	. ~/.ssh-agent >/dev/null
     fi
-    if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID; then
+    if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID >/dev/null 2>&1; then
 	echo "Launching ssh-agent ..."
 	ssh-agent > ~/.ssh-agent
 	. ~/.ssh-agent >/dev/null
