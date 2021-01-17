@@ -1,6 +1,5 @@
 export TERM=xterm-256color
 
-alias ll='ls -al'
 alias em='emacs'
 alias d='docker'
 alias dx='docker exec -it'
@@ -8,8 +7,16 @@ alias dc='docker-compose'
 alias dcu='docker-compose up -d'
 alias dcub='docker-compose up -d --build'
 alias dcd='docker-compose down'
+# gitpush alias: ref. https://qiita.com/ut0n/items/2074623c0b8c1c9ff8e6
+gitpush() {
+  git add .
+  git commit -m "$*"
+  git push origin HEAD
+}
+alias gp=gitpush
 alias tmux='~/dotfiles/tmux.sh'
 alias k='kubectl'
+alias ll='ls -al'
 # git settings
 source ~/dotfiles/git-prompt.sh
 source ~/dotfiles/git-completion.bash
