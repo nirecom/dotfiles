@@ -27,8 +27,8 @@ if [ "$(uname)" == 'Darwin' ]; then
         keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
     fi
     ISCLIENTOS=true
-elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
-    ISCLIENTOS=true
+#elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+#    ISCLIENTOS=false
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
     ISCLIENTOS=true
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW64_NT' ]; then
@@ -40,15 +40,15 @@ fi
 if "$ISCLIENTOS"; then
     echo "You are on client: $(uname -s)."
     if [ -f ~/.ssh-agent ]; then
-        echo "Launching ssh-agent ..."
-	    . ~/.ssh-agent >/dev/null
+	echo "Sourcing ~/.ssh-agent ..."
+	. ~/.ssh-agent >/dev/null
     fi
     if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID; then
-        echo "Launching ssh-agent ..."
-	    ssh-agent > ~/.ssh-agent
-	    . ~/.ssh-agent >/dev/null
+	echo "Launching ssh-agent ..."
+	ssh-agent > ~/.ssh-agent
+	. ~/.ssh-agent >/dev/null
     fi
-#    ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
+    ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
 fi
     
 if [ $HOSTNAME = "lab" ]; then
