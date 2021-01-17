@@ -44,9 +44,3 @@ if [ ! -f /etc/sudoers.d/nirecom-users ]; then
     sudo chown root:root /etc/sudoers.d/nirecom-users
     sudo chmod 440 /etc/sudoers.d/nirecom-users
 fi
-
-# Copy .ssh/ folder from S3
-aws s3 cp --recursive s3://nirecom-home/.ssh ~/.ssh
-chmod 600 ~/.ssh/*
-chmod +x ~/.ssh/ssh-add-all
-
