@@ -20,19 +20,35 @@ if [ -f ~/dotfiles/git-values.sh ]; then
 fi
 
 # Setup ssh-agent
-if type keychain >/dev/null 2>&1
-then
-    keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
+ISCLIENTOS=false
+if [ "$(uname)" == 'Darwin' ]; then
+    if type keychain >/dev/null 2>&1
+    then
+        keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
+    fi
+    ISCLIENTOS=true
+elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+    ISCLIENTOS=true
+elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
+    ISCLIENTOS=true
+elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW64_NT' ]; then
+    ISCLIENTOS=true
+else
+    echo "You are on server. Will not launch ssh-agent."
 fi
-if [ -f ~/.ssh-agent ]; then
-	. ~/.ssh-agent >/dev/null
-fi
-if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID; then
-	ssh-agent > ~/.ssh-agent
-	. ~/.ssh-agent >/dev/null
-fi
-ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
 
+if "$ISCLIENTOS"; then
+    echo "You are on client: $(uname -s). Launching ssh-agent ..."
+    if [ -f ~/.ssh-agent ]; then
+	    . ~/.ssh-agent >/dev/null
+    fi
+    if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID; then
+	    ssh-agent > ~/.ssh-agent
+	    . ~/.ssh-agent >/dev/null
+    fi
+#    ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
+fi
+    
 if [ $HOSTNAME = "lab" ]; then
 	~/dotfiles/tmux.sh
 fi
