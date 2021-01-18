@@ -9,7 +9,7 @@ alias dcub='docker-compose up -d --build'
 alias dcd='docker-compose down'
 # gitpush alias: ref. https://qiita.com/ut0n/items/2074623c0b8c1c9ff8e6
 gitpush() {
-  git add .
+  git add -A
   git commit -m "$*"
   git push origin HEAD
 }
