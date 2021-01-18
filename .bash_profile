@@ -60,9 +60,9 @@ if "$ISCLIENTOS"; then
     ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
 fi
     
-if [ $HOSTNAME = "lab" ]; then
+#if [ $HOSTNAME = "lab" ]; then
 	~/dotfiles/tmux.sh
-fi
+#fi
 
 # Added by iTerm
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
