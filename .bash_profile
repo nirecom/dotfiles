@@ -15,6 +15,8 @@ gitpush() {
   git push origin HEAD
 }
 alias gp=gitpush
+alias psmem='ps aux k -pmem | head -n 10'
+alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
 alias k='kubectl'
 alias ll='ls -al'
