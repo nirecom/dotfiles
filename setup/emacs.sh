@@ -8,3 +8,4 @@ fi
 if [ ! -d ~/.emacs_backup ]; then
     mkdir ~/.emacs_backup
 fi
+emacs --script ~/.emacs.d/packages/package-init.el
