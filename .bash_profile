@@ -44,7 +44,7 @@ elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW64_NT' ]; then
     ISCLIENTOS=true
 else
-    echo "You are on server. Will not launch ssh-agent."
+#    echo "You are on server. Will not launch ssh-agent."
 fi
 
 if "$ISCLIENTOS"; then
@@ -60,9 +60,11 @@ if "$ISCLIENTOS"; then
     ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
 fi
     
-if type git > /dev/null 2>&1; then
-    echo "git pull ~/dotfiles ..."
-    git -C ~/dotfiles pull
+if type git > /dev/null 2>&1; then # if git is installed
+    if [ $$ -eq $(pgrep -fo bash) ]; then # if first bash process
+        echo "git pull ~/dotfiles ..."
+        git -C ~/dotfiles pull
+    fi
 fi
 
 # Added by iTerm
