@@ -5,9 +5,17 @@
 # Install kubectl and download .kube files if not exist
 ./client.sh
 
+# Observe Taints
+echo "Before Untaint:"
+kubectl describe nodes | grep -e "Name:" -e "Taints:"
+
 # Untaint: Enable control planes to install pods
 echo "Untainging master node ..."
 kubectl taint nodes --all node-role.kubernetes.io/master-
+
+# Observe Taints
+echo "After Untaint:"
+kubectl describe nodes | grep -e "Name:" -e "Taints:"
 
 # See if STATUS is ready
 kubectl get nodes
