@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# Install Kubernetes
-# Part2 - master only
+# Install Kubernetes Master (First Time)
 #
 # Hostname cannot be changed after kubeadm
 #echo "Changing Hostname ..."
@@ -33,13 +32,3 @@ aws s3 cp $HOME/.kube/config s3://nirecom-home/.kube/
 # Edit iptables for flannel
 # not necessary for Ubuntu 20.04 LTS
 #sudo sysctl net.bridge.bridge-nf-call-iptables=1
-# Apply Flannel
-echo "Applying flannel ..."
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-# Untaint: Enable control planes to install pods
-#echo "Untainging master node ..."
-#kubectl taint nodes --all node-role.kubernetes.io/master-
-# See if STATUS is ready
-kubectl get nodes
-echo If STATUS is "Ready", you finished to install master node!
-echo See https://qiita.com/nykym/items/dcc572c21885543d94c8 for untaint master node if you want.
