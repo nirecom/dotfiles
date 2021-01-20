@@ -60,10 +60,12 @@ if "$ISCLIENTOS"; then
     ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
 fi
     
-#if [ $HOSTNAME = "lab" ]; then
-	~/dotfiles/tmux.sh
-#fi
+if type git > /dev/null 2>&1; then
+    echo "git pull ~/dotfiles ..."
+    git -C ~/dotfiles pull
+fi
 
 # Added by iTerm
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
+~/dotfiles/tmux.sh
