@@ -4,11 +4,16 @@
 # Part2 - master only
 #
 # Hostname cannot be changed after kubeadm
-echo "Changing Hostname ..."
-sudo hostnamectl set-hostname k8s-master
+#echo "Changing Hostname ..."
+#sudo hostnamectl set-hostname k8s-master
 # ref. https://qiita.com/nnagashima/items/d7deb00d086b6e276eea
+echo "Cleanup kubeadm information ..."
+sudo kubeadm reset -f
 echo "Initializing with kubeadm init ..."
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=Mem
+#sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=Mem
+# --control-plan-endpoint is for high-availability masters cluster
+sudo kubeadm init --control-plane-endpoint "k8s-master:16443" --upload-certs --pod-network-cidr=10.244.0.0/16
+
 # You will see Docker version error with 20.0.1. Need to use 19.03
 # ref. https://qiita.com/soumi/items/7736ac3aabbbe4fb474a
 # If succeeded, you will see messages:
