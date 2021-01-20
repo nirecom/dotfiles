@@ -17,8 +17,8 @@ else
     sudo apt install -y kubectl
 fi
 
-if [ -d "$HOME/.kube" ]; then
-    echo "$HOME/.kube exists. Skip copying ..."
+if [ -f "$HOME/.kube/config" ]; then
+    echo "$HOME/.kube/config exists. Skip copying ..."
 else
     echo "Copying config to $HOME/.kube ..."
     mkdir -p $HOME/.kube
