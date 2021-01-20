@@ -43,8 +43,6 @@ elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
     ISCLIENTOS=true
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW64_NT' ]; then
     ISCLIENTOS=true
-else
-#    echo "You are on server. Will not launch ssh-agent."
 fi
 
 if "$ISCLIENTOS"; then
