@@ -9,7 +9,7 @@
 echo "Initializing with kubeadm init ..."
 #sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=Mem
 # --control-plan-endpoint is for high-availability masters cluster
-sudo kubeadm init --control-plane-endpoint "k8s-master:16443" --upload-certs --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --control-plane-endpoint "k8s-master:16443" --upload-certs --pod-network-cidr=10.244.0.0/16 | tee ~/kubeadm-init.log.txt
 
 # You will see Docker version error with 20.0.1. Need to use 19.03
 # ref. https://qiita.com/soumi/items/7736ac3aabbbe4fb474a
