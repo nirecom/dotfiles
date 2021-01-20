@@ -6,8 +6,6 @@
 #echo "Changing Hostname ..."
 #sudo hostnamectl set-hostname k8s-master
 # ref. https://qiita.com/nnagashima/items/d7deb00d086b6e276eea
-echo "Cleanup kubeadm information ..."
-sudo kubeadm reset -f
 echo "Initializing with kubeadm init ..."
 #sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=Mem
 # --control-plan-endpoint is for high-availability masters cluster
@@ -32,3 +30,11 @@ aws s3 cp $HOME/.kube/config s3://nirecom-home/.kube/
 # Edit iptables for flannel
 # not necessary for Ubuntu 20.04 LTS
 #sudo sysctl net.bridge.bridge-nf-call-iptables=1
+
+# Apply Flannel
+#echo "Applying Flannel ..."
+#kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+# Apply Weave Net
+#echo "Applying Weave Net ..."
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"

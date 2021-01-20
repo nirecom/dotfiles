@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Install Kubernetes Client
+# Install kubectl and download .kube files if not exist
 # ref. https://qiita.com/nnagashima/items/d7deb00d086b6e276eea
 #
 if type kubectl > /dev/null 2>&1; then
