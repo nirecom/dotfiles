@@ -19,6 +19,8 @@
     dockerfile-mode
     ;; php-mode
     php-mode
+    ;; terraform-mode
+    terraform-mode
    ))
 
 (dolist (package my/favorite-packages)
