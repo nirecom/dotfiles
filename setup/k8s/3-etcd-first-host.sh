@@ -2,6 +2,7 @@
 export HOST0=k8s-master-ne1a
 export HOST1=k8s-master-ne1c
 export HOST2=k8s-master-ne1d
+export SCPUSER=nire
 
 # Create temp directories to store files that will end up on other hosts.
 mkdir -p /tmp/${HOST0}/ /tmp/${HOST1}/ /tmp/${HOST2}/
@@ -57,19 +58,20 @@ sudo kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST0}/kub
 sudo kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST0}/kubeadmcfg.yaml
 # No need to move the certs because they are for HOST0
 
-USER=nire
 SSHHOSTS=(${HOST1} ${HOST2})
+TARFILE=kubernetes-pki.tar
 for i in "${!SSHHOSTS[@]}"; do
   HOST=${SSHHOSTS[$i]}
-  echo "Copying cert to $HOST ..."    
-  scp -r /tmp/${HOST}/* ${USER}@${HOST}:
+  echo "Creating & Copying tarball to $HOST ..."
+  sudo sh -c "cd /tmp/${HOST}; tar cf /tmp/${TARFILE} ./pki"
+  scp -r /tmp/${TARFILE} ${SCPUSER}@${HOST}:
+
+  # clean up certs that should not be copied off this host
+  sudo find /tmp/${HOST} -name ca.key -type f -delete
+  sudo rm /tmp/${TARFILE}
+  
 done
-
-# clean up certs that should not be copied off this host
-#find /tmp/${HOST2} -name ca.key -type f -delete
-#find /tmp/${HOST1} -name ca.key -type f -delete
-
-echo "Done. Please copy files manually with:"
-echo "$USER@$HOST $ sudo -Es"
-echo "root@HOST $ chown -R root:root pki"
-echo "root@HOST $ mv pki /etc/kubernetes/"
+echo "Run following commands manually:"
+echo "---"
+echo "cd /etc/kubernetes; sudo tar xf ~/${TARFILE}; sudo chown -R root:root /etc/kubernetes; rm ~/${TARFILE}"
+echo "---"
