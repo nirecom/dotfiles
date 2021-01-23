@@ -1,3 +1,4 @@
+export PATH=$PATH:/usr/local/go/bin
 export TERM=xterm-256color
 
 alias em='emacs'
