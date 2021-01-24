@@ -63,7 +63,9 @@ if "$ISCLIENTOS"; then
 fi
     
 if type git > /dev/null 2>&1; then # if git is installed
-    PID=`pgrep -fo bash`
+    if type pgrep >/dev/null 2>&1; then
+	PID=`pgrep -fo bash`
+    fi
     if [ -n "$PID" ] && [ $$ != "$PID" ]; then # if first bash process
           echo "git pull ~/dotfiles ..."
           git -C ~/dotfiles pull
@@ -73,6 +75,6 @@ fi
 # Added by iTerm
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
-if [ ! "$(uname)" = 'Darwin' ]; then
+if ! "$ISCLIENTOS"; then
     ~/dotfiles/tmux.sh
 fi
