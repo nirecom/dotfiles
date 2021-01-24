@@ -15,9 +15,9 @@ gitpush() {
   git commit -m "$*"
   git push origin HEAD
 }
-alias gd=git diff
-alias gs=git status
-alias gl=git pull
+alias gd='git diff'
+alias gs='git status'
+alias gl='git pull'
 alias gp=gitpush
 alias psmem='ps aux k -pmem | head -n 10'
 alias pscpu='ps aux k -pcpu | head -n 10'
