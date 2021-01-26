@@ -1,4 +1,3 @@
-export PATH=$PATH:/usr/local/go/bin
 export TERM=xterm-256color
 # terraform does not read region from ~/.aws/config.
 # ref. https://ja.ojit.com/so/terraform/3413058
@@ -27,6 +26,31 @@ alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
 alias k='kubectl'
 alias ll='ls -al'
+
+# Add path only one time
+# ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
+addpath() {
+    _path=""
+    for _p in $(echo $PATH | tr ':' ' '); do
+        case ":${_path}:" in
+            *:"${_p}":* )
+            ;;
+            * )
+                if [ "$_path" ]; then
+                    _path="$_path:$_p"
+                else
+                    _path=$_p
+                fi
+                ;;
+        esac
+    done
+    PATH=$_path
+    unset _p
+    unset _path
+}
+addpath "/usr/local/go/bin"
+export PATH
+
 # git settings
 source ~/dotfiles/git-prompt.sh
 source ~/dotfiles/git-completion.bash
