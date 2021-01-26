@@ -1,4 +1,3 @@
-export PATH=$PATH:/usr/local/go/bin
 export TERM=xterm-256color
 # terraform does not read region from ~/.aws/config.
 # ref. https://ja.ojit.com/so/terraform/3413058
@@ -23,11 +22,37 @@ alias gd='git diff'
 alias gs='git status'
 alias gl='git pull'
 alias gp=gitpush
+alias k='kubectl'
+alias ll='ls -al'
 alias psmem='ps aux k -pmem | head -n 10'
 alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
-alias k='kubectl'
-alias ll='ls -al'
+alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
+
+# Add path only one time
+# ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
+addpath() {
+    _path=""
+    for _p in $(echo $PATH | tr ':' ' '); do
+        case ":${_path}:" in
+            *:"${_p}":* )
+            ;;
+            * )
+                if [ "$_path" ]; then
+                    _path="$_path:$_p"
+                else
+                    _path=$_p
+                fi
+                ;;
+        esac
+    done
+    PATH=$_path
+    unset _p
+    unset _path
+}
+addpath "/usr/local/go/bin"
+export PATH
+
 # git settings
 source ~/dotfiles/git-prompt.sh
 source ~/dotfiles/git-completion.bash
@@ -38,23 +63,24 @@ if [ -f ~/dotfiles/git-values.sh ]; then
 fi
 
 # Setup ssh-agent
-ISCLIENTOS=false
+ISTERM=false
 if [ "$(uname)" == 'Darwin' ]; then
     if type keychain >/dev/null 2>&1
     then
         keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
     fi
-    ISCLIENTOS=true
+    ISTERM=true
 #elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
-#    ISCLIENTOS=false
+#    ISTERM=false
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
-    ISCLIENTOS=true
+    ISTERM=true
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW64_NT' ]; then
-    ISCLIENTOS=true
+    ISTERM=true
+elif [ -v WSLENV ]; then # WSL
+    ISTERM=true
 fi
 
-if "$ISCLIENTOS"; then
-    echo "You are on client: $(uname -s)."
+if "$ISTERM"; then
     if [ -f ~/.ssh-agent ]; then
 	. ~/.ssh-agent >/dev/null
     fi
@@ -79,6 +105,11 @@ fi
 # Added by iTerm
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
-if ! "$ISCLIENTOS"; then
+# Added by SDKMAN
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/home/nire/.sdkman"
+[[ -s "/home/nire/.sdkman/bin/sdkman-init.sh" ]] && source "/home/nire/.sdkman/bin/sdkman-init.sh"
+
+if ! "$ISTERM"; then
     ~/dotfiles/tmux.sh
 fi
