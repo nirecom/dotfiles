@@ -102,6 +102,11 @@ fi
 # Added by iTerm
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
+# Added by SDKMAN
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/home/nire/.sdkman"
+[[ -s "/home/nire/.sdkman/bin/sdkman-init.sh" ]] && source "/home/nire/.sdkman/bin/sdkman-init.sh"
+
 if ! "$ISCLIENTOS"; then
     ~/dotfiles/tmux.sh
 fi
