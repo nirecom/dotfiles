@@ -21,11 +21,12 @@ alias gd='git diff'
 alias gs='git status'
 alias gl='git pull'
 alias gp=gitpush
+alias k='kubectl'
+alias ll='ls -al'
 alias psmem='ps aux k -pmem | head -n 10'
 alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
-alias k='kubectl'
-alias ll='ls -al'
+alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
 
 # Add path only one time
 # ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
@@ -61,23 +62,24 @@ if [ -f ~/dotfiles/git-values.sh ]; then
 fi
 
 # Setup ssh-agent
-ISCLIENTOS=false
+ISTERM=false
 if [ "$(uname)" == 'Darwin' ]; then
     if type keychain >/dev/null 2>&1
     then
         keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
     fi
-    ISCLIENTOS=true
+    ISTERM=true
 #elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
-#    ISCLIENTOS=false
+#    ISTERM=false
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
-    ISCLIENTOS=true
+    ISTERM=true
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW64_NT' ]; then
-    ISCLIENTOS=true
+    ISTERM=true
+elif [ -v WSLENV ]; then # WSL
+    ISTERM=true
 fi
 
-if "$ISCLIENTOS"; then
-    echo "You are on client: $(uname -s)."
+if "$ISTERM"; then
     if [ -f ~/.ssh-agent ]; then
 	. ~/.ssh-agent >/dev/null
     fi
@@ -107,6 +109,6 @@ test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shel
 export SDKMAN_DIR="/home/nire/.sdkman"
 [[ -s "/home/nire/.sdkman/bin/sdkman-init.sh" ]] && source "/home/nire/.sdkman/bin/sdkman-init.sh"
 
-if ! "$ISCLIENTOS"; then
+if ! "$ISTERM"; then
     ~/dotfiles/tmux.sh
 fi
