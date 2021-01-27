@@ -29,9 +29,9 @@ alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
 alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
 
-# Add path only one time
+# make each path unique
 # ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
-addpath() {
+uniqpath() {
     _path=""
     for _p in $(echo $PATH | tr ':' ' '); do
         case ":${_path}:" in
@@ -50,8 +50,8 @@ addpath() {
     unset _p
     unset _path
 }
-addpath "/usr/local/go/bin"
-export PATH
+export PATH="$HOME/.nodebrew/current/bin:$PATH:/usr/local/go/bin"
+uniqpath
 
 # git settings
 source ~/dotfiles/git-prompt.sh
