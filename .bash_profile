@@ -52,6 +52,9 @@ uniqpath() {
 }
 export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin"
 uniqpath
+if type rbenv >/dev/null 2>&1; then
+    eval "$(rbenv init -)"
+fi
 
 # git settings
 source ~/dotfiles/git-prompt.sh
