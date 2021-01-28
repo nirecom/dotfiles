@@ -50,7 +50,7 @@ uniqpath() {
     unset _p
     unset _path
 }
-export PATH="$HOME/.nodebrew/current/bin:$PATH:/usr/local/go/bin"
+export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin"
 uniqpath
 
 # git settings
