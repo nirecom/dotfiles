@@ -21,6 +21,8 @@
     php-mode
     ;; terraform-mode
     terraform-mode
+    ;; kotlin-mode
+    kotlin-mode flycheck-kotlin
    ))
 
 (dolist (package my/favorite-packages)
