@@ -50,7 +50,7 @@ uniqpath() {
     unset _p
     unset _path
 }
-export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/flutter/bin"
+export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/development/flutter/bin"
 
 uniqpath
 if type rbenv >/dev/null 2>&1; then
