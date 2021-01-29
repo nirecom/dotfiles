@@ -1,1 +1,1 @@
-/home/nire/dotfiles/filetype.vim
+/Users/example/dotfiles/filetype.vim
