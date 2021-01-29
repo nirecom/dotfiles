@@ -1,1 +1,0 @@
-/Users/example/dotfiles/filetype.vim
