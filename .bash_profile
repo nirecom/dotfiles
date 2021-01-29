@@ -106,6 +106,10 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
+# Source code highlighting
+export LESSOPEN="| /usr/local/bin/src-hilite-lesspipe.sh %s"
+export LESS='-R'
+
 # Added by iTerm
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
