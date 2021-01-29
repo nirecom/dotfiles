@@ -50,7 +50,8 @@ uniqpath() {
     unset _p
     unset _path
 }
-export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin"
+export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/flutter/bin"
+
 uniqpath
 if type rbenv >/dev/null 2>&1; then
     eval "$(rbenv init -)"
@@ -110,8 +111,8 @@ test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shel
 
 # Added by SDKMAN
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/home/nire/.sdkman"
-[[ -s "/home/nire/.sdkman/bin/sdkman-init.sh" ]] && source "/home/nire/.sdkman/bin/sdkman-init.sh"
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 if ! "$ISTERM"; then
     ~/dotfiles/tmux.sh
