@@ -58,9 +58,13 @@ if type rbenv >/dev/null 2>&1; then
 fi
 
 # git settings
+# ref. https://qiita.com/varmil/items/9b0aeafa85975474e9b6
 source ~/dotfiles/git-prompt.sh
 source ~/dotfiles/git-completion.bash
+GIT_PS1_SHOWUPSTREAM=true
+GIT_PS1_SHOWUNTRACKEDFILES=true
 GIT_PS1_SHOWDIRTYSTATE=true
+GIT_PS1_SHOWSTASHSTATE=true
 export PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[1;34m\]\w\[\033[0;31m\]$(__git_ps1)\[\033[00m\]\$ '
 if [ -f ~/dotfiles/git-values.sh ]; then
 	source ~/dotfiles/git-values.sh
