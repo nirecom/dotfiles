@@ -29,3 +29,34 @@ alias psmem='ps aux k -pmem | head -n 10'
 alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
 alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
+
+# make each path unique
+# ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
+uniqpath() {
+    _path=""
+    for _p in $(echo $PATH | tr ':' ' '); do
+        case ":${_path}:" in
+            *:"${_p}":* )
+            ;;
+            * )
+                if [ "$_path" ]; then
+                    _path="$_path:$_p"
+                else
+                    _path=$_p
+                fi
+                ;;
+        esac
+    done
+    PATH=$_path
+    unset _p
+    unset _path
+}
+export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/development/flutter/bin"
+uniqpath
+
+# git settings: common part
+source ~/completion/git-prompt.sh
+GIT_PS1_SHOWUPSTREAM=true
+GIT_PS1_SHOWUNTRACKEDFILES=true
+GIT_PS1_SHOWDIRTYSTATE=true
+GIT_PS1_SHOWSTASHSTATE=true
