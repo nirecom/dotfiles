@@ -110,6 +110,13 @@ fi
 export LESSOPEN="| /usr/local/bin/src-hilite-lesspipe.sh %s"
 export LESS='-R'
 
+# nvm on macos
+if [ "$(uname)" == 'Darwin' ]; then
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+fi
+
 # Added by iTerm
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
