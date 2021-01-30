@@ -2,7 +2,7 @@ export TERM=xterm-256color
 # terraform does not read region from ~/.aws/config.
 # ref. https://ja.ojit.com/so/terraform/3413058
 export AWS_DEFAULT_REGION=$(aws configure get region --profile default)
-export BASH_SILENCE_DEPRECATION_WARNING=1
+#export BASH_SILENCE_DEPRECATION_WARNING=1
 
 alias em='emacs'
 alias d='docker'

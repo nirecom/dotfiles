@@ -2,8 +2,9 @@
 #ln -sf ~/dotfiles/.bashrc ~/ # Ubuntu has .bashrc by default
 ln -sf ~/dotfiles/.bash_profile ~/
 ln -sf ~/dotfiles/.bash_logout ~/
+ln -sf ~/dotfiles/.zshrc ~/
 ln -sf ~/dotfiles/.vimrc ~/
-ln -sf ~/dotfiles/.vim ~/
+#ln -sf ~/dotfiles/.vim ~/
 ln -sf ~/dotfiles/.editorconfig ~/
 ln -sf ~/dotfiles/.tmux.conf ~/
 ln -sf ~/dotfiles/.gitconfig ~/
