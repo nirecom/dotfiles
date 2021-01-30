@@ -1,33 +1,7 @@
-export TERM=xterm-256color
-# terraform does not read region from ~/.aws/config.
-# ref. https://ja.ojit.com/so/terraform/3413058
-export AWS_DEFAULT_REGION=$(aws configure get region --profile default)
-#export BASH_SILENCE_DEPRECATION_WARNING=1
-
-alias em='emacs'
-alias d='docker'
-alias dx='docker exec -it'
-alias dc='docker-compose'
-alias dcu='docker-compose up -d'
-alias dcub='docker-compose up -d --build'
-alias dcd='docker-compose down'
-alias g='git'
-# gitpush alias: ref. https://qiita.com/ut0n/items/2074623c0b8c1c9ff8e6
-gitpush() {
-  git add -A
-  git commit -m "$*"
-  git push origin HEAD
-}
-alias gd='git diff'
-alias gs='git status'
-alias gl='git pull'
-alias gp=gitpush
-alias k='kubectl'
-alias ll='ls -al'
-alias psmem='ps aux k -pmem | head -n 10'
-alias pscpu='ps aux k -pcpu | head -n 10'
-alias tmux='~/dotfiles/tmux.sh'
-alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
+COMMON_PROFILE=$HOME/dotfiles/.profile_common
+if [ -e $COMMON_PROFILE ]; then
+	source $COMMON_PROFILE
+fi
 
 # make each path unique
 # ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
@@ -59,8 +33,8 @@ fi
 
 # git settings
 # ref. https://qiita.com/varmil/items/9b0aeafa85975474e9b6
-source ~/dotfiles/git-prompt.sh
-source ~/dotfiles/git-completion.bash
+source ~/completion/git-prompt.sh
+source ~/completion/git-completion.bash
 GIT_PS1_SHOWUPSTREAM=true
 GIT_PS1_SHOWUNTRACKEDFILES=true
 GIT_PS1_SHOWDIRTYSTATE=true
