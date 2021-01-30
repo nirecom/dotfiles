@@ -1,44 +1,16 @@
+#!/bin/bash
 COMMON_PROFILE=$HOME/dotfiles/.profile_common
 if [ -e $COMMON_PROFILE ]; then
 	source $COMMON_PROFILE
 fi
 
-# make each path unique
-# ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
-uniqpath() {
-    _path=""
-    for _p in $(echo $PATH | tr ':' ' '); do
-        case ":${_path}:" in
-            *:"${_p}":* )
-            ;;
-            * )
-                if [ "$_path" ]; then
-                    _path="$_path:$_p"
-                else
-                    _path=$_p
-                fi
-                ;;
-        esac
-    done
-    PATH=$_path
-    unset _p
-    unset _path
-}
-export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/development/flutter/bin"
-
-uniqpath
 if type rbenv >/dev/null 2>&1; then
     eval "$(rbenv init -)"
 fi
 
 # git settings
 # ref. https://qiita.com/varmil/items/9b0aeafa85975474e9b6
-source ~/completion/git-prompt.sh
 source ~/completion/git-completion.bash
-GIT_PS1_SHOWUPSTREAM=true
-GIT_PS1_SHOWUNTRACKEDFILES=true
-GIT_PS1_SHOWDIRTYSTATE=true
-GIT_PS1_SHOWSTASHSTATE=true
 export PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[1;34m\]\w\[\033[0;31m\]$(__git_ps1)\[\033[00m\]\$ '
 if [ -f ~/dotfiles/git-values.sh ]; then
 	source ~/dotfiles/git-values.sh
