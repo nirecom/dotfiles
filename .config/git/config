@@ -11,8 +11,6 @@
 	difff = diff --word-diff
 [push]
 	default = simple
-[core]
-	excludesfile = /Users/nire/.gitignore_global
 [credential]
         helper = osxkeychain
 [difftool "sourcetree"]

@@ -8,6 +8,7 @@ ln -sf ~/dotfiles/.vimrc ~/
 ln -sf ~/dotfiles/.editorconfig ~/
 ln -sf ~/dotfiles/.tmux.conf ~/
 ln -sf ~/dotfiles/.gitconfig ~/
+ln -sf ~/dotfiles/.config ~/
 ln -sf ~/dotfiles/.inputrc ~/
 
 # Emacs
