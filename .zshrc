@@ -32,7 +32,7 @@ autoload predict-on
 predict-on
 
 # case insensitive on completion
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+#zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 # directory color: cyan 
 zstyle ':completion:*' list-colors 'di=36;49'
 
