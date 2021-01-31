@@ -69,7 +69,7 @@ if [[ "$(uname)" == 'Darwin' ]]; then
         keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
     fi
     ISTERM=true
-elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+elif [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
     ISTERM=false
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
     ISTERM=true
