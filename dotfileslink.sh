@@ -7,11 +7,9 @@ ln -sf ~/dotfiles/.vimrc ~/
 #ln -sf ~/dotfiles/.vim ~/
 ln -sf ~/dotfiles/.editorconfig ~/
 ln -sf ~/dotfiles/.tmux.conf ~/
-ln -sf ~/dotfiles/.gitconfig ~/
 ln -sf ~/dotfiles/.inputrc ~/
 
 # Git config
-[ -f ~/.gitconfig ] && rm ~/.gitconfig
 mkdir -p ~/.config
 [ ! -e ~/.config/git ] && ln -sf ~/dotfiles/.config/git ~/.config/
 
