@@ -4,6 +4,8 @@ export TERM=xterm-256color
 # ref. https://ja.ojit.com/so/terraform/3413058
 export AWS_DEFAULT_REGION=$(aws configure get region --profile default)
 #export BASH_SILENCE_DEPRECATION_WARNING=1
+#export LSCOLORS=Cxfxcxdxbxegedabagacad
+export LSCOLORS=gxfxcxdxbxegedabagacad
 
 alias em='emacs'
 alias d='docker'
@@ -24,7 +26,10 @@ alias gs='git status'
 alias gl='git pull'
 alias gp=gitpush
 alias k='kubectl'
-alias ll='ls -al'
+alias ll='ls -alG'
+alias ls='ls -G'
+alias pon='predict-on' # zsh
+alias poff='predict-off' # zsh
 alias psmem='ps aux k -pmem | head -n 10'
 alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
