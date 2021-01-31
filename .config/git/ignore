@@ -1,0 +1,28 @@
+# this repository specific
+.terraform.*
+.terraform/
+terraform.*
+#---------------------------
+# Emacs
+.\#*
+# Backup files
+#---------------------------
+*~
+*.orig
+*.org
+*.old
+*.bak
+\#*\#
+# OS dependent files
+#---------------------------
+.DS_Store
+Thumbs.db
+# Bundler specific
+#---------------------------
+/vendor/bundle/
+/.bundle/
+# Office specific
+~$*
+*.tmp
+# Vagrant specific
+.vagrant/
