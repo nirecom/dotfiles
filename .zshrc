@@ -28,8 +28,17 @@ setopt hist_no_store
 setopt hist_expand			# auto expand histories on completion
 setopt share_history		# share with other shells
 
-autoload predict-on
-predict-on
+# Disable predict, Enable zsh-autosuggestions instead
+# ref. https://www.pandanoir.info/entry/2018/02/23/193721
+#autoload predict-on
+#predict-on
+if [ -f ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+    source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+plugins=(
+    zsh-autosuggestions
+)
+#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=5'
 
 # case insensitive on completion
 #zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
