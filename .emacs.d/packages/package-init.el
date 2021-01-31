@@ -23,6 +23,8 @@
     terraform-mode
     ;; kotlin-mode
     kotlin-mode flycheck-kotlin
+    ;; editorconfig
+    editorconfig
    ))
 
 (dolist (package my/favorite-packages)
