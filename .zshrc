@@ -15,7 +15,7 @@ setopt mark_dirs # add trailing '/' on completing directory
 setopt no_beep
 setopt nolistbeep	# does not beep on completion
 setopt no_tify				# notify when bg job finished
-setopt print_exit_value
+#setopt print_exit_value
 setopt pushd_ignore_dups	# remove duplicated directories on pushd
 
 # History
