@@ -10,16 +10,17 @@ ln -sf ~/dotfiles/.tmux.conf ~/
 ln -sf ~/dotfiles/.gitconfig ~/
 ln -sf ~/dotfiles/.inputrc ~/
 
-# Config
+# Git config
+[ -f ~/.gitconfig ] && rm ~/.gitconfig
 mkdir -p ~/.config
-ln -sf ~/dotfiles/.config/git ~/.config/
+[ ! -e ~/.config/git ] && ln -sf ~/dotfiles/.config/git ~/.config/
 
 # Emacs
-if [ ! -d ~/.emacs.d/ ]; then mkdir ~/.emacs.d; fi
+mkdir -p ~/.emacs.d
 ln -sf ~/dotfiles/.emacs.d/init.el ~/.emacs.d/
 ln -sf ~/dotfiles/.emacs.d/packages ~/.emacs.d/packages
-if [ ! -d ~/tmp ]; then mkdir ~/tmp; fi
-if [ ! -d ~/.emacs_backup ]; then mkdir ~/.emacs_backup; fi
+mkdir -p ~/tmp
+mkdir -p ~/.emacs_backup
 
 if [ -d ~/.atom/ ]; then
     ln -sf ~/dotfiles/.atom/config.cson ~/.atom/
