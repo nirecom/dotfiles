@@ -8,8 +8,11 @@ ln -sf ~/dotfiles/.vimrc ~/
 ln -sf ~/dotfiles/.editorconfig ~/
 ln -sf ~/dotfiles/.tmux.conf ~/
 ln -sf ~/dotfiles/.gitconfig ~/
-ln -sf ~/dotfiles/.config ~/
 ln -sf ~/dotfiles/.inputrc ~/
+
+# Config
+mkdir -p ~/.config
+ln -sf ~/dotfiles/.config/git ~/.config/
 
 # Emacs
 if [ ! -d ~/.emacs.d/ ]; then mkdir ~/.emacs.d; fi
