@@ -1,3 +1,11 @@
+# bash
+.bash_history
+# zsh
+.zcompcache
+.zcompdump
+.zsh_history
+# vim
+.viminfo
 # terraform
 .terraform.*
 .terraform/
@@ -7,6 +15,7 @@ node_modules/
 #---------------------------
 # Emacs
 .\#*
+.emacs.d/history
 # Backup files
 #---------------------------
 *~
