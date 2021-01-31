@@ -11,10 +11,9 @@
 ;(add-to-list 'load-path "~/.emacs.d")
 (add-to-list 'load-path "~/.emacs.d/packages")
 
-;; Use editorconfig (elisp version)
-;; ref. https://qiita.com/ticonz/items/5e2d5f12b991076710a5
-(setq editorconfig-get-properties-function
-      'editorconfig-core-get-properties-hash)
+;; Use editorconfig
+;; ref. https://qiita.com/10sr/items/5e5d9519874ea3602d96
+(editorconfig-mode 1)
 
 ;; Theme
 (load-theme 'misterioso t)
@@ -113,7 +112,7 @@
 ; ref. https://qiita.com/mamo3gr/items/1c6862cba09d5876e52c
 (if (version<= "26.0.50" emacs-version)
     (global-display-line-numbers-mode))
- 
+
 ;; Show corresponding parenthesis
 (show-paren-mode 1)
 
