@@ -1,7 +1,9 @@
-# this repository specific
+# terraform
 .terraform.*
 .terraform/
 terraform.*
+# node
+node_modules/
 #---------------------------
 # Emacs
 .\#*
