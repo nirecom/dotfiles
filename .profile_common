@@ -26,14 +26,19 @@ alias gs='git status'
 alias gl='git pull'
 alias gp=gitpush
 alias k='kubectl'
-alias ll='ls -alG'
-alias ls='ls -G'
 alias pon='predict-on' # zsh
 alias poff='predict-off' # zsh
 alias psmem='ps aux k -pmem | head -n 10'
 alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
 alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
+
+if [[ "$(uname)" == 'Darwin' ]] || [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
+	alias ll='ls -alG'
+    alias ls='ls -G'
+else
+	alias ll='ls -al'
+fi
 
 # make each path unique
 # ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
