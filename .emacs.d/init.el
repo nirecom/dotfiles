@@ -34,8 +34,13 @@
 ;(require 'flymake-yaml)
 ;(add-hook 'yaml-mode-hook 'flymake-yaml-load)
 
+;; web mode
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+;; apply jsx mode to .js
+(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
 ;; js-mode
-(setq js-indent-level 2)
+;(setq js-indent-level 2)
 
 ;; Markdown
 ;; ref. https://qiita.com/howking/items/bcc4e05bfb16777747fa
@@ -192,8 +197,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   (quote
-    (php-mode dockerfile-mode markdown-mode uuidgen solarized-theme markdown-preview-mode))))
+   '(php-mode dockerfile-mode markdown-mode uuidgen solarized-theme markdown-preview-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
