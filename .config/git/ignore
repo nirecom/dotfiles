@@ -10,8 +10,9 @@
 .terraform.*
 .terraform/
 terraform.*
-# node
+# node / npm
 node_modules/
+.eslintcache
 #---------------------------
 # Emacs
 .\#*
