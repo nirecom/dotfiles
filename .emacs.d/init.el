@@ -129,6 +129,38 @@
 (setq visible-bell t)
 ;(setq ring-bell-function 'ignore)
 
+;; Display whitespaces and tabs
+;; ref. https://yanqirenshi.hatenablog.com/entry/2016/07/03/Emacs%3A_whitespace_%E3%81%A7%E4%BD%99%E5%88%86%E3%81%AA%E7%A9%BA%E7%99%BD/%E3%82%BF%E3%83%96%E3%81%AB%E8%89%B2%E3%81%A5%E3%81%91
+(require 'whitespace)
+
+;; spaces
+(set-face-foreground 'whitespace-space nil)
+(set-face-background 'whitespace-space "gray33")
+;; empty lines at top and bottom
+(set-face-background 'whitespace-empty "gray33")
+;; tabs
+(set-face-foreground 'whitespace-tab nil)
+(set-face-background 'whitespace-tab "gray33")
+;;
+(set-face-background 'whitespace-trailing "gray33")
+(set-face-background 'whitespace-hspace "gray33")
+
+(setq whitespace-style '(face           ; faceで可視化
+							trailing       ; 行末
+							tabs           ; タブ
+							empty          ; 先頭/末尾の空行
+							spaces         ; 空白
+							;; space-mark     ; 表示のマッピング
+							tab-mark))
+
+;; only zenkaku spaces are visualized
+(setq whitespace-space-regexp "\\(\u3000+\\)")
+;; change how to display tabs
+(setq whitespace-display-mappings
+	'((tab-mark ?\t [?\xBB ?\t])))
+;; enable
+(global-whitespace-mode 1)
+
 ;; Copy & Paste synchronization (macOS)
 ;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
 ;; required to run: brew install reattach-to-user-namespace
