@@ -33,6 +33,12 @@ alias pscpu='ps aux k -pcpu | head -n 10'
 alias tmux='~/dotfiles/tmux.sh'
 alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
 
+if [[ "$(uname)" == 'Darwin' ]]; then
+    # airport -I for mac address check
+	# ref. https://qiita.com/KEINOS/items/dbee5a53caa124430b1f
+    alias airport='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+fi
+
 if [[ "$(uname)" == 'Darwin' ]] || [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
 	alias ll='ls -alG'
     alias ls='ls -G'
