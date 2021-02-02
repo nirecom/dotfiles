@@ -7,6 +7,7 @@ export AWS_DEFAULT_REGION=$(aws configure get region --profile default)
 #export LSCOLORS=Cxfxcxdxbxegedabagacad
 export LSCOLORS=gxfxcxdxbxegedabagacad
 
+# Aliases
 alias em='emacs'
 alias d='docker'
 alias dx='docker exec -it'
@@ -35,18 +36,22 @@ alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ss
 
 if [[ "$(uname)" == 'Darwin' ]]; then
     # airport -I for mac address check
-	# ref. https://qiita.com/KEINOS/items/dbee5a53caa124430b1f
+    # ref. https://qiita.com/KEINOS/items/dbee5a53caa124430b1f
     alias airport='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
 fi
 
 if [[ "$(uname)" == 'Darwin' ]]; then
-	alias ll='ls -alG'
+    alias ll='ls -alG'
     alias ls='ls -G'
 elif [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
-	alias ll='ls -al --color=auto'
-	alias ls='ls --color=auto'
+    alias ll='ls -al --color=auto'
+    alias ls='ls --color=auto'
 else
-	alias ll='ls -al'
+    alias ll='ls -al'
+fi
+
+if [ -v WSLENV ]; then
+    alias open="explorer.exe" # open browser for the same experience as macOS
 fi
 
 # make each path unique
@@ -100,19 +105,19 @@ fi
 
 if "$ISTERM"; then
     if [ -f ~/.ssh-agent ]; then
-	. ~/.ssh-agent >/dev/null
+    . ~/.ssh-agent >/dev/null
     fi
     if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID >/dev/null 2>&1; then
-	echo "Launching ssh-agent ..."
-	ssh-agent > ~/.ssh-agent
-	. ~/.ssh-agent >/dev/null
+    echo "Launching ssh-agent ..."
+    ssh-agent > ~/.ssh-agent
+    . ~/.ssh-agent >/dev/null
     fi
     ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
 fi
 
 if type git > /dev/null 2>&1; then # if git is installed
     if type pgrep >/dev/null 2>&1; then
-	PID=`pgrep -fo bash`
+    PID=`pgrep -fo bash`
     fi
     if [ -n "$PID" ] && [ $$ != "$PID" ]; then # if first bash process
           echo "git pull ~/dotfiles ..."
