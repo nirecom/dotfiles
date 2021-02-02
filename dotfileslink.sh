@@ -16,7 +16,7 @@ mkdir -p ~/.config
 # Emacs
 mkdir -p ~/.emacs.d
 ln -sf ~/dotfiles/.emacs.d/init.el ~/.emacs.d/
-ln -sf ~/dotfiles/.emacs.d/packages ~/.emacs.d/packages
+ln -sf ~/dotfiles/.emacs.d/packages ~/.emacs.d/
 mkdir -p ~/tmp
 mkdir -p ~/.emacs_backup
 
