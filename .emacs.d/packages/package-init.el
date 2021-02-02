@@ -25,7 +25,7 @@
     kotlin-mode flycheck-kotlin
     ;; editorconfig
     editorconfig
-   ))
+))
 
 (dolist (package my/favorite-packages)
   (unless (package-installed-p package)

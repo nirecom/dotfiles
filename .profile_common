@@ -40,8 +40,11 @@ if [[ "$(uname)" == 'Darwin' ]]; then
 fi
 
 if [[ "$(uname)" == 'Darwin' ]] || [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
-	alias ll='ls -alG'
-    alias ls='ls -G'
+	export CLICOLOR=1
+    alias ll='ls -al'
+
+#	alias ll='ls -alG'
+#    alias ls='ls -G'
 else
 	alias ll='ls -al'
 fi
