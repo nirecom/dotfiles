@@ -1,4 +1,6 @@
 #!/bin/bash
+export LANG=ja_JP.UTF-8
+export LANGUAGE="ja_JP:ja"
 export TERM=xterm-256color
 # terraform does not read region from ~/.aws/config.
 # ref. https://ja.ojit.com/so/terraform/3413058
@@ -126,8 +128,11 @@ if type git > /dev/null 2>&1; then # if git is installed
 fi
 
 # Source code highlighting
-if [[ "$(uname)" == 'Darwin' ]] || [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
+if [[ "$(uname)" == 'Darwin' ]]; then
     export LESSOPEN="| /usr/local/bin/src-hilite-lesspipe.sh %s"
+    export LESS='-R'
+elif [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
+    export LESSOPEN="| /usr/share/source-highlight/src-hilite-lesspipe.sh %s"
     export LESS='-R'
 fi
 
