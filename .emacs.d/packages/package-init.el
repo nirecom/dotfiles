@@ -25,6 +25,8 @@
     kotlin-mode flycheck-kotlin
     ;; editorconfig
     editorconfig
+    ;; Web / JSX
+    web-mode rjsx-mode
 ))
 
 (dolist (package my/favorite-packages)
