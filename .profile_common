@@ -39,12 +39,12 @@ if [[ "$(uname)" == 'Darwin' ]]; then
     alias airport='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
 fi
 
-if [[ "$(uname)" == 'Darwin' ]] || [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
-	export CLICOLOR=1
-    alias ll='ls -al'
-
-#	alias ll='ls -alG'
-#    alias ls='ls -G'
+if [[ "$(uname)" == 'Darwin' ]]; then
+	alias ll='ls -alG'
+    alias ls='ls -G'
+elif [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
+	alias ll='ls -al --color=auto'
+	alias ls='ls --color=auto'
 else
 	alias ll='ls -al'
 fi
