@@ -45,7 +45,7 @@
 
 ;; Markdown
 ;; ref. https://qiita.com/howking/items/bcc4e05bfb16777747fa
-(package-install 'markdown-mode)
+;(package-install 'markdown-mode)
 (autoload 'markdown-mode "markdown-mode"
   "Major mode for editing Markdown files" t)
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
