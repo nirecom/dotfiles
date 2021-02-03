@@ -1,8 +1,7 @@
 ;; Define Keys
-;; it does not work so far...?
-(define-key global-map [?¥] [?\\]) ;; type backslash instead of yen sign
+(define-key global-map [?¥] [?\\]) ;; (macOS) type backslash instead of yen sign. may not work...?
 
-;; Initialize package
+;; Initialize packages
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
