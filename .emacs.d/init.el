@@ -32,8 +32,8 @@
 
 ;; flymake-yaml for syntax check
 ;; ref. https://dev.classmethod.jp/articles/emacs-edit-yaml-cloudformation/
-;(require 'flymake-yaml)
-;(add-hook 'yaml-mode-hook 'flymake-yaml-load)
+(require 'flymake-yaml)
+(add-hook 'yaml-mode-hook 'flymake-yaml-load)
 
 ;; web mode
 (require 'web-mode)
