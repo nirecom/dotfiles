@@ -9,10 +9,8 @@
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 (package-initialize)
 
-;; configure load path
-; adding default .emacs.d causes error
-;(add-to-list 'load-path "~/.emacs.d")
-(add-to-list 'load-path "~/.emacs.d/packages")
+;; configure load path (other than .emacs.d)
+;(add-to-list 'load-path "~/.emacs.d/packages")
 
 ;; Use editorconfig
 ;; ref. https://qiita.com/10sr/items/5e5d9519874ea3602d96
@@ -200,7 +198,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(php-mode dockerfile-mode markdown-mode uuidgen solarized-theme markdown-preview-mode)))
+   '(yaml-mode php-mode dockerfile-mode markdown-mode uuidgen solarized-theme markdown-preview-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
