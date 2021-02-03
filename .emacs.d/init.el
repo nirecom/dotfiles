@@ -185,23 +185,8 @@
     (message "This platform is not mac")
 )
 
-;; ref. https://stackoverflow.com/questions/5052088/what-is-custom-set-variables-and-faces-in-my-emacs
-;(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-;(load custom-file)
-
-;;
-;; Auto added part by emacs
-;;
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(yaml-mode php-mode dockerfile-mode markdown-mode uuidgen solarized-theme markdown-preview-mode)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+;; Separate customized part to another file
+;; ref. https://vinelinux.org/docs/vine6/emacs-guide/emacs-customize-saving-customizations.html
+(setq custom-file "~/.emacs.d/custom.el")
+(if (file-exists-p (expand-file-name custom-file))
+        (load-file (expand-file-name custom-file)))

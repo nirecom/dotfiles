@@ -17,6 +17,7 @@ node_modules/
 # Emacs
 .\#*
 .emacs.d/history
+custom.el
 # Backup files
 #---------------------------
 *~
