@@ -10,9 +10,15 @@
 .terraform.*
 .terraform/
 terraform.*
-# node / npm
+# react / npm
 node_modules/
 .eslintcache
+# add necessary html / js only
+**/public/**
+!**/public/index.html
+**/src/*
+!**/src/App.js
+!**/src/index.js
 #---------------------------
 # Emacs
 .\#*
@@ -32,8 +38,8 @@ custom.el
 Thumbs.db
 # Bundler specific
 #---------------------------
-/vendor/bundle/
-/.bundle/
+vendor/bundle/
+.bundle/
 # Office specific
 ~$*
 *.tmp
