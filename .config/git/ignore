@@ -14,11 +14,13 @@ terraform.*
 node_modules/
 .eslintcache
 # add necessary html / js only
-**/public/**
-!**/public/index.html
-**/src/*
-!**/src/App.js
-!**/src/index.js
+**/public/*.ico
+**/public/*.png
+**/public/manifest.json
+**/public/robots.txt
+**/src/logo.svg
+**/src/reportWebVitals.js
+**/src/setupTests.js
 #---------------------------
 # Emacs
 .\#*
