@@ -13,7 +13,7 @@
 ;; TODO: solarized-theme actually isn't included in melpa list any more...?
 (defvar my/favorite-packages
   '(
-    ;; markdown-mode
+    auto-async-byte-compile
     markdown-mode
     ;; markdown-preview-mode
     markdown-preview-mode websocket web-server uuidgen
