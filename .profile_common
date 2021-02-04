@@ -33,7 +33,7 @@ alias pon='predict-on' # zsh
 alias poff='predict-off' # zsh
 alias psmem='ps aux k -pmem | head -n 10'
 alias pscpu='ps aux k -pcpu | head -n 10'
-alias tmux='~/dotfiles/tmux.sh'
+alias tmux='~/dotfiles/bin/tmux.sh'
 alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
 
 if [[ "$(uname)" == 'Darwin' ]]; then
@@ -77,7 +77,7 @@ uniqpath() {
     unset _p
     unset _path
 }
-export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/development/flutter/bin"
+export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/development/flutter/bin:$HOME/dotfiles/bin"
 uniqpath
 
 # git settings: common part
