@@ -16,6 +16,12 @@
 ;; ref. https://qiita.com/10sr/items/5e5d9519874ea3602d96
 (editorconfig-mode 1)
 
+;; auto-async-byte-compile
+;; ref. https://www.yokoweb.net/2017/07/23/emacs-byte-compile/
+(require 'auto-async-byte-compile)
+;; (setq auto-async-byte-compile-exclude-files-regexp "/junk/")
+(add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
+
 ;; Theme
 (load-theme 'misterioso t)
 
