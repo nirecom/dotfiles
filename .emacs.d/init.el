@@ -45,7 +45,8 @@
 (require 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 ;; apply jsx mode to .js
-(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
+;(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
+(add-to-list 'auto-mode-alist '(".*\\.js\\'" . web-mode))
 ;; js-mode
 ;(setq js-indent-level 2)
 
