@@ -1,6 +1,7 @@
-;; Installed listed
-;; ref. https://emacs-jp.github.io/packages/package
-
+;;; package-install.el --- Installed listed packages
+;;; Commentary:
+;;; ref https://emacs-jp.github.io/packages/package
+;;; Code:
 (require 'package)
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
@@ -17,7 +18,8 @@
     init-loader ; load separated init.el files
     auto-async-byte-compile ; automatically compiles el
     company ; company mode
-    flycheck
+    ;; flycheck and related package
+    flycheck add-node-modules-path
     ;; editorconfig
     editorconfig
     ;; several modes
