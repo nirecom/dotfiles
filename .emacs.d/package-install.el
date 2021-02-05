@@ -18,6 +18,7 @@
     init-loader ; load separated init.el files
     auto-async-byte-compile ; automatically compiles el
     company ; company mode
+    git-gutter+
     ;; flycheck and related package
     flycheck add-node-modules-path
     ;; editorconfig
