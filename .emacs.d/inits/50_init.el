@@ -1,0 +1,186 @@
+;; Use editorconfig
+;; ref. https://qiita.com/10sr/items/5e5d9519874ea3602d96
+(editorconfig-mode 1)
+
+;; auto-async-byte-compile
+;; ref. https://www.yokoweb.net/2017/07/23/emacs-byte-compile/
+(require 'auto-async-byte-compile)
+;; (setq auto-async-byte-compile-exclude-files-regexp "/junk/")
+(add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
+(setq auto-async-byte-compile-suppress-warnings t)
+
+;; Theme
+(load-theme 'misterioso t)
+
+;;
+;; Highlighters
+;;
+;; Define general major modes
+(require 'generic-x)
+
+;; yaml-mode: highlighter
+(require 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+(add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
+
+;; flymake-yaml for syntax check
+;; ref. https://dev.classmethod.jp/articles/emacs-edit-yaml-cloudformation/
+(require 'flymake-yaml)
+(add-hook 'yaml-mode-hook 'flymake-yaml-load)
+
+;; web mode
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+;; apply jsx mode to .js
+(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
+;(add-to-list 'auto-mode-alist '(".*\\.js\\'" . web-mode))
+;; js-mode
+;(setq js-indent-level 2)
+
+;; Markdown
+;; ref. https://qiita.com/howking/items/bcc4e05bfb16777747fa
+;(package-install 'markdown-mode)
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
+;; Highlighten code block
+(setq markdown-fontify-code-blocks-natively t)
+
+;; Markdown Preview Mode
+;; ref. https://qiita.com/No_217/items/afd39b0828b444a160da
+(autoload 'markdown-preview-mode "markdown-preview-mode.el" t)
+
+;; Dockerfile Mode
+(autoload 'dockerfile-mode "dockerfile-mode" nil t)
+(add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode))
+
+;; Japanese, UTF-8
+(set-locale-environment nil)
+(set-language-environment "Japanese")
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-buffer-file-coding-system 'utf-8)
+(setq default-buffer-file-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(prefer-coding-system 'utf-8)
+
+;; Do not display startup message
+(setq inhibit-startup-message t)
+
+;; Do not create backup files
+;(setq make-backup-files nil)
+
+;; Create backup files under specific folder
+;; ref. https://emacs.tsutomuonoda.com/file-settings-that-emacs-automatically-creates/
+(setq backup-directory-alist '((".*" . "~/.emacs_backup")))
+(setq version-control t)
+(setq kept-new-versions 5)
+(setq kept-old-versions 1)
+(setq delete-old-versions t)
+
+;; Create auto-save files, but do not create auto-save list file
+(setq auto-save-file-name-transforms   '((".*" "~/tmp/" t)))
+(setq auto-save-list-file-prefix nil)
+
+;; Remove auto save file when quit
+(setq delete-auto-save-files t)
+
+;; Use tab
+(setq-default tab-width 4)
+(setq-default indent-tabs-mode nil)
+
+;; Display CRLF codes
+(setq eol-mnemonic-dos "(CRLF)")
+(setq eol-mnemonic-mac "(CR)")
+(setq eol-mnemonic-unix "(LF)")
+
+;; Prohibit multiple windows
+(setq ns-pop-up-frames nil)
+
+;; Remove Menu Bar
+(menu-bar-mode -1)
+
+;; Remove Tool Bar
+;(tool-bar-mode -1)
+
+;; Display Column
+(column-number-mode t)
+
+; Display Line Number
+;(global-linum-mode t)
+; ref. https://qiita.com/mamo3gr/items/1c6862cba09d5876e52c
+(if (version<= "26.0.50" emacs-version)
+    (global-display-line-numbers-mode))
+
+;; Show corresponding parenthesis
+(show-paren-mode 1)
+
+;; Visualize spaces and tabs
+;(global-whitespace-mode 1)
+
+;; Scroll one line only
+(setq scroll-conservatively 1)
+
+;; dired
+;(require 'dired-x)
+
+;; Disable ring
+(setq visible-bell t)
+;(setq ring-bell-function 'ignore)
+
+;; Display whitespaces and tabs
+;; ref. https://yanqirenshi.hatenablog.com/entry/2016/07/03/Emacs%3A_whitespace_%E3%81%A7%E4%BD%99%E5%88%86%E3%81%AA%E7%A9%BA%E7%99%BD/%E3%82%BF%E3%83%96%E3%81%AB%E8%89%B2%E3%81%A5%E3%81%91
+(require 'whitespace)
+
+;; spaces
+(set-face-foreground 'whitespace-space nil)
+(set-face-background 'whitespace-space "gray33")
+;; empty lines at top and bottom
+(set-face-background 'whitespace-empty "gray33")
+;; tabs
+(set-face-foreground 'whitespace-tab nil)
+(set-face-background 'whitespace-tab "gray33")
+;;
+(set-face-background 'whitespace-trailing "gray33")
+(set-face-background 'whitespace-hspace "gray33")
+
+(setq whitespace-style '(face           ; faceで可視化
+                            trailing       ; 行末
+                            tabs           ; タブ
+                            empty          ; 先頭/末尾の空行
+                            spaces         ; 空白
+                            ;; space-mark     ; 表示のマッピング
+                            tab-mark))
+
+;; only zenkaku spaces are visualized
+(setq whitespace-space-regexp "\\(\u3000+\\)")
+;; change how to display tabs
+(setq whitespace-display-mappings
+    '((tab-mark ?\t [?\xBB ?\t])))
+;; enable
+(global-whitespace-mode 1)
+
+;; Copy & Paste synchronization (macOS)
+;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
+;; required to run: brew install reattach-to-user-namespace
+(if (eq system-type 'darwin)
+    (progn
+      (defun copy-from-osx ()
+    (shell-command-to-string "reattach-to-user-namespace pbpaste"))
+      (defun paste-to-osx (text &optional push)
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "pbcopy" "*Messages*" "reattach-to-user-namespace" "pbcopy")))
+        (process-send-string proc text)
+        (process-send-eof proc))))
+      (setq interprogram-cut-function 'paste-to-osx)
+      (setq interprogram-paste-function 'copy-from-osx)
+    )
+    (message "This platform is not mac")
+)
+
+;; Separate customized part to another file
+;; ref. https://vinelinux.org/docs/vine6/emacs-guide/emacs-customize-saving-customizations.html
+(setq custom-file "~/.emacs.d/custom.el")
+(if (file-exists-p (expand-file-name custom-file))
+        (load-file (expand-file-name custom-file)))
