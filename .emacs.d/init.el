@@ -21,6 +21,7 @@
 (require 'auto-async-byte-compile)
 ;; (setq auto-async-byte-compile-exclude-files-regexp "/junk/")
 (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
+(setq auto-async-byte-compile-suppress-warnings t)
 
 ;; Theme
 (load-theme 'misterioso t)
@@ -45,8 +46,8 @@
 (require 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 ;; apply jsx mode to .js
-;(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
-(add-to-list 'auto-mode-alist '(".*\\.js\\'" . web-mode))
+(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
+;(add-to-list 'auto-mode-alist '(".*\\.js\\'" . web-mode))
 ;; js-mode
 ;(setq js-indent-level 2)
 
@@ -159,18 +160,18 @@
 (set-face-background 'whitespace-hspace "gray33")
 
 (setq whitespace-style '(face           ; faceで可視化
-							trailing       ; 行末
-							tabs           ; タブ
-							empty          ; 先頭/末尾の空行
-							spaces         ; 空白
-							;; space-mark     ; 表示のマッピング
-							tab-mark))
+                            trailing       ; 行末
+                            tabs           ; タブ
+                            empty          ; 先頭/末尾の空行
+                            spaces         ; 空白
+                            ;; space-mark     ; 表示のマッピング
+                            tab-mark))
 
 ;; only zenkaku spaces are visualized
 (setq whitespace-space-regexp "\\(\u3000+\\)")
 ;; change how to display tabs
 (setq whitespace-display-mappings
-	'((tab-mark ?\t [?\xBB ?\t])))
+    '((tab-mark ?\t [?\xBB ?\t])))
 ;; enable
 (global-whitespace-mode 1)
 
