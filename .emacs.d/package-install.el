@@ -16,19 +16,20 @@
     package-utils ; upgrade packages
     init-loader ; load separated init.el files
     auto-async-byte-compile ; automatically compiles el
-    markdown-mode
-    ;; markdown-preview-mode
-    markdown-preview-mode websocket web-server uuidgen
-    ;; dockerfile-mode
-    dockerfile-mode
-    ;; php-mode
-    php-mode
-    ;; terraform-mode
-    terraform-mode
-    ;; kotlin-mode
-    kotlin-mode flycheck-kotlin
+    company ; company mode
+    flycheck
     ;; editorconfig
     editorconfig
+    ;; several modes
+    dockerfile-mode
+    php-mode
+    smart-mode-line
+    terraform-mode
+    ;; markdown-preview-mode
+    markdown-mode
+    markdown-preview-mode websocket web-server uuidgen
+    ;; kotlin-mode
+    kotlin-mode flycheck-kotlin
     ;; Web / JSX
     web-mode rjsx-mode
     ;; yaml
