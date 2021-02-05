@@ -1,3 +1,7 @@
+;;; 50_init.el --- Misc definitions
+;;; Commentary:
+;;; Code:
+
 ;; auto-async-byte-compile
 ;; ref. https://www.yokoweb.net/2017/07/23/emacs-byte-compile/
 (require 'auto-async-byte-compile)
@@ -7,6 +11,8 @@
 
 ;; Smart Mode Line
 (setq sml/no-confirm-load-theme t)
+(setq sml/shorten-directory t) ; does not work ...?
+(setq sml/shorten-modes t) ; does not work ...?
 (sml/setup)
 
 ;;
