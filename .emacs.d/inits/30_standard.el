@@ -1,3 +1,4 @@
+;;; Code:
 ;; Define Keys
 (define-key global-map [?¥] [?\\]) ;; (macOS) type backslash instead of yen sign. may not work...?
 
@@ -9,7 +10,6 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-buffer-file-coding-system 'utf-8)
-(setq default-buffer-file-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (prefer-coding-system 'utf-8)
 
@@ -44,7 +44,7 @@
 (setq eol-mnemonic-unix "(LF)")
 
 ;; Prohibit multiple windows
-(setq ns-pop-up-frames nil)
+;(setq ns-pop-up-frames nil)
 
 ;; Remove Menu Bar
 (menu-bar-mode -1)
