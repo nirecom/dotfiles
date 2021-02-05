@@ -19,8 +19,8 @@ node_modules/
 **/public/manifest.json
 **/public/robots.txt
 **/src/logo.svg
-**/src/reportWebVitals.js
-**/src/setupTests.js
+#**/src/reportWebVitals.js
+#**/src/setupTests.js
 #---------------------------
 # Emacs
 .\#*
