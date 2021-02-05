@@ -1,16 +1,9 @@
-;; Use editorconfig
-;; ref. https://qiita.com/10sr/items/5e5d9519874ea3602d96
-(editorconfig-mode 1)
-
 ;; auto-async-byte-compile
 ;; ref. https://www.yokoweb.net/2017/07/23/emacs-byte-compile/
 (require 'auto-async-byte-compile)
 ;; (setq auto-async-byte-compile-exclude-files-regexp "/junk/")
 (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
 (setq auto-async-byte-compile-suppress-warnings t)
-
-;; Theme
-(load-theme 'misterioso t)
 
 ;;
 ;; Highlighters
@@ -54,80 +47,6 @@
 ;; Dockerfile Mode
 (autoload 'dockerfile-mode "dockerfile-mode" nil t)
 (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode))
-
-;; Japanese, UTF-8
-(set-locale-environment nil)
-(set-language-environment "Japanese")
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-buffer-file-coding-system 'utf-8)
-(setq default-buffer-file-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(prefer-coding-system 'utf-8)
-
-;; Do not display startup message
-(setq inhibit-startup-message t)
-
-;; Do not create backup files
-;(setq make-backup-files nil)
-
-;; Create backup files under specific folder
-;; ref. https://emacs.tsutomuonoda.com/file-settings-that-emacs-automatically-creates/
-(setq backup-directory-alist '((".*" . "~/.emacs_backup")))
-(setq version-control t)
-(setq kept-new-versions 5)
-(setq kept-old-versions 1)
-(setq delete-old-versions t)
-
-;; Create auto-save files, but do not create auto-save list file
-(setq auto-save-file-name-transforms   '((".*" "~/tmp/" t)))
-(setq auto-save-list-file-prefix nil)
-
-;; Remove auto save file when quit
-(setq delete-auto-save-files t)
-
-;; Use tab
-(setq-default tab-width 4)
-(setq-default indent-tabs-mode nil)
-
-;; Display CRLF codes
-(setq eol-mnemonic-dos "(CRLF)")
-(setq eol-mnemonic-mac "(CR)")
-(setq eol-mnemonic-unix "(LF)")
-
-;; Prohibit multiple windows
-(setq ns-pop-up-frames nil)
-
-;; Remove Menu Bar
-(menu-bar-mode -1)
-
-;; Remove Tool Bar
-;(tool-bar-mode -1)
-
-;; Display Column
-(column-number-mode t)
-
-; Display Line Number
-;(global-linum-mode t)
-; ref. https://qiita.com/mamo3gr/items/1c6862cba09d5876e52c
-(if (version<= "26.0.50" emacs-version)
-    (global-display-line-numbers-mode))
-
-;; Show corresponding parenthesis
-(show-paren-mode 1)
-
-;; Visualize spaces and tabs
-;(global-whitespace-mode 1)
-
-;; Scroll one line only
-(setq scroll-conservatively 1)
-
-;; dired
-;(require 'dired-x)
-
-;; Disable ring
-(setq visible-bell t)
-;(setq ring-bell-function 'ignore)
 
 ;; Display whitespaces and tabs
 ;; ref. https://yanqirenshi.hatenablog.com/entry/2016/07/03/Emacs%3A_whitespace_%E3%81%A7%E4%BD%99%E5%88%86%E3%81%AA%E7%A9%BA%E7%99%BD/%E3%82%BF%E3%83%96%E3%81%AB%E8%89%B2%E3%81%A5%E3%81%91
