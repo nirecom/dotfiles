@@ -28,17 +28,10 @@ setopt hist_no_store
 setopt hist_expand          # auto expand histories on completion
 setopt share_history        # share with other shells
 
-# Disable predict, Enable zsh-autosuggestions instead
+# Disable predict, Enable zsh-autosuggestions instead with zinit
 # ref. https://www.pandanoir.info/entry/2018/02/23/193721
 #autoload predict-on
 #predict-on
-
-#if [ -f ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
-#    source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-#fi
-#plugins=(
-#    zsh-autosuggestions
-#)
 
 zstyle ':completion:*' menu select
 # case insensitive on completion
@@ -56,6 +49,9 @@ compinit # runs securely
 # git-prompt: unique for zsh
 setopt PROMPT_SUBST ; PS1='%F{green}%n@%m%f:%F{cyan}%~%f %F{red}$(__git_ps1 "(%s)")%f\$ '
 
+# Zinit
+# ref. https://github.com/zdharma/zinit#installation
+#
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
     print -P "%F{33}▓▒░ %F{220}Installing %F{33}DHARMA%F{220} Initiative Plugin Manager (%F{33}zdharma/zinit%F{220})…%f"
@@ -70,5 +66,6 @@ autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 ### End of Zinit's installer chunk
 
+# Plugins
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
