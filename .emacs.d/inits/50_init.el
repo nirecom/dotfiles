@@ -49,7 +49,9 @@
 (require 'flymake-yaml)
 (add-hook 'yaml-mode-hook 'flymake-yaml-load)
 
+;;
 ;; web mode
+;;
 (require 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 
@@ -60,14 +62,16 @@
 ; open .js, jsx with web-mode
 (add-to-list 'auto-mode-alist '("\\.js[x]?$" . web-mode))
 ; open .js with .jsx edit mode
-(defvar web-mode-content-types-alist
+(setq web-mode-content-types-alist   ; do not to use defvar instead of setq
       '(("jsx" . "\\.js[x]?\\'")))
 ; comments
 (add-hook 'web-mode-hook
   '(lambda ()
     (add-to-list 'web-mode-comment-formats '("jsx" . "//" ))))
 
+;;
 ;; Markdown
+;;
 ;; ref. https://qiita.com/howking/items/bcc4e05bfb16777747fa
 (require 'markdown-mode)
 ;(package-install 'markdown-mode)
