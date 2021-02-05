@@ -5,6 +5,10 @@
 (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
 (setq auto-async-byte-compile-suppress-warnings t)
 
+;; Smart Mode Line
+(setq sml/no-confirm-load-theme t)
+(sml/setup)
+
 ;;
 ;; Highlighters
 ;;
@@ -25,13 +29,14 @@
 (require 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 ;; apply jsx mode to .js
-(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
-;(add-to-list 'auto-mode-alist '(".*\\.js\\'" . web-mode))
+;(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
+(add-to-list 'auto-mode-alist '(".*\\.js\\'" . web-mode))
 ;; js-mode
 ;(setq js-indent-level 2)
 
 ;; Markdown
 ;; ref. https://qiita.com/howking/items/bcc4e05bfb16777747fa
+(require 'markdown-mode)
 ;(package-install 'markdown-mode)
 (autoload 'markdown-mode "markdown-mode"
   "Major mode for editing Markdown files" t)
@@ -79,6 +84,22 @@
     '((tab-mark ?\t [?\xBB ?\t])))
 ;; enable
 (global-whitespace-mode 1)
+
+;; Company Mode
+;; ref. http://company-mode.github.io/
+(require 'company)
+;(global-company-mode)
+(add-hook 'after-init-hook 'global-company-mode)
+
+;; Flycheck
+;; ref. https://www.flycheck.org/en/latest/user/installation.html
+(when (locate-library "flycheck")
+  (require 'flycheck)
+  (global-flycheck-mode)
+)
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
 
 ;; Copy & Paste synchronization (macOS)
 ;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
