@@ -23,7 +23,7 @@
     ;; several modes
     dockerfile-mode
     php-mode
-    smart-mode-line
+;    smart-mode-line
     terraform-mode
     ;; markdown-preview-mode
     markdown-mode
