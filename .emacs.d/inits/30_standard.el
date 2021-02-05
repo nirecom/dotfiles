@@ -38,10 +38,6 @@
 ;; ref. https://qiita.com/10sr/items/5e5d9519874ea3602d96
 (editorconfig-mode 1)
 
-;; Use tab
-;(setq-default tab-width 4)
-;(setq-default indent-tabs-mode nil)
-
 ;; Display CRLF codes
 (setq eol-mnemonic-dos "(CRLF)")
 (setq eol-mnemonic-mac "(CR)")
@@ -57,7 +53,7 @@
 ;(tool-bar-mode -1)
 
 ;; Display Column
-(column-number-mode t)
+;(column-number-mode t)
 
 ; Display Line Number
 ;(global-linum-mode t)
