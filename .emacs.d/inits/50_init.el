@@ -9,12 +9,6 @@
 (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
 (setq auto-async-byte-compile-suppress-warnings t)
 
-;; Smart Mode Line
-;(setq sml/no-confirm-load-theme t)
-;(setq sml/shorten-directory t) ; does not work ...?
-;(setq sml/shorten-modes t) ; does not work ...?
-;(sml/setup)
-
 ;;
 ;; Highlighters
 ;;
@@ -34,11 +28,20 @@
 ;; web mode
 (require 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-;; apply jsx mode to .js
+
 ;(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
-(add-to-list 'auto-mode-alist '(".*\\.js\\'" . web-mode))
-;; js-mode
-;(setq js-indent-level 2)
+; must be web-mode for Flycheck
+
+;; ref. https://qiita.com/kwappa/items/6bde1fe2bbeedc85023e
+; open .js, jsx with web-mode
+(add-to-list 'auto-mode-alist '("\\.js[x]?$" . web-mode))
+; open .js with .jsx edit mode
+(defvar web-mode-content-types-alist
+      '(("jsx" . "\\.js[x]?\\'")))
+; comments
+(add-hook 'web-mode-hook
+  '(lambda ()
+    (add-to-list 'web-mode-comment-formats '("jsx" . "//" ))))
 
 ;; Markdown
 ;; ref. https://qiita.com/howking/items/bcc4e05bfb16777747fa
@@ -97,15 +100,25 @@
 ;(global-company-mode)
 (add-hook 'after-init-hook 'global-company-mode)
 
+;;
 ;; Flycheck
-;; ref. https://www.flycheck.org/en/latest/user/installation.html
+;;
+;; ref https://www.flycheck.org/en/latest/user/installation.html
 (when (locate-library "flycheck")
   (require 'flycheck)
   (global-flycheck-mode)
 )
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
+
+;; ref https://www.m3tech.blog/entry/emacs-web-service#%E5%85%B1%E9%80%9A%E8%A8%AD%E5%AE%9A
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+(eval-after-load 'web-mode
+    '(add-hook 'web-mode-hook #'add-node-modules-path))
+
+;; ref https://www.m3tech.blog/entry/emacs-web-service#%E5%85%B1%E9%80%9A%E8%A8%AD%E5%AE%9A
+; auto run syntax check
+(setq flycheck-check-syntax-automatically
+    '(save idle-change mode-enabled))
+(setq flycheck-idle-change-delay 1)
 
 ;; Copy & Paste synchronization (macOS)
 ;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
