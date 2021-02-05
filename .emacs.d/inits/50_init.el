@@ -10,10 +10,10 @@
 (setq auto-async-byte-compile-suppress-warnings t)
 
 ;; Smart Mode Line
-(setq sml/no-confirm-load-theme t)
-(setq sml/shorten-directory t) ; does not work ...?
-(setq sml/shorten-modes t) ; does not work ...?
-(sml/setup)
+;(setq sml/no-confirm-load-theme t)
+;(setq sml/shorten-directory t) ; does not work ...?
+;(setq sml/shorten-modes t) ; does not work ...?
+;(sml/setup)
 
 ;;
 ;; Highlighters
