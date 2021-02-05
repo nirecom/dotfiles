@@ -13,7 +13,9 @@
 ;; TODO: solarized-theme actually isn't included in melpa list any more...?
 (defvar my/favorite-packages
   '(
-    auto-async-byte-compile
+    package-utils ; upgrade packages
+    init-loader ; load separated init.el files
+    auto-async-byte-compile ; automatically compiles el
     markdown-mode
     ;; markdown-preview-mode
     markdown-preview-mode websocket web-server uuidgen
