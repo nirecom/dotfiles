@@ -153,12 +153,7 @@
 
 ;; counsel: Various completion functions using Ivy
 (when (require 'counsel nil t)
-;    (global-set-key (kbd "M-x") 'counsel-M-x)
-;    (global-set-key (kbd "M-y") 'counsel-yank-pop)
-;    (global-set-key (kbd "C-M-z") 'counsel-fzf)
-;    (global-set-key (kbd "C-M-r") 'counsel-recentf)
-;    (global-set-key (kbd "C-x C-b") 'counsel-ibuffer)
-;    (global-set-key (kbd "C-M-f") 'counsel-ag)
+    (setq counsel-find-file-ignore-regexp "\\.elc\\'")
     ;; activate
     (counsel-mode 1))
 
@@ -187,7 +182,7 @@
     (global-set-key (kbd "C-c L") 'counsel-git-log)
     (global-set-key (kbd "C-c k") 'counsel-rg)
     (global-set-key (kbd "C-c m") 'counsel-linux-app)
-    (global-set-key (kbd "C-c n") 'counsel-fzf)
+;    (global-set-key (kbd "C-c n") 'counsel-fzf)
     (global-set-key (kbd "C-x l") 'counsel-locate)
     (global-set-key (kbd "C-c J") 'counsel-file-jump)
     (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
@@ -224,6 +219,14 @@
 (setq flycheck-check-syntax-automatically
     '(save idle-change mode-enabled))
 (setq flycheck-idle-change-delay 1)
+
+;; diminish
+(require 'diminish)
+
+(eval-after-load "company" '(diminish 'company-mode "comp"))
+;(eval-after-load "ivy" '(diminish 'ivy-mode))
+(eval-after-load "git-gutter+" '(diminish 'git-gutter+-mode "GitG"))
+(diminish 'editorconfig-mode "EC")
 
 ;; Copy & Paste synchronization (macOS)
 ;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
