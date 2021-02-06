@@ -224,9 +224,28 @@
 (require 'diminish)
 
 (eval-after-load "company" '(diminish 'company-mode "comp"))
-;(eval-after-load "ivy" '(diminish 'ivy-mode))
+(eval-after-load "ivy" '(diminish 'ivy-mode))
 (eval-after-load "git-gutter+" '(diminish 'git-gutter+-mode "GitG"))
 (diminish 'editorconfig-mode "EC")
+
+; dumb-jump
+; Jump to definition for 40+ languages without configuration
+(add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+; ref https://qiita.com/blue0513/items/c0dc35a880170997c3f5
+;(setq dumb-jump-mode t)
+(setq dumb-jump-selector 'ivy) ;; leave selection to ivy
+(setq dumb-jump-use-visible-window nil)
+; M-. and M-, are overriden
+
+; symbol-overlay: Highlight symbols with keymap-enabled overlays
+(require 'symbol-overlay)
+(add-hook 'prog-mode-hook #'symbol-overlay-mode)
+(add-hook 'markdown-mode-hook #'symbol-overlay-mode)
+(global-set-key (kbd "M-i") 'symbol-overlay-put)
+(global-set-key (kbd "M-n") 'symbol-overlay-switch-forward)
+(global-set-key (kbd "M-p") 'symbol-overlay-switch-backward)
+(global-set-key (kbd "<f7>") 'symbol-overlay-mode)
+(global-set-key (kbd "<f8>") 'symbol-overlay-remove-all)
 
 ;; Copy & Paste synchronization (macOS)
 ;; ref. https://hawksnowlog.blogspot.com/2017/04/clipboard-share-for-emacs.html
@@ -245,15 +264,5 @@
     )
     (message "This platform is not mac")
 )
-
-; dump-jump
-; Jump to definition for 40+ languages without configuration
-;(add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
-; ref https://qiita.com/blue0513/items/c0dc35a880170997c3f5
-(setq dumb-jump-mode t)
-(setq dumb-jump-selector 'ivy) ;; leave selection to ivy
-(setq dumb-jump-use-visible-window nil)
-;(define-key global-map [(super d)] 'dumb-jump-go) ;; go-to-definition
-;(define-key global-map [(super shift d)] 'dumb-jump-back)
 
 ;;; 50_init.el ends here
