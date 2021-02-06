@@ -246,4 +246,14 @@
     (message "This platform is not mac")
 )
 
+; dump-jump
+; Jump to definition for 40+ languages without configuration
+;(add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+; ref https://qiita.com/blue0513/items/c0dc35a880170997c3f5
+(setq dumb-jump-mode t)
+(setq dumb-jump-selector 'ivy) ;; leave selection to ivy
+(setq dumb-jump-use-visible-window nil)
+;(define-key global-map [(super d)] 'dumb-jump-go) ;; go-to-definition
+;(define-key global-map [(super shift d)] 'dumb-jump-back)
+
 ;;; 50_init.el ends here
