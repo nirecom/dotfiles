@@ -1,3 +1,5 @@
+;;; 30_standard.el --- Standard Definitions without packages
+;;; Commentary:
 ;;; Code:
 ;; Define Keys
 (define-key global-map [?¥] [?\\]) ;; (macOS) type backslash instead of yen sign. may not work...?
@@ -50,7 +52,7 @@
 (menu-bar-mode -1)
 
 ;; Remove Tool Bar
-;(tool-bar-mode -1)
+(tool-bar-mode -1)
 
 ;; Display Column
 ;(column-number-mode t)
@@ -76,3 +78,5 @@
 ;; Disable ring
 (setq visible-bell t)
 ;(setq ring-bell-function 'ignore)
+
+;;; 30_standard.el ends here
