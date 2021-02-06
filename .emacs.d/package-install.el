@@ -17,8 +17,10 @@
     package-utils ; upgrade packages
     init-loader ; load separated init.el files
     auto-async-byte-compile ; automatically compiles el
-    company ; company mode
     git-gutter+
+    ;; completion
+    company ; company mode
+    ivy counsel swiper
     ;; flycheck and related package
     flycheck add-node-modules-path
     ;; editorconfig
