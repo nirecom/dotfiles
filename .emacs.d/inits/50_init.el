@@ -122,11 +122,66 @@
 ;; enable
 (global-whitespace-mode 1)
 
+;;
+;; Completion Modes
+;;
 ;; Company Mode
 ;; ref. http://company-mode.github.io/
 (require 'company)
-;(global-company-mode)
+;(global-company-mode) ; this does not work. use after-init-hook
 (add-hook 'after-init-hook 'global-company-mode)
+
+;; ivy: completion package
+;; ref https://qiita.com/takaxp/items/2fde2c119e419713342b
+(when (require 'ivy nil t)
+    ;; Assign M-o to ivy-hydra-read-action
+    (when (require 'ivy-hydra nil t)
+        (setq ivy-read-action-function #'ivy-hydra-read-action))
+    ;; Include recent files and bookmarks to `ivy-switch-buffer' (C-x b) list
+    (setq ivy-use-virtual-buffers t)
+    ;; approve to issue command in mini buffer
+    (when (setq enable-recursive-minibuffers t)
+        (minibuffer-depth-indicate-mode 1)) ;; prompt depth
+    ;; close mini buffer with mashing ESC
+    (define-key ivy-minibuffer-map (kbd "<escape>") 'minibuffer-keyboard-quit)
+    ;; wrap long prompt (including candidates)
+    (setq ivy-truncate-lines nil)
+    ;; wrap list when C-p
+    (setq ivy-wrap t)
+    ;; activate
+    (ivy-mode 1))
+
+;; counsel: Various completion functions using Ivy
+(when (require 'counsel nil t)
+;    (global-set-key (kbd "M-x") 'counsel-M-x)
+;    (global-set-key (kbd "M-y") 'counsel-yank-pop)
+;    (global-set-key (kbd "C-M-z") 'counsel-fzf)
+;    (global-set-key (kbd "C-M-r") 'counsel-recentf)
+;    (global-set-key (kbd "C-x C-b") 'counsel-ibuffer)
+;    (global-set-key (kbd "C-M-f") 'counsel-ag)
+    ;; activate
+    (counsel-mode 1))
+
+;; swiper: Isearch with an overview. Oh, man!
+(when (require 'swiper nil t)
+    (global-set-key "\C-s" 'swiper)
+    (global-set-key (kbd "C-c C-r") 'ivy-resume)
+    (global-set-key (kbd "<f6>") 'ivy-resume)
+;    (global-set-key (kbd "M-x") 'counsel-M-x) ; not necessary. pre-defined
+;    (global-set-key (kbd "C-x C-f") 'counsel-find-file) ; not necessary. pre-defined
+    (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+    (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+    (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+    (global-set-key (kbd "<f1> l") 'counsel-find-library)
+    (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+    (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+    (global-set-key (kbd "C-c g") 'counsel-git)
+    (global-set-key (kbd "C-c j") 'counsel-git-grep)
+    (global-set-key (kbd "C-c k") 'counsel-ag)
+    (global-set-key (kbd "C-x l") 'counsel-locate)
+    (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+    (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+    )
 
 ;;
 ;; Flycheck
@@ -171,3 +226,4 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (if (file-exists-p (expand-file-name custom-file))
         (load-file (expand-file-name custom-file)))
+;;; 50_init.el ends here
