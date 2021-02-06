@@ -10,14 +10,14 @@
 (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (add-to-list 'package-archives  '("marmalade" . "https://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
-;on top init.el now
-;(package-initialize)
+;(package-initialize) ; on init.el
 
 ;; configure load path (other than .emacs.d)
 ;(add-to-list 'load-path "~/.emacs.d/packages")
 
 ;;
 ;; Install packages if not exist
+;; ref https://qiita.com/catatsuy/items/5f1cd86e2522fd3384a0
 ;;
 (require 'cl)
 
