@@ -27,6 +27,7 @@
     init-loader ; load separated init.el files
     auto-async-byte-compile ; automatically compiles el
     diminish
+    dumb-jump ; Jump to definition for 40+ languages without configuration
     git-gutter+
     ;; completion
     company ; company mode
@@ -49,7 +50,7 @@
     web-mode rjsx-mode
     ;; yaml
     yaml-mode flymake-easy flymake-yaml
-))
+         ))
 
 (let ((not-installed (loop for x in installing-package-list
                          when (not (package-installed-p x))
@@ -57,7 +58,7 @@
     (when not-installed
         (package-refresh-contents)
         (dolist (pkg not-installed)
-            (package-install pkg))))
-
+                    (package-install pkg))))
 (provide '20_packages)
+
 ;;; 20_packages.el ends here
