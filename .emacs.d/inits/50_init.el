@@ -106,12 +106,12 @@
 (set-face-background 'whitespace-trailing "gray33")
 (set-face-background 'whitespace-hspace "gray33")
 
-(setq whitespace-style '(face           ; faceで可視化
-                            trailing       ; 行末
-                            tabs           ; タブ
-                            empty          ; 先頭/末尾の空行
-                            spaces         ; 空白
-                            ;; space-mark     ; 表示のマッピング
+(setq whitespace-style '(face           ; visualize
+                            trailing       ; end of line
+                            tabs
+                            empty          ; empty lines at top / end of file
+                            spaces
+                            ; space-mark
                             tab-mark))
 
 ;; only zenkaku spaces are visualized
@@ -164,24 +164,46 @@
 
 ;; swiper: Isearch with an overview. Oh, man!
 (when (require 'swiper nil t)
+    ; Ivy-based interface to standard commands
     (global-set-key "\C-s" 'swiper)
-    (global-set-key (kbd "C-c C-r") 'ivy-resume)
-    (global-set-key (kbd "<f6>") 'ivy-resume)
-;    (global-set-key (kbd "M-x") 'counsel-M-x) ; not necessary. pre-defined
-;    (global-set-key (kbd "C-x C-f") 'counsel-find-file) ; not necessary. pre-defined
+;    (global-set-key (kbd "C-s") 'swiper-isearch)
+;    (global-set-key (kbd "M-x") 'counsel-M-x) ; defined by default
+;    (global-set-key (kbd "C-x C-f") 'counsel-find-file) ; defined by default
+    (global-set-key (kbd "M-y") 'counsel-yank-pop)
     (global-set-key (kbd "<f1> f") 'counsel-describe-function)
     (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-    (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
     (global-set-key (kbd "<f1> l") 'counsel-find-library)
     (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
     (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+    (global-set-key (kbd "<f2> j") 'counsel-set-variable)
+    (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
+    (global-set-key (kbd "C-c v") 'ivy-push-view)
+    (global-set-key (kbd "C-c V") 'ivy-pop-view)
+
+    ; Ivy-based interface to shell and system tools
+    (global-set-key (kbd "C-c c") 'counsel-compile)
     (global-set-key (kbd "C-c g") 'counsel-git)
     (global-set-key (kbd "C-c j") 'counsel-git-grep)
-    (global-set-key (kbd "C-c k") 'counsel-ag)
+    (global-set-key (kbd "C-c L") 'counsel-git-log)
+    (global-set-key (kbd "C-c k") 'counsel-rg)
+    (global-set-key (kbd "C-c m") 'counsel-linux-app)
+    (global-set-key (kbd "C-c n") 'counsel-fzf)
     (global-set-key (kbd "C-x l") 'counsel-locate)
+    (global-set-key (kbd "C-c J") 'counsel-file-jump)
     (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+    (global-set-key (kbd "C-c w") 'counsel-wmctrl)
+
+    ; Ivy-resume and other commands
+    (global-set-key (kbd "C-c C-r") 'ivy-resume)
+    (global-set-key (kbd "C-c b") 'counsel-bookmark)
+    (global-set-key (kbd "C-c d") 'counsel-descbinds)
+    (global-set-key (kbd "C-c g") 'counsel-git)
+    (global-set-key (kbd "C-c o") 'counsel-outline)
+    (global-set-key (kbd "C-c t") 'counsel-load-theme)
+    (global-set-key (kbd "C-c F") 'counsel-org-file)
+
     (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
-    )
+)
 
 ;;
 ;; Flycheck
