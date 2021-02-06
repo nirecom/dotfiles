@@ -26,6 +26,7 @@
     package-utils ; upgrade packages
     init-loader ; load separated init.el files
     auto-async-byte-compile ; automatically compiles el
+    diminish
     git-gutter+
     ;; completion
     company ; company mode
@@ -37,7 +38,7 @@
     ;; several modes
     dockerfile-mode
     php-mode
-    smart-mode-line
+;    smart-mode-line
     terraform-mode
     ;; markdown-preview-mode
     markdown-mode
