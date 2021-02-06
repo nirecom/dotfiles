@@ -13,10 +13,12 @@
 
 ;; TODO: solarized-theme actually isn't included in melpa list any more...?
 (defvar my/favorite-packages
-  '(
+    '(
     package-utils ; upgrade packages
     init-loader ; load separated init.el files
     auto-async-byte-compile ; automatically compiles el
+    diminish
+    dumb-jump ; Jump to definition for 40+ languages without configuration
     git-gutter+
     ;; completion
     company ; company mode
@@ -44,3 +46,4 @@
 (dolist (package my/favorite-packages)
   (unless (package-installed-p package)
     (package-install package)))
+;;; package-install.el ends here
