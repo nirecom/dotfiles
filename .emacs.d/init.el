@@ -1,17 +1,15 @@
-(package-initialize)
+;;; init.el --- Initial file read by emacs
+;;; Commentary:
+;;; definitions are under inits folder controlled by init-loader.el.
+;;; Code:
+
+(package-initialize) ; must be top before init-loader-load
 (init-loader-load)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
-    '(custom-safe-themes
-         '("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default))
-    '(package-selected-packages
-         '(add-node-modules-path yaml-mode web-mode uuidgen terraform-mode solarized-theme rjsx-mode rich-minority php-mode package-utils markdown-preview-mode kotlin-mode init-loader flymake-yaml flycheck-kotlin editorconfig dockerfile-mode company auto-async-byte-compile)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+
+;; Separate customized part to another file
+;; ref. https://vinelinux.org/docs/vine6/emacs-guide/emacs-customize-saving-customizations.html
+(setq custom-file "~/.emacs.d/custom.el")
+(if (file-exists-p (expand-file-name custom-file))
+    (load-file (expand-file-name custom-file)))
+
+;;; init.el ends here

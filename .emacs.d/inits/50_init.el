@@ -243,9 +243,4 @@
     (message "This platform is not mac")
 )
 
-;; Separate customized part to another file
-;; ref. https://vinelinux.org/docs/vine6/emacs-guide/emacs-customize-saving-customizations.html
-(setq custom-file "~/.emacs.d/custom.el")
-(if (file-exists-p (expand-file-name custom-file))
-        (load-file (expand-file-name custom-file)))
 ;;; 50_init.el ends here
