@@ -47,9 +47,11 @@
     ;; kotlin-mode
     kotlin-mode flycheck-kotlin
     ;; Web / JSX
-    web-mode rjsx-mode
+    web-mode
+; rjsx-mode
     ;; yaml
     yaml-mode flymake-easy flymake-yaml
+    symbol-overlay
          ))
 
 (let ((not-installed (loop for x in installing-package-list
