@@ -38,9 +38,11 @@
     ;; kotlin-mode
     kotlin-mode flycheck-kotlin
     ;; Web / JSX
-    web-mode rjsx-mode
+    web-mode
+; rjsx-mode
     ;; yaml
     yaml-mode flymake-easy flymake-yaml
+    symbol-overlay
 ))
 
 (dolist (package my/favorite-packages)

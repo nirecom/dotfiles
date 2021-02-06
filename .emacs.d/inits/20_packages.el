@@ -6,10 +6,11 @@
 ;; Initialize packages
 ;;
 (require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
-(add-to-list 'package-archives  '("marmalade" . "https://marmalade-repo.org/packages/"))
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
+(setq package-archives
+      '(("melpa" . "https://melpa.org/packages/")
+        ;; ("melpa-stable" . "https://stable.melpa.org/packages/")
+        ("org" . "https://orgmode.org/elpa/")
+        ("gnu" . "https://elpa.gnu.org/packages/")))
 ;(package-initialize) ; on init.el
 
 ;; configure load path (other than .emacs.d)
@@ -17,11 +18,11 @@
 
 ;;
 ;; Install packages if not exist
-;; ref https://qiita.com/catatsuy/items/5f1cd86e2522fd3384a0
 ;;
-(require 'cl)
+(package-refresh-contents) ; it's too slow
 
-(defvar installing-package-list
+;; TODO: solarized-theme actually isn't included in melpa list any more...?
+(defvar my/favorite-packages
     '(
     package-utils ; upgrade packages
     init-loader ; load separated init.el files
@@ -48,19 +49,14 @@
     kotlin-mode flycheck-kotlin
     ;; Web / JSX
     web-mode
-; rjsx-mode
     ;; yaml
     yaml-mode flymake-easy flymake-yaml
     symbol-overlay
-         ))
+))
 
-(let ((not-installed (loop for x in installing-package-list
-                         when (not (package-installed-p x))
-                         collect x)))
-    (when not-installed
-        (package-refresh-contents)
-        (dolist (pkg not-installed)
-                    (package-install pkg))))
+(dolist (package my/favorite-packages)
+  (unless (package-installed-p package)
+    (package-install package)))
+
 (provide '20_packages)
-
 ;;; 20_packages.el ends here
