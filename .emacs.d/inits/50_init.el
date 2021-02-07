@@ -33,6 +33,9 @@
        (define-key git-gutter+-mode-map (kbd "C-x C-y") 'git-gutter+-stage-and-commit-whole-buffer)
        (define-key git-gutter+-mode-map (kbd "C-x U") 'git-gutter+-unstage-whole-buffer)))
 
+;; mode-line
+(eval-after-load "git-gutter+" '(diminish 'git-gutter+-mode "GitG"))
+
 ;;
 ;; Highlighters
 ;;
@@ -141,13 +144,6 @@
 (setq flycheck-check-syntax-automatically
     '(save idle-change mode-enabled))
 (setq flycheck-idle-change-delay 2)
-
-;; diminish: shorten minor mode expression
-(require 'diminish)
-(eval-after-load "company" '(diminish 'company-mode "Comp"))
-(eval-after-load "ivy" '(diminish 'ivy-mode))
-(eval-after-load "git-gutter+" '(diminish 'git-gutter+-mode "GitG"))
-(eval-after-load "editorconfig" '(diminish 'editorconfig-mode "ecf"))
 
 ; dumb-jump
 ; Jump to definition for 40+ languages without configuration
