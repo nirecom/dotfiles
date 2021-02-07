@@ -140,11 +140,10 @@
 ; auto run syntax check
 (setq flycheck-check-syntax-automatically
     '(save idle-change mode-enabled))
-(setq flycheck-idle-change-delay 1)
+(setq flycheck-idle-change-delay 2)
 
-;; diminish
+;; diminish: shorten minor mode expression
 (require 'diminish)
-
 (eval-after-load "company" '(diminish 'company-mode "Comp"))
 (eval-after-load "ivy" '(diminish 'ivy-mode))
 (eval-after-load "git-gutter+" '(diminish 'git-gutter+-mode "GitG"))

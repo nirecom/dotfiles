@@ -120,7 +120,9 @@
     (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
 )
 
+;;
 ;; Yasnippet
+;;
 (require 'yasnippet)
 (yas-global-mode 1)
 ; also requires yasnippet-snippets
@@ -142,6 +144,9 @@
     (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
     )
 (add-hook 'company-mode-hook 'set-yas-as-company-backend)
+
+; react-snippet
+(require 'react-snippets)
 
 ;; git-complete: Yet another completion engine powered by git grep
 ;; ref https://qiita.com/zk_phi/items/642b1e7dd12b44ea83ce
