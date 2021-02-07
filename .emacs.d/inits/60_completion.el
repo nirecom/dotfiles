@@ -11,7 +11,7 @@
 (with-eval-after-load 'company
     (setq company-auto-expand t) ;; automatically epand 1st candidate
     (setq company-transformers '(company-sort-by-backend-importance)) ;; sort order
-    (setq company-idle-delay 0)  ;; complete after x sec
+    (setq company-idle-delay 1)  ;; complete after x sec
     (setq company-minimum-prefix-length 2) ; 4 by default
     (setq company-selection-wrap-around t)
 ;    (setq completion-ignore-case t)
