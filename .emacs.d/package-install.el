@@ -20,11 +20,17 @@
     diminish
     dumb-jump ; Jump to definition for 40+ languages without configuration
     git-gutter+
+    ;;
     ;; completion
+    ;;
     ;; company: completion
     company company-web
     ivy counsel swiper
-    yasnippet yasnippet-snippets react-snippets
+    ;;
+    ;; yasnippet
+    ;;
+    yasnippet yasnippet-snippets
+    react-snippets js-react-redux-yasnippets ; testing both
 ;    hydra; ivy-hydra
     ;; flycheck and related package
     flycheck add-node-modules-path
