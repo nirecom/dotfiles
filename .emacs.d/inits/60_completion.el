@@ -1,9 +1,6 @@
 ;;; 60_completion.el --- Completions
 ;;; Commentary:
 ;;; Code:
-;;
-;; Completion Modes
-;;
 ;; Company Mode
 ;; ref http://company-mode.github.io/
 (require 'company)
@@ -156,9 +153,28 @@
 ; react-snippet
 (require 'react-snippets)
 
+; eacl: Emacs auto complete lines
+; ref https://github.com/redguardtoo/eacl
+(require 'eacl)
+(global-set-key (kbd "C-c c") 'eacl-complete-line)
+(global-set-key (kbd "C-c C-c") 'eacl-complete-multiline)
+(with-eval-after-load 'grep
+    (dolist (v '("node_modules"
+                    ".sass_cache"
+                    ".cache"
+                    ".npm"))
+        (add-to-list 'grep-find-ignored-directories v))
+    (dolist (v '("*.elc"
+                    "*.min.js"
+                    "*.bundle.js"
+                    "*.min.css"
+                    "*.json"
+                    "*.log"))
+            (add-to-list 'grep-find-ignored-files v)))
+
 ;; git-complete: Yet another completion engine powered by git grep
 ;; ref https://qiita.com/zk_phi/items/642b1e7dd12b44ea83ce
-(require 'git-complete)
-(global-set-key (kbd "C-c C-c") 'git-complete)
+;(require 'git-complete)
+;(global-set-key (kbd "C-c C-c") 'git-complete)
 
 ;;; 60_completion.el ends here

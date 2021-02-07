@@ -26,6 +26,7 @@
     ;; company: completion
     company company-web
     ivy counsel swiper
+    eacl
     ;;
     ;; yasnippet
     ;;
