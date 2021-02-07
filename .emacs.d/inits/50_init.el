@@ -182,7 +182,6 @@
     (global-set-key (kbd "C-c L") 'counsel-git-log)
     (global-set-key (kbd "C-c k") 'counsel-rg)
     (global-set-key (kbd "C-c m") 'counsel-linux-app)
-;    (global-set-key (kbd "C-c n") 'counsel-fzf)
     (global-set-key (kbd "C-x l") 'counsel-locate)
     (global-set-key (kbd "C-c J") 'counsel-file-jump)
     (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
@@ -192,13 +191,19 @@
     (global-set-key (kbd "C-c C-r") 'ivy-resume)
     (global-set-key (kbd "C-c b") 'counsel-bookmark)
     (global-set-key (kbd "C-c d") 'counsel-descbinds)
-    (global-set-key (kbd "C-c g") 'counsel-git)
+;    (global-set-key (kbd "C-c g") 'counsel-git)
     (global-set-key (kbd "C-c o") 'counsel-outline)
     (global-set-key (kbd "C-c t") 'counsel-load-theme)
     (global-set-key (kbd "C-c F") 'counsel-org-file)
 
+    (global-set-key (kbd "C-c a") 'counsel-ag)
+
     (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
 )
+
+;; git-complete: Yet another completion engine powered by git grep
+(require 'git-complete)
+(global-set-key (kbd "C-c C-c") 'git-complete)
 
 ;;
 ;; Flycheck
@@ -262,7 +267,7 @@
       (setq interprogram-cut-function 'paste-to-osx)
       (setq interprogram-paste-function 'copy-from-osx)
     )
-    (message "This platform is not mac")
+;    (message "This platform is not mac")
 )
 
 ;;; 50_init.el ends here
