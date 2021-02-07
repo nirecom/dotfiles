@@ -59,6 +59,7 @@
 
 ; Display Line Number
 ;(global-linum-mode t)
+(line-number-mode -1) ; do not display line number on mode line
 ; ref. https://qiita.com/mamo3gr/items/1c6862cba09d5876e52c
 (if (version<= "26.0.50" emacs-version)
     (global-display-line-numbers-mode))
