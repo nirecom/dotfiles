@@ -23,6 +23,7 @@
     ;; completion
     company ; company mode
     ivy counsel swiper
+;    hydra; ivy-hydra
     ;; flycheck and related package
     flycheck add-node-modules-path
     ;; editorconfig

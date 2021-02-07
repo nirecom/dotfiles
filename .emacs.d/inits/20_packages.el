@@ -15,6 +15,7 @@
 
 ;; configure load path (other than .emacs.d)
 ;(add-to-list 'load-path "~/.emacs.d/packages")
+(add-to-list 'load-path "~/.emacs.d/git")
 
 (provide '20_packages)
 ;;; 20_packages.el ends here
