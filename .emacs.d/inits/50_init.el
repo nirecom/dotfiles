@@ -126,10 +126,33 @@
 ;; Completion Modes
 ;;
 ;; Company Mode
-;; ref. http://company-mode.github.io/
+;; ref http://company-mode.github.io/
 (require 'company)
 ;(global-company-mode) ; this does not work. use after-init-hook
 (add-hook 'after-init-hook 'global-company-mode)
+
+;; ref https://qiita.com/kod314/items/3a31719db27a166d2ec1
+(with-eval-after-load 'company
+    (setq company-auto-expand t) ;; automatically epand 1st candidate
+    (setq company-transformers '(company-sort-by-backend-importance)) ;; sort order
+    (setq company-idle-delay 0)  ;; complete immediately
+    (setq company-minimum-prefix-length 1) ; 4 by default
+    (setq company-selection-wrap-around t)
+;    (setq completion-ignore-case t)
+    (setq company-dabbrev-downcase nil)
+    (global-set-key (kbd "C-M-i") 'company-complete)
+
+    (define-key company-active-map (kbd "C-n") 'company-select-next)
+    (define-key company-active-map (kbd "C-p") 'company-select-previous)
+    (define-key company-active-map [tab] 'company-complete-selection)
+    (define-key company-active-map (kbd "C-h") nil) ; undefine
+;    (define-key company-active-map (kbd "C-S-h") 'company-show-doc-buffer)
+)
+
+;; Company plugins
+(require 'company-web-html)
+(add-to-list 'company-backends 'company-web-html)
+;(define-key web-mode-map (kbd "C-c w") 'company-web-html)
 
 ;; ivy: completion package
 ;; ref https://qiita.com/takaxp/items/2fde2c119e419713342b
@@ -229,10 +252,10 @@
 ;; diminish
 (require 'diminish)
 
-(eval-after-load "company" '(diminish 'company-mode "comp"))
+(eval-after-load "company" '(diminish 'company-mode "Comp"))
 (eval-after-load "ivy" '(diminish 'ivy-mode))
 (eval-after-load "git-gutter+" '(diminish 'git-gutter+-mode "GitG"))
-(diminish 'editorconfig-mode "EC")
+(diminish 'editorconfig-mode "EConf")
 
 ; dumb-jump
 ; Jump to definition for 40+ languages without configuration
