@@ -1,6 +1,19 @@
 #!/bin/bash
-export LANG=ja_JP.UTF-8
-export LC_MESSAGES=C
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+export LC_NUMERIC=ja_JP.UTF-8
+export LC_TIME=ja_JP.UTF-8
+export LC_COLLATE=en_US.UTF-8
+export LC_MONETARY=ja_JP.UTF-8
+export LC_MESSAGES=en_US.UTF-8
+export LC_PAPER=ja_JP.UTF-8
+export LC_NAME=ja_JP.UTF-8
+export LC_ADDRESS=ja_JP.UTF-8
+export LC_TELEPHONE=ja_JP.UTF-8
+export LC_MEASUREMENT=ja_JP.UTF-8
+export LC_IDENTIFICATION=ja_JP.UTF-8
+export LC_ALL=en_US.UTF-8
 export TERM=xterm-256color
 # terraform does not read region from ~/.aws/config.
 # ref. https://ja.ojit.com/so/terraform/3413058
