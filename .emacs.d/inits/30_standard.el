@@ -48,10 +48,8 @@
 ;; Prohibit multiple windows
 ;(setq ns-pop-up-frames nil)
 
-;; Remove Menu Bar
+;; Remove Menu / Tool Bar
 (menu-bar-mode -1)
-
-;; Remove Tool Bar
 (tool-bar-mode -1)
 
 ;; Display Column
@@ -66,6 +64,8 @@
 
 ;; Show corresponding parenthesis
 (show-paren-mode 1)
+;; Automatically pair parenthesis
+(electric-pair-mode 1)
 
 ;; Visualize spaces and tabs
 ;(global-whitespace-mode 1)
