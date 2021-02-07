@@ -202,6 +202,7 @@
 )
 
 ;; git-complete: Yet another completion engine powered by git grep
+;; ref https://qiita.com/zk_phi/items/642b1e7dd12b44ea83ce
 (require 'git-complete)
 (global-set-key (kbd "C-c C-c") 'git-complete)
 
