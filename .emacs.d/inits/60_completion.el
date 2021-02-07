@@ -120,6 +120,29 @@
     (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
 )
 
+;; Yasnippet
+(require 'yasnippet)
+(yas-global-mode 1)
+; also requires yasnippet-snippets
+
+; TAB for indent and complete key
+; ref https://www.ncaq.net/2018/03/28/13/12/03/
+(global-set-key (kbd "<tab>") 'company-indent-or-complete-common)
+
+; display yasnippet as candidates of company
+; ref https://github.com/keicy/.emacs.d/issues/75
+(defvar company-mode/enable-yas t
+    "Enable yasnippet for all backends.")
+(defun company-mode/backend-with-yas (backend)
+    (if (or (not company-mode/enable-yas) (and (listp backend) (member 'company-yasnippet backend)))
+        backend
+        (append (if (consp backend) backend (list backend))
+            '(:with company-yasnippet))))
+(defun set-yas-as-company-backend ()
+    (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+    )
+(add-hook 'company-mode-hook 'set-yas-as-company-backend)
+
 ;; git-complete: Yet another completion engine powered by git grep
 ;; ref https://qiita.com/zk_phi/items/642b1e7dd12b44ea83ce
 (require 'git-complete)

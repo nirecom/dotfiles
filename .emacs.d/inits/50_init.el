@@ -148,7 +148,7 @@
 (eval-after-load "company" '(diminish 'company-mode "Comp"))
 (eval-after-load "ivy" '(diminish 'ivy-mode))
 (eval-after-load "git-gutter+" '(diminish 'git-gutter+-mode "GitG"))
-(diminish 'editorconfig-mode "EConf")
+(eval-after-load "editorconfig" '(diminish 'editorconfig-mode "ecf"))
 
 ; dumb-jump
 ; Jump to definition for 40+ languages without configuration
