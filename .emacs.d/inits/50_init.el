@@ -135,7 +135,7 @@
 (with-eval-after-load 'company
     (setq company-auto-expand t) ;; automatically epand 1st candidate
     (setq company-transformers '(company-sort-by-backend-importance)) ;; sort order
-    (setq company-idle-delay 0)  ;; complete immediately
+    (setq company-idle-delay 1)  ;; complete after x sec
     (setq company-minimum-prefix-length 1) ; 4 by default
     (setq company-selection-wrap-around t)
 ;    (setq completion-ignore-case t)
@@ -147,6 +147,23 @@
     (define-key company-active-map [tab] 'company-complete-selection)
     (define-key company-active-map (kbd "C-h") nil) ; undefine
 ;    (define-key company-active-map (kbd "C-S-h") 'company-show-doc-buffer)
+
+    ; like auto-complete
+    ; ref https://qiita.com/syohex/items/8d21d7422f14e9b53b17
+    (set-face-attribute 'company-tooltip nil
+        :foreground "black" :background "lightgrey")
+    (set-face-attribute 'company-tooltip-common nil
+        :foreground "black" :background "lightgrey")
+    (set-face-attribute 'company-tooltip-common-selection nil
+        :foreground "white" :background "steelblue")
+    (set-face-attribute 'company-tooltip-selection nil
+        :foreground "black" :background "steelblue")
+    (set-face-attribute 'company-preview-common nil
+        :background nil :foreground "lightgrey" :underline t)
+    (set-face-attribute 'company-scrollbar-fg nil
+        :background "orange")
+    (set-face-attribute 'company-scrollbar-bg nil
+                            :background "gray40")
 )
 
 ;; Company plugins
