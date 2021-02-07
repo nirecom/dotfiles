@@ -24,7 +24,7 @@
     ;; company: completion
     company company-web
     ivy counsel swiper
-    yasnippet yasnippet-snippets
+    yasnippet yasnippet-snippets react-snippets
 ;    hydra; ivy-hydra
     ;; flycheck and related package
     flycheck add-node-modules-path
