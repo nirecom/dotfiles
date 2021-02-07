@@ -21,7 +21,8 @@
     dumb-jump ; Jump to definition for 40+ languages without configuration
     git-gutter+
     ;; completion
-    company ; company mode
+    ;; company: completion
+    company company-web
     ivy counsel swiper
 ;    hydra; ivy-hydra
     ;; flycheck and related package
@@ -31,7 +32,6 @@
     ;; several modes
     dockerfile-mode
     php-mode
-;    smart-mode-line
     terraform-mode
     ;; markdown-preview-mode
     markdown-mode
