@@ -40,6 +40,10 @@
 ;; ref. https://qiita.com/10sr/items/5e5d9519874ea3602d96
 (editorconfig-mode 1)
 
+;; diminish: shorten minor mode expression
+(require 'diminish)
+(eval-after-load "editorconfig" '(diminish 'editorconfig-mode "ecf"))
+
 ;; Display CRLF codes
 (setq eol-mnemonic-dos "(CRLF)")
 (setq eol-mnemonic-mac "(CR)")
@@ -79,5 +83,14 @@
 ;; Disable ring
 (setq visible-bell t)
 ;(setq ring-bell-function 'ignore)
+
+;; Shorten: Emacs Lisp mode
+(add-hook 'emacs-lisp-mode-hook
+  (lambda()
+    (setq mode-name "ELisp")))
+(add-hook 'sh-mode-hook
+  (lambda()
+    (setq mode-name "Shell")))
+
 
 ;;; 30_standard.el ends here

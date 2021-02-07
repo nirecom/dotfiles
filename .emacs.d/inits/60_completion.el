@@ -45,7 +45,12 @@
                             :background "gray40")
 )
 
+;; diminish: shorten minor mode expression
+(eval-after-load "company" '(diminish 'company-mode "Comp"))
+
+;;
 ;; Company plugins
+;;
 (require 'company-web-html)
 (add-to-list 'company-backends 'company-web-html)
 ;(define-key web-mode-map (kbd "C-c w") 'company-web-html)
@@ -75,6 +80,9 @@
     (setq counsel-find-file-ignore-regexp "\\.elc\\'")
     ;; activate
     (counsel-mode 1))
+
+; do not display minor mode
+(eval-after-load "counsel" '(diminish 'counsel-mode))
 
 ;; swiper: Isearch with an overview. Oh, man!
 (when (require 'swiper nil t)
