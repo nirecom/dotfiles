@@ -146,21 +146,30 @@ if type git > /dev/null 2>&1; then # if git is installed
 fi
 
 # Source code highlighting
-if [[ "$(uname)" == 'Darwin' ]]; then
-    export LESSOPEN="| /usr/local/bin/src-hilite-lesspipe.sh %s"
-    export LESS='-R'
-elif [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
-    export LESSOPEN="| /usr/share/source-highlight/src-hilite-lesspipe.sh %s"
-    export LESS='-R'
-fi
+case "$OSDIST" in
+    "macos" )
+        export SHAREDIR="/usr/local/share/source-highlight"
+        export LESSOPEN="| /usr/local/bin/src-hilite-lesspipe.sh %s"
+        ;;
+    "ubuntu" )
+        export SHAREDIR="/usr/share/source-highlight"
+        export LESSOPEN="| $SHAREDIR/src-hilite-lesspipe.sh %s"
+        ;;
+    "amazon" )
+        export SHAREDIR="/usr/share/source-highlight"
+        export LESSOPEN="| $SHAREDIR/src-hilite-lesspipe.sh %s"
+esac
+export LESS='-R'
 
-# nvm on macos
-if [[ "$(uname)" == 'Darwin' ]]; then
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
-    # disabled, too heavy on old macbook :(
-    #    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
-elif [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
-    export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-fi
+# nvm
+case "$OSDIST" in
+    "macos" )
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+        # disabled, too heavy on old macbook :(
+        #    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+        ;;
+    "ubuntu" | "amazon" )
+        export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+esac
