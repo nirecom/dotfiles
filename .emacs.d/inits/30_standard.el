@@ -1,11 +1,10 @@
 ;;; 30_standard.el --- Standard Definitions without packages
 ;;; Commentary:
 ;;; Code:
-;; Define Keys
-(define-key global-map [?¥] [?\\]) ;; (macOS) type backslash instead of yen sign. may not work...?
 
 ;; Theme
 (load-theme 'misterioso t)
+
 ;; Japanese, UTF-8
 (set-locale-environment nil)
 (set-language-environment "Japanese")
@@ -91,6 +90,5 @@
 (add-hook 'sh-mode-hook
   (lambda()
     (setq mode-name "Shell")))
-
 
 ;;; 30_standard.el ends here
