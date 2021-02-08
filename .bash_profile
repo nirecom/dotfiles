@@ -1,7 +1,9 @@
 #!/bin/bash
+source $HOME/dotfiles/bin/detectos.sh
+
 COMMON_PROFILE=$HOME/dotfiles/.profile_common
 if [ -e $COMMON_PROFILE ]; then
-	source $COMMON_PROFILE
+    source $COMMON_PROFILE
 fi
 
 if type rbenv >/dev/null 2>&1; then
@@ -23,6 +25,6 @@ test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shel
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-if ! "$ISTERM"; then
-    ~/dotfiles/tmux.sh
+if ! "$ISTERM" && [ "$OSDIST" = "ubuntu" ]; then
+    ~/dotfiles/bin/tmux.sh
 fi
