@@ -31,8 +31,9 @@
     ;; yasnippet
     ;;
     yasnippet yasnippet-snippets
-    ;react-snippets
-    js-react-redux-yasnippets ; testing both
+    ;; react snippets
+    react-snippets ; comparing with js-react-redux-yasnippets
+    js-react-redux-yasnippets
 ;    hydra; ivy-hydra
     ;; flycheck and related package
     flycheck add-node-modules-path
