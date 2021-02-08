@@ -150,9 +150,6 @@
     )
 (add-hook 'company-mode-hook 'set-yas-as-company-backend)
 
-; react-snippet
-(require 'react-snippets)
-
 ; eacl: Emacs auto complete lines
 ; ref https://github.com/redguardtoo/eacl
 (require 'eacl)
@@ -169,7 +166,8 @@
                     "*.bundle.js"
                     "*.min.css"
                     "*.json"
-                    "*.log"))
+                    "*.log"
+                    "*.svg"))
             (add-to-list 'grep-find-ignored-files v)))
 
 ;; git-complete: Yet another completion engine powered by git grep
