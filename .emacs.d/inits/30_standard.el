@@ -68,7 +68,7 @@
 ;; Show corresponding parenthesis
 (show-paren-mode 1)
 ;; Automatically pair parenthesis
-(electric-pair-mode 1)
+;(electric-pair-mode 1) ; being replaced with smartparen.el
 
 ;; Visualize spaces and tabs
 ;(global-whitespace-mode 1)
