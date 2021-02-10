@@ -94,6 +94,9 @@ uniqpath() {
     unset _path
 }
 export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/development/flutter/bin:$HOME/dotfiles/bin"
+if [ "$OSDIST" = "macos" ]; then
+    eval $(/opt/homebrew/bin/brew shellenv)
+fi
 uniqpath
 
 # git settings: common part
