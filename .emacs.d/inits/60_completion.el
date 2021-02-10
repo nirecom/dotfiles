@@ -3,7 +3,7 @@
 ;;; Code:
 ;; Company Mode
 ;; ref http://company-mode.github.io/
-(require 'company)
+;(require 'company)
 ;(global-company-mode) ; this does not work. use after-init-hook
 (add-hook 'after-init-hook 'global-company-mode)
 
@@ -174,5 +174,12 @@
 ;; ref https://qiita.com/zk_phi/items/642b1e7dd12b44ea83ce
 ;(require 'git-complete)
 ;(global-set-key (kbd "C-c C-c") 'git-complete)
+
+; smartparen: Automatic insertion, wrapping and paredit-like navigation with user defined pairs.
+; ref https://qiita.com/ShingoFukuyama/items/ed1af137a98e0028e025
+(smartparens-global-mode)
+(show-smartparens-global-mode) ; seems heavy
+;(ad-disable-advice 'delete-backward-char 'before 'sp-delete-pair-advice)
+;(ad-activate 'delete-backward-char)
 
 ;;; 60_completion.el ends here
