@@ -33,7 +33,8 @@
     yasnippet yasnippet-snippets
     ;; react snippets
     react-snippets ; comparing with js-react-redux-yasnippets
-    js-react-redux-yasnippets
+    ;js-react-redux-yasnippets
+    smartparens
 ;    hydra; ivy-hydra
     ;; flycheck and related package
     flycheck add-node-modules-path
