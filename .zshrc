@@ -69,3 +69,8 @@ autoload -Uz _zinit
 # Plugins
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
+
+# Added by SDKMAN
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/Users/nire/.sdkman"
+[[ -s "/Users/nire/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/nire/.sdkman/bin/sdkman-init.sh"
