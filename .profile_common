@@ -151,9 +151,13 @@ fi
 # Source code highlighting
 case "$OSDIST" in
     "macos" )
-        #        export SHAREDIR="/usr/local/share/source-highlight"
-        export SHAREDIR="/opt/homebrew/share/source-highlight"
-        export LESSOPEN="| /opt/homebrew/bin/src-hilite-lesspipe.sh %s"
+        if "$ISM1"; then
+            export SHAREDIR="/opt/homebrew/share/source-highlight"
+            export LESSOPEN="| /opt/homebrew/bin/src-hilite-lesspipe.sh %s"
+        else
+            export SHAREDIR="/usr/local/share/source-highlight"
+            export LESSOPEN="| /usr/local/bin/src-hilite-lesspipe.sh %s"
+        fi
         ;;
     "ubuntu" )
         export SHAREDIR="/usr/share/source-highlight"
@@ -169,9 +173,14 @@ export LESS='-R'
 case "$OSDIST" in
     "macos" )
         export NVM_DIR="$HOME/.nvm"
-        [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
-        # disabled, too heavy on old macbook :(
-        #    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+        if "$ISM1"; then
+            [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && . "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+            [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && . "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+        else
+            [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+            # may too heavy on old macbook :(
+            [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+        fi
         ;;
     "ubuntu" | "amazon" )
         export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
