@@ -95,7 +95,13 @@ uniqpath() {
 }
 export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:/usr/local/go/bin:$HOME/development/flutter/bin:$HOME/dotfiles/bin"
 if [ "$OSDIST" = "macos" ]; then
-    eval $(/opt/homebrew/bin/brew shellenv)
+    if type /usr/local/bin/brew >/dev/null 2>&1; then
+        eval $(/usr/local/bin/brew shellenv)
+    fi
+    # later 'brew shellenv' will have higher priority
+    if "$ISM1" && type /opt/homebrew/bin/brew >/dev/null 2>&1; then
+            eval $(/opt/homebrew/bin/brew shellenv)
+    fi
 fi
 uniqpath
 
