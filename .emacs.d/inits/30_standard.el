@@ -83,6 +83,9 @@
 (setq visible-bell t)
 ;(setq ring-bell-function 'ignore)
 
+;; answer y or n, instead of yes or no
+(defalias 'yes-or-no-p 'y-or-n-p)
+
 ;; Shorten: Emacs Lisp mode
 (add-hook 'emacs-lisp-mode-hook
   (lambda()
