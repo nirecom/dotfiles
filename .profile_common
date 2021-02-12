@@ -93,8 +93,13 @@ uniqpath() {
     unset _p
     unset _path
 }
+<<<<<<< HEAD
 #export PATH="$HOME/.nodebrew/current/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin"
 export PATH="$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin"
+=======
+#export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin"
+export PATH="$HOME/.anyenv/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin"
+>>>>>>> 580aba756b31a3510bd6c11812bc2ad875c9fbe3
 
 if [ "$OSDIST" = "macos" ]; then
     if type /usr/local/bin/brew >/dev/null 2>&1; then
