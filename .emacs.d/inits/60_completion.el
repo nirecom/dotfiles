@@ -167,7 +167,8 @@
                     "*.min.css"
                     "*.json"
                     "*.log"
-                    "*.svg"))
+                    "*.svg"
+                    "README.md"))
             (add-to-list 'grep-find-ignored-files v)))
 
 ;; git-complete: Yet another completion engine powered by git grep
