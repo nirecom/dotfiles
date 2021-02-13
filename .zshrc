@@ -39,6 +39,7 @@ zshaddhistory() {
     [[ ${#line} -ge 3       # store longer lines only
         && ${cmd} != (l|l[sal]) # do not store following commands
         && ${cmd} != (c|cd)
+        && ${cmd} != (h|history)
         && ${cmd} != (m|man)
     ]]
 }
