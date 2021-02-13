@@ -159,7 +159,8 @@
     (dolist (v '("node_modules"
                     ".sass_cache"
                     ".cache"
-                    ".npm"))
+                    ".npm"
+                    "build"))
         (add-to-list 'grep-find-ignored-directories v))
     (dolist (v '("*.elc"
                     "*.min.js"
