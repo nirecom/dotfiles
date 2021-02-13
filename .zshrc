@@ -20,13 +20,28 @@ setopt pushd_ignore_dups    # remove duplicated directories on pushd
 
 # History
 setopt extended_history         # record time as well
-setopt hist_ignore_dups         # do not record duplicated commands
+setopt hist_ignore_dups         # remove dups in series
+setopt hist_ignore_all_dups     # remove older dups
+setopt hist_find_no_dups        # skip dups while finding
 setopt hist_ignore_space
 setopt hist_reduce_blanks
-setopt hist_no_functions    # do not record commands to define functions
-setopt hist_no_store
+setopt hist_no_functions    # do not store commands to define functions
+setopt hist_no_store        # do not store history command
 setopt hist_expand          # auto expand histories on completion
 setopt share_history        # share with other shells
+
+# add only histories that matches conditions
+# ref https://mollifier.hatenablog.com/entry/20090728/p1
+zshaddhistory() {
+    local line=${1%%$'\n'}
+    local cmd=${line%% *}
+
+    [[ ${#line} -ge 3       # store longer lines only
+        && ${cmd} != (l|l[sal]) # do not store following commands
+        && ${cmd} != (c|cd)
+        && ${cmd} != (m|man)
+    ]]
+}
 
 # Disable predict, Enable zsh-autosuggestions instead with zinit
 # ref. https://www.pandanoir.info/entry/2018/02/23/193721
