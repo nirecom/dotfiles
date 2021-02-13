@@ -6,6 +6,8 @@ fi
 
 setopt auto_param_keys # complete pharenthesis
 setopt auto_param_slash # complete '/'
+setopt auto_cd # can suppress cd command
+cdpath=(.. ~  ~/.emacs.d(N-))
 setopt auto_pushd
 setopt correct
 #setopt correct_all # spellcheck to all command lines
