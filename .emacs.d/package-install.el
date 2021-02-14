@@ -16,6 +16,7 @@
     '(
     package-utils ; upgrade packages
     init-loader ; load separated init.el files
+    use-package
     auto-async-byte-compile ; automatically compiles el
     diminish
     dumb-jump ; Jump to definition for 40+ languages without configuration
@@ -54,6 +55,8 @@
     ;; yaml
     yaml-mode flymake-easy flymake-yaml
     symbol-overlay
+    ;; java
+    lsp-java
 ))
 
 (dolist (package my/favorite-packages)
