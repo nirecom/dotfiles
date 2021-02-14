@@ -1,6 +1,8 @@
 ;;; 60_completion.el --- Completions
 ;;; Commentary:
 ;;; Code:
+(require 'use-package)
+
 ;; Company Mode
 ;; ref http://company-mode.github.io/
 ;(require 'company)
@@ -128,8 +130,12 @@
 ;;
 ;; Yasnippet
 ;;
-(require 'yasnippet)
-(yas-global-mode 1)
+(use-package yasnippet
+    :ensure t
+    :config
+    (yas-global-mode 1))
+;(require 'yasnippet)
+;(yas-global-mode 1)
 ; also requires yasnippet-snippets
 
 ; TAB for indent and complete key
@@ -183,5 +189,30 @@
 (show-smartparens-global-mode) ; seems heavy
 ;(ad-disable-advice 'delete-backward-char 'before 'sp-delete-pair-advice)
 ;(ad-activate 'delete-backward-char)
+
+;; lsp-java: Emacs Java IDE using Eclipse JDT Language Server.
+;; ref https://github.com/emacs-lsp/lsp-java
+(use-package lsp-mode
+  :ensure t
+  :defer t
+  :hook (lsp-mode . (lambda ()
+                      (let ((lsp-keymap-prefix "C-c l"))
+                        (lsp-enable-which-key-integration))))
+  :init
+  (setq lsp-keep-workspace-alive nil
+        lsp-signature-doc-lines 5
+        lsp-idle-delay 0.5
+        lsp-prefer-capf t
+        lsp-client-packages nil)
+  :config
+  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+  (setq lsp-completion-enable-additional-text-edit nil))
+
+(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+
+;(require 'lsp-java)
+;(add-hook 'java-mode-hook #'lsp)
+
+;(define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
 
 ;;; 60_completion.el ends here
