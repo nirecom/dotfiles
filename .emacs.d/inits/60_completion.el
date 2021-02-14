@@ -193,22 +193,22 @@
 ;; lsp-java: Emacs Java IDE using Eclipse JDT Language Server.
 ;; ref https://github.com/emacs-lsp/lsp-java
 (use-package lsp-mode
-  :ensure t
-  :defer t
-  :hook (lsp-mode . (lambda ()
-                      (let ((lsp-keymap-prefix "C-c l"))
-                        (lsp-enable-which-key-integration))))
-  :init
-  (setq lsp-keep-workspace-alive nil
+    :ensure t
+    :defer t
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    (setq lsp-keep-workspace-alive nil
         lsp-signature-doc-lines 5
         lsp-idle-delay 0.5
         lsp-prefer-capf t
-        lsp-client-packages nil)
-  :config
-  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-  (setq lsp-completion-enable-additional-text-edit nil))
+      lsp-client-packages nil)
+    :config
+    (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+    (setq lsp-completion-enable-additional-text-edit nil))
 
-(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+(use-package lsp-java
+    :config
+    (add-hook 'java-mode-hook 'lsp))
 
 ;(require 'lsp-java)
 ;(add-hook 'java-mode-hook #'lsp)
