@@ -6,10 +6,9 @@
 .zsh_history
 # vim
 .viminfo
-# terraform
-.terraform.*
-.terraform/
-terraform.*
+# java
+*.class
+#---------------------------
 # react / npm
 node_modules/
 .eslintcache
@@ -21,6 +20,11 @@ node_modules/
 **/src/logo.svg
 #**/src/reportWebVitals.js
 #**/src/setupTests.js
+#---------------------------
+# terraform
+.terraform.*
+.terraform/
+terraform.*
 #---------------------------
 # Emacs
 .\#*
