@@ -57,6 +57,8 @@
     symbol-overlay
     ;; java
     lsp-java
+    ;; org-mode
+    org
 ))
 
 (dolist (package my/favorite-packages)
