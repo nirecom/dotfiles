@@ -190,29 +190,5 @@
 ;(ad-disable-advice 'delete-backward-char 'before 'sp-delete-pair-advice)
 ;(ad-activate 'delete-backward-char)
 
-;; lsp-java: Emacs Java IDE using Eclipse JDT Language Server.
-;; ref https://github.com/emacs-lsp/lsp-java
-(use-package lsp-mode
-    :ensure t
-    :defer t
-    :init
-    (setq lsp-keymap-prefix "C-c l")
-    (setq lsp-keep-workspace-alive nil
-        lsp-signature-doc-lines 5
-        lsp-idle-delay 0.5
-        lsp-prefer-capf t
-      lsp-client-packages nil)
-    :config
-    (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-    (setq lsp-completion-enable-additional-text-edit nil))
-
-(use-package lsp-java
-    :config
-    (add-hook 'java-mode-hook 'lsp))
-
-;(require 'lsp-java)
-;(add-hook 'java-mode-hook #'lsp)
-
-;(define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-
+(provide '60_completion)
 ;;; 60_completion.el ends here
