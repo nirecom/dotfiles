@@ -148,6 +148,7 @@ if "$ISTERM"; then
     ssh-agent > ~/.ssh-agent
     . ~/.ssh-agent >/dev/null
     fi
+    eval "$(ssh-agent)"
     ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
 fi
 
