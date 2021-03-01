@@ -12,6 +12,8 @@
 # react / npm
 node_modules/
 .eslintcache
+.next/
+out/
 # add necessary html / js only
 **/public/*.ico
 **/public/*.png
