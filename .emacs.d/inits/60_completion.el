@@ -166,6 +166,8 @@
                     ".sass_cache"
                     ".cache"
                     ".npm"
+                    ".next"
+                    "out"
                     "build"))
         (add-to-list 'grep-find-ignored-directories v))
     (dolist (v '("*.elc"
