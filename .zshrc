@@ -88,6 +88,12 @@ autoload -Uz _zinit
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
 
+# kubectl completion
+if type kubectl >/dev/null 2>&1; then
+    source <(kubectl completion zsh)
+fi
+complete -F __start_kubectl k
+
 # Added by SDKMAN
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/Users/nire/.sdkman"
