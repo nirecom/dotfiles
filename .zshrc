@@ -92,7 +92,7 @@ zinit light zdharma/fast-syntax-highlighting
 if type kubectl >/dev/null 2>&1; then
     source <(kubectl completion zsh)
 fi
-complete -F __start_kubectl k
+#complete -F __start_kubectl k
 
 # Added by SDKMAN
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
