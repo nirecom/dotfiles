@@ -1,3 +1,8 @@
+# ignore executable file without extension
+*
+!*/
+!*.*
+
 # bash
 .bash_history
 # zsh
