@@ -59,6 +59,8 @@
     lsp-java
     ;; org-mode
     org
+    ;; swift-mode
+    swift-mode
 ))
 
 (dolist (package my/favorite-packages)
