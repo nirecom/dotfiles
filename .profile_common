@@ -141,15 +141,13 @@ fi
 
 if "$ISTERM"; then
     if [ -f ~/.ssh-agent ]; then
-    . ~/.ssh-agent >/dev/null
+    . ~/.ssh-agent
     fi
     if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID >/dev/null 2>&1; then
-    echo "Launching ssh-agent ..."
     ssh-agent > ~/.ssh-agent
-    . ~/.ssh-agent >/dev/null
+    . ~/.ssh-agent
     fi
-    eval "$(ssh-agent)"
-    ssh-add -l >& /dev/null || ~/.ssh/ssh-add-all
+    ssh-add -l >& /dev/null || ssh-add
 fi
 
 if type git > /dev/null 2>&1; then # if git is installed
