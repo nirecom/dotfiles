@@ -75,27 +75,26 @@ fi
 
 # make each path unique
 # ref. https://qiita.com/key-amb/items/ce39b0c85b30888e1e3b
-uniqpath() {
-    _path=""
-    for _p in $(echo $PATH | tr ':' ' '); do
-        case ":${_path}:" in
-            *:"${_p}":* )
-            ;;
-            * )
-                if [ "$_path" ]; then
-                    _path="$_path:$_p"
-                else
-                    _path=$_p
-                fi
-                ;;
-        esac
-    done
-    PATH=$_path
-    unset _p
-    unset _path
-}
-#export PATH="$HOME/.nodebrew/current/bin:$HOME/.rbenv/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin"
-export PATH="$HOME/.anyenv/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin"
+#uniqpath() {
+#    _path=""
+#    for _p in $(echo $PATH | tr ':' ' '); do
+#        case ":${_path}:" in
+#            *:"${_p}":* )
+#            ;;
+#            * )
+#                if [ "$_path" ]; then
+#                    _path="$_path:$_p"
+#                else
+#                    _path=$_p
+#                fi
+#                ;;
+#        esac
+#    done
+#    PATH=$_path
+#    unset _p
+#    unset _path
+#}
+export PATH="$HOME/.anyenv/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 if [ "$OSDIST" = "macos" ]; then
     if type /usr/local/bin/brew >/dev/null 2>&1; then
@@ -110,7 +109,8 @@ fi
 # manipulate PATH
 eval "$(anyenv init -)"
 # make path unique
-uniqpath
+# does not work, since it replaces VSCode path with space to column mark
+#uniqpath
 
 # git settings: common part
 source ~/completion/git-prompt.sh
