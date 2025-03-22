@@ -20,7 +20,6 @@
     auto-async-byte-compile ; automatically compiles el
     diminish
     dumb-jump ; Jump to definition for 40+ languages without configuration
-    git-gutter+
     ;;
     ;; completion
     ;;
