@@ -2,7 +2,6 @@
 source $HOME/dotfiles/bin/detectos.sh
 
 # Locale
-export LC_ALL=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 export LC_NUMERIC=ja_JP.UTF-8
