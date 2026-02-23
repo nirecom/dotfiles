@@ -97,6 +97,13 @@ fi
 #}
 export PATH="$PATH:$HOME/.local/share/fnm:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
+if "$ISWSL"; then
+    # Add VS Code Server CLI (WSL Remote) path
+    for d in "$HOME/.vscode-server/bin"/*/bin/remote-cli; do
+        [ -d "$d" ] && export PATH="$d:$PATH" && break
+    done
+fi
+
 if [ "$OSDIST" = "macos" ]; then
     if type /usr/local/bin/brew >/dev/null 2>&1; then
         eval $(/usr/local/bin/brew shellenv)
