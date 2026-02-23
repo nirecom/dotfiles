@@ -95,7 +95,7 @@ fi
 #    unset _p
 #    unset _path
 #}
-export PATH="$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+export PATH="$PATH:$HOME/.local/share/fnm:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 if [ "$OSDIST" = "macos" ]; then
     if type /usr/local/bin/brew >/dev/null 2>&1; then
@@ -105,6 +105,11 @@ if [ "$OSDIST" = "macos" ]; then
     if "$ISM1" && type /opt/homebrew/bin/brew >/dev/null 2>&1; then
             eval $(/opt/homebrew/bin/brew shellenv)
     fi
+fi
+
+# for fnm
+if command -v fnm &> /dev/null; then
+  eval "$(fnm env)"
 fi
 
 # git settings: common part
