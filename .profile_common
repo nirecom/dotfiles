@@ -95,7 +95,7 @@ fi
 #    unset _p
 #    unset _path
 #}
-export PATH="$HOME/.anyenv/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+export PATH="$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 if [ "$OSDIST" = "macos" ]; then
     if type /usr/local/bin/brew >/dev/null 2>&1; then
@@ -106,12 +106,6 @@ if [ "$OSDIST" = "macos" ]; then
             eval $(/opt/homebrew/bin/brew shellenv)
     fi
 fi
-
-# manipulate PATH
-eval "$(anyenv init -)"
-# make path unique
-# does not work, since it replaces VSCode path with space to column mark
-#uniqpath
 
 # git settings: common part
 source ~/completion/git-prompt.sh
