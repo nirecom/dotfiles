@@ -1,5 +1,4 @@
 # ignore executable file without extension
-*
 !*/
 !*.*
 
@@ -58,3 +57,9 @@ vendor/bundle/
 *.tmp
 # Vagrant specific
 .vagrant/
+#---------------------------
+# Private information for Claude Code and any AI agents
+**/.claude/settings.local.json
+**/CLAUDE_PRIVATE.md
+**/AGENTS.local.md
+**/.context-private/
