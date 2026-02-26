@@ -189,6 +189,6 @@ case "$OSDIST" in
 esac
 
 # tmux
-if ! "$ISTERM" && [ "$OSDIST" = "ubuntu" ]; then
+if ! "$ISWSL" && [ "$OSDIST" = "ubuntu" ]; then
     ~/dotfiles/bin/tmux.sh
 fi
