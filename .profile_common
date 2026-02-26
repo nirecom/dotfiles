@@ -120,34 +120,23 @@ GIT_PS1_SHOWDIRTYSTATE=true
 GIT_PS1_SHOWSTASHSTATE=true
 
 # Setup ssh-agent
-ISTERM=false
-if "$ISWSL"; then # WSL. Linux, but it's terminal
-    ISTERM=true
+if type keychain >/dev/null 2>&1; then
+    # keychain manages ssh-agent lifecycle (macOS, Ubuntu, WSL)
+    eval "$(keychain --eval --nogui --quiet --agents ssh id_ed25519 2>/dev/null)"
 else
+    # Fallback: manual ssh-agent management (mingw, etc.)
     case "$OSDIST" in
-        "macos" )
-            if type keychain >/dev/null 2>&1; then
-                keychain --nogui --quiet ~/.ssh/id_rsa >/dev/null 2>&1 # giving up error happens
-            fi
-            ISTERM=true
-            ;;
-        "ubuntu" | "amazon" )
-            ISTERM=false
-            ;;
         "mingw" )
-            ISTERM=true
+            if [ -f ~/.ssh-agent ]; then
+                . ~/.ssh-agent
+            fi
+            if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID >/dev/null 2>&1; then
+                ssh-agent > ~/.ssh-agent
+                . ~/.ssh-agent
+            fi
+            ssh-add -l >& /dev/null || ssh-add
+            ;;
     esac
-fi
-
-if "$ISTERM"; then
-    if [ -f ~/.ssh-agent ]; then
-    . ~/.ssh-agent
-    fi
-    if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID >/dev/null 2>&1; then
-    ssh-agent > ~/.ssh-agent
-    . ~/.ssh-agent
-    fi
-    ssh-add -l >& /dev/null || ssh-add
 fi
 
 if type git > /dev/null 2>&1; then # if git is installed
