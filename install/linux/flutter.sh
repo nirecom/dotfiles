@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install flutter
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 # ref. https://qiita.com/tomy0610/items/896dc8ec9ba95c33194f
 if [ ! "$OSDIST" = "macos" ]; then

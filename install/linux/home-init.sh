@@ -1,6 +1,6 @@
 #!/bin/bash
 # Initializa User: nire
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 USERNAME=nire
 BUCKET=nirecom-home
@@ -11,15 +11,15 @@ if [ `whoami` != "$USERNAME" ]; then
 fi
 
 # Install brew and git on macos (if not macos, will be skipped)
-~/install/brew-git.sh
+~/dotfiles/install/linux/brew-git.sh
 # Install aws cli
-~/install/awscli.sh
-~/install/keychain.sh
-~/install/dotfiles.sh
-~/install/anyenv.sh
-~/install/zsh.sh
-~/install/git-completion.sh
-~/install/vim.sh
-~/install/tmux.sh
+~/dotfiles/install/linux/awscli.sh
+~/dotfiles/install/linux/keychain.sh
+~/dotfiles/install/linux/dotfiles.sh
+~/dotfiles/install/linux/anyenv.sh
+~/dotfiles/install/linux/zsh.sh
+~/dotfiles/install/linux/git-completion.sh
+~/dotfiles/install/linux/vim.sh
+~/dotfiles/install/linux/tmux.sh
 # source-highlight.sh must come to the end, since it reloads shell
-~/install/source-highlight.sh
+~/dotfiles/install/linux/source-highlight.sh

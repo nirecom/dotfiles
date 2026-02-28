@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 echo "Installing zsh ..."
 if [ "$OSDIST" = "mingw" ]; then

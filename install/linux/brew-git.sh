@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install brew and git
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 if [ "$OSDIST" != "macos" ]; then
     echo "Skipping brew / git installation only for macos..."

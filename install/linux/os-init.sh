@@ -1,6 +1,6 @@
 #!/bin/bash
 # Initialize Ubuntu
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 # Check current user name
 USERNAME=nire

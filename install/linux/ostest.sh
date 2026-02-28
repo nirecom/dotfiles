@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 echo OSDIST=$OSDIST
 echo ISWSL=$ISWSL
