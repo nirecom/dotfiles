@@ -18,6 +18,11 @@ if [ ! -e ~/.config/git ]; then
     ln -sf ~/dotfiles/.config/git ~/.config/
 fi
 
+# Starship config
+if [ ! -e ~/.config/starship.toml ]; then
+    ln -sf ~/dotfiles/.config/starship.toml ~/.config/
+fi
+
 # Emacs
 mkdir -p ~/.emacs.d
 ln -sf ~/dotfiles/.emacs.d/init.el ~/.emacs.d/
