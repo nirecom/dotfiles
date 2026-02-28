@@ -22,8 +22,10 @@ cd ~/dotfiles
 ### Windows (PowerShell)
 
 ```powershell
-git clone git@github.com:nirecom/dotfiles.git $HOME\dotfiles
-~/dotfiles/install/win/dotfileslink.ps1
+git clone https://github.com/nirecom/dotfiles.git $HOME\dotfiles
+cd $HOME\dotfiles
+.\install\win\install.ps1          # Symlinks only
+.\install\win\install.ps1 -Full    # Symlinks + additional setup
 ```
 
 Requires Developer Mode (Settings > System > For developers) or Administrator privileges.
