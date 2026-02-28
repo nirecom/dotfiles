@@ -13,7 +13,7 @@ if ($PSVersionTable.PSVersion.Major -le 5) {
     Write-Warning "Recommend: Install PowerShell 7+ (https://aka.ms/powershell) or run as Administrator."
 }
 
-# Check Developer Mode
+# Check Developer Mode / Admin for symlink capability
 $regKey = Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock -ErrorAction SilentlyContinue
 $devMode = if ($regKey -and ($regKey.PSObject.Properties.Name -contains "AllowDevelopmentWithoutDevLicense")) {
     $regKey.AllowDevelopmentWithoutDevLicense
@@ -21,11 +21,7 @@ $devMode = if ($regKey -and ($regKey.PSObject.Properties.Name -contains "AllowDe
     $false
 }
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-if (-not $devMode -and -not $isAdmin) {
-    Write-Error "Developer Mode is not enabled and not running as Administrator. Enable Developer Mode (Settings > System > For developers) or run as Administrator."
-    exit 1
-}
+$canSymlink = $devMode -or $isAdmin
 
 # Symlink targets: source (in repo) -> destination (in $HOME)
 $links = @(
@@ -64,6 +60,10 @@ foreach ($link in $links) {
         continue
     }
 
+    if (-not $canSymlink) {
+        Write-Warning "Cannot create symlink (no permission): $dest"
+        continue
+    }
     New-Item -ItemType SymbolicLink -Path $dest -Target $source | Out-Null
     Write-Host "Linked: $dest -> $source" -ForegroundColor Green
 }
@@ -101,6 +101,10 @@ if (Test-Path $profileSource) {
             continue
         }
 
+        if (-not $canSymlink) {
+            Write-Warning "Cannot create symlink (no permission): $dest"
+            continue
+        }
         New-Item -ItemType SymbolicLink -Path $dest -Target $profileSource | Out-Null
         Write-Host "Linked: $dest -> $profileSource" -ForegroundColor Green
     }
