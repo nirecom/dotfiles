@@ -95,7 +95,10 @@ fi
 #    unset _p
 #    unset _path
 #}
-export PATH="$PATH:$HOME/.local/share/fnm:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+export PATH="$HOME/.local/bin:$PATH:$HOME/.local/share/fnm:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+
+# LM Studio CLI
+[ -d "$HOME/.lmstudio/bin" ] && export PATH="$PATH:$HOME/.lmstudio/bin"
 
 if [ "$OSDIST" = "macos" ]; then
     if type /usr/local/bin/brew >/dev/null 2>&1; then
