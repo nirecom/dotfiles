@@ -9,6 +9,9 @@ ln -sf ~/dotfiles/.editorconfig ~/
 ln -sf ~/dotfiles/.tmux.conf ~/
 ln -sf ~/dotfiles/.inputrc ~/
 
+# Private context directory (gitignored)
+mkdir -p ~/dotfiles/.context-private
+
 # Git config
 mkdir -p ~/.config
 if [ ! -e ~/.config/git ]; then
