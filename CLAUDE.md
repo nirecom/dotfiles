@@ -4,17 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Personal dotfiles repository for cross-platform use (Ubuntu/WSL2, macOS Intel & Apple Silicon, Git Bash/MinGW). Configs are symlinked into `$HOME` via `bin/dotfileslink.sh`.
+Personal dotfiles and install scripts repository for cross-platform use (Ubuntu/WSL2, macOS Intel & Apple Silicon, Windows native). Configs are symlinked into `$HOME` via `install/linux/dotfileslink.sh` (Linux/macOS) or `install/win/dotfileslink.ps1` (Windows).
 
 ## Installation
 
 ```bash
-git clone git@github.com:nirecom/dotfiles.git
-cd dotfiles
-./dotfileslink.sh
+git clone git@github.com:nirecom/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./install.sh          # Symlinks only
+./install.sh --full   # Symlinks + package installation
 ```
-
-Prerequisite: the [install](https://github.com/nirecom/install) repo must be set up first.
 
 ## Architecture
 
