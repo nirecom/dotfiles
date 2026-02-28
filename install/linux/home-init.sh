@@ -18,6 +18,7 @@ fi
 ~/dotfiles/install/linux/dotfiles.sh
 ~/dotfiles/install/linux/anyenv.sh
 ~/dotfiles/install/linux/zsh.sh
+~/dotfiles/install/linux/starship.sh
 ~/dotfiles/install/linux/git-completion.sh
 ~/dotfiles/install/linux/vim.sh
 ~/dotfiles/install/linux/tmux.sh
