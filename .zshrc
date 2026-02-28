@@ -64,8 +64,13 @@ autoload -Uz compinit
 #compinit -u
 compinit # runs securely
 
-# git-prompt: unique for zsh
-setopt PROMPT_SUBST ; PS1='%F{green}%n@%m%f:%F{cyan}%~%f %F{red}$(__git_ps1 "(%s)")%f\$ '
+# Prompt: use starship if installed, otherwise fall back to git-prompt PS1
+if type starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+else
+    setopt PROMPT_SUBST
+    PS1='%F{green}%n@%m%f:%F{cyan}%~%f %F{red}$(__git_ps1 "(%s)")%f\$ '
+fi
 
 # Zinit
 # ref. https://github.com/zdharma-continuum/zinit#installation
