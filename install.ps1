@@ -20,10 +20,10 @@ Write-Host "--- Creating symlinks ---"
 & "$DotfilesDir\install\win\dotfileslink.ps1"
 
 if ($Full) {
-    # Step 2: Additional setup (placeholder for future scripts)
+    # Step 2: Install packages
     Write-Host ""
-    Write-Host "--- Additional setup ---"
-    Write-Host "No additional setup scripts yet." -ForegroundColor DarkGray
+    Write-Host "--- Installing packages ---"
+    & "$DotfilesDir\install\win\starship.ps1"
 }
 
 Write-Host ""
