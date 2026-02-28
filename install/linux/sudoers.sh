@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 FILENAME="/etc/sudoers.d/nirecom-users"
 if [ ! -f /etc/sudoers.d/nirecom-users ]; then
