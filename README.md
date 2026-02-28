@@ -1,30 +1,54 @@
 # dotfiles
 
-Dot* files / directories (e.g. .bash_profile, .emacs.d) under the home directory.
+Personal dotfiles and install scripts for cross-platform development environments.
 
-* How it works
+## Supported Platforms
 
-These files are intended to place under ~/dotfiles. Necessary files are linked to their expected ~/ location by setup shell script (dotfileslink.sh).
+- Ubuntu (native or WSL2)
+- macOS (Intel / Apple Silicon)
+- Windows (native, for git config and editorconfig)
 
-* System Requirement
+## Install
 
-It automatically detects OS and changes behaviors.
+### Linux / macOS
 
-    * OS: Either of
-	    * Ubuntu 20.04 LTS (native Ubuntu or WSL2)
-		* macOS
-		* Git for Windows
-	* Shell
-	    * bash or zsh
+```bash
+git clone git@github.com:nirecom/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./install.sh          # Symlinks only
+./install.sh --full   # Symlinks + package installation
+```
 
-* Install
+### Windows (PowerShell)
 
-    * Install "install" repository firstly to install dependent packages.
-	See https://github.com/nirecom/install
-    * cd ~
-	* git clone git@github.com:nirecom/dotfiles.git
-	* cd dotfiles
-	* ./dotfileslink.sh
-	
-Thanks,
-Hideaki Nire (@nirecom)
+```powershell
+git clone git@github.com:nirecom/dotfiles.git $HOME\dotfiles
+~/dotfiles/install/win/dotfileslink.ps1
+```
+
+Requires Developer Mode (Settings > System > For developers) or Administrator privileges.
+
+## Repository Structure
+
+```
+dotfiles/
+├── .config/git/         # Git config and global gitignore
+├── .emacs.d/            # Emacs config
+├── bin/                 # Utility scripts (detectos.sh, etc.)
+├── source-highlight/    # GNU source-highlight config
+├── install/
+│   ├── linux/           # Linux/macOS install scripts
+│   └── win/             # Windows install scripts
+├── install.sh           # Unified installer (Linux/macOS)
+├── .bash_profile
+├── .editorconfig
+├── .inputrc
+├── .profile_common      # Shared shell config (aliases, PATH, tools)
+├── .tmux.conf
+├── .vimrc
+└── .zshrc
+```
+
+## Migration from nirecom/install
+
+The [nirecom/install](https://github.com/nirecom/install) repository has been merged into `install/linux/`. The separate install repo is no longer needed and can be deleted.
