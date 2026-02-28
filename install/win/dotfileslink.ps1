@@ -109,6 +109,3 @@ if (Test-Path $profileSource) {
         Write-Host "Linked: $dest -> $profileSource" -ForegroundColor Green
     }
 }
-
-Write-Host ""
-Write-Host "=== Done ===" -ForegroundColor Cyan
