@@ -24,8 +24,8 @@ cd ~/dotfiles
 ```powershell
 git clone https://github.com/nirecom/dotfiles.git $HOME\dotfiles
 cd $HOME\dotfiles
-.\install\win\install.ps1          # Symlinks only
-.\install\win\install.ps1 -Full    # Symlinks + additional setup
+.\install.ps1          # Symlinks only
+.\install.ps1 -Full    # Symlinks + additional setup
 ```
 
 Requires Developer Mode (Settings > System > For developers) or Administrator privileges.
@@ -42,6 +42,7 @@ dotfiles/
 │   ├── linux/           # Linux/macOS install scripts
 │   └── win/             # Windows install scripts
 ├── install.sh           # Unified installer (Linux/macOS)
+├── install.ps1          # Unified installer (Windows)
 ├── .bash_profile
 ├── .editorconfig
 ├── .inputrc
