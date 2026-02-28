@@ -33,6 +33,11 @@ $links = @(
     @{ Source = ".editorconfig"; Dest = "$HOME\.editorconfig"; IsDir = $false }
 )
 
+# Private context directory (gitignored)
+if (-not (Test-Path "$DotfilesDir\.context-private")) {
+    New-Item -ItemType Directory -Path "$DotfilesDir\.context-private" -Force | Out-Null
+}
+
 # Ensure parent directories exist
 if (-not (Test-Path "$HOME\.config")) {
     New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null
