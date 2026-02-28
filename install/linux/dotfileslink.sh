@@ -23,6 +23,15 @@ if [ ! -e ~/.config/starship.toml ]; then
     ln -sf ~/dotfiles/.config/starship.toml ~/.config/
 fi
 
+# Claude Code global config
+mkdir -p ~/.claude
+if [ -d ~/.claude/.git ]; then
+    echo "WARNING: ~/.claude is a git repo (dotclaude). Remove .git dir to enable symlinks."
+else
+    ln -sf ~/dotfiles/claude-code/CLAUDE.md ~/.claude/
+    ln -sf ~/dotfiles/claude-code/settings.json ~/.claude/
+fi
+
 # Emacs
 mkdir -p ~/.emacs.d
 ln -sf ~/dotfiles/.emacs.d/init.el ~/.emacs.d/

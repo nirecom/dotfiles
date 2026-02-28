@@ -21,13 +21,18 @@ echo ""
 echo "--- Creating symlinks ---"
 ~/dotfiles/install/linux/dotfileslink.sh
 
-# Step 2: Clean up obsolete files
+# Step 2: Install Claude Code
+echo ""
+echo "--- Installing Claude Code ---"
+~/dotfiles/install/linux/claude-code.sh
+
+# Step 3: Clean up obsolete files
 echo ""
 echo "--- Cleaning up obsolete files ---"
 ~/dotfiles/install/linux/home-obsolete.sh
 
 if [ "$1" = "--full" ]; then
-    # Step 3: Install packages
+    # Step 4: Install packages
     echo ""
     echo "--- Installing packages ---"
     ~/dotfiles/install/linux/home-init.sh
