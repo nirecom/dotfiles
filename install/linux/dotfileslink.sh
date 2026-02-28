@@ -11,7 +11,9 @@ ln -sf ~/dotfiles/.inputrc ~/
 
 # Git config
 mkdir -p ~/.config
-[ ! -e ~/.config/git ] && ln -sf ~/dotfiles/.config/git ~/.config/
+if [ ! -e ~/.config/git ]; then
+    ln -sf ~/dotfiles/.config/git ~/.config/
+fi
 
 # Emacs
 mkdir -p ~/.emacs.d
@@ -27,4 +29,6 @@ mkdir -p ~/.emacs_backup
 #    ln -sf ~/dotfiles/.atom/keymap.cson ~/.atom/
 #fi
 
-chmod +x ~/.ssh/ssh-add-all
+if [ -e ~/.ssh/ssh-add-all ]; then
+    chmod +x ~/.ssh/ssh-add-all
+fi
