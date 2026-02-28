@@ -29,6 +29,8 @@ $links = @(
     @{ Source = ".editorconfig"; Dest = "$HOME\.editorconfig"; IsDir = $false }
     @{ Source = ".config\starship.toml"; Dest = "$HOME\.config\starship.toml"; IsDir = $false }
     @{ Source = ".config\starship-powershell.toml"; Dest = "$HOME\.config\starship-powershell.toml"; IsDir = $false }
+    @{ Source = "claude-code\CLAUDE.md"; Dest = "$HOME\.claude\CLAUDE.md"; IsDir = $false }
+    @{ Source = "claude-code\settings.json"; Dest = "$HOME\.claude\settings.json"; IsDir = $false }
 )
 
 # Private context directory (gitignored)
@@ -39,6 +41,14 @@ if (-not (Test-Path "$DotfilesDir\.context-private")) {
 # Ensure parent directories exist
 if (-not (Test-Path "$HOME\.config")) {
     New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null
+}
+
+# Ensure ~/.claude directory exists
+if (-not (Test-Path "$HOME\.claude")) {
+    New-Item -ItemType Directory -Path "$HOME\.claude" -Force | Out-Null
+}
+if (Test-Path "$HOME\.claude\.git") {
+    Write-Warning "~/.claude is a git repo (dotclaude). Remove .git dir to enable symlinks."
 }
 
 foreach ($link in $links) {
