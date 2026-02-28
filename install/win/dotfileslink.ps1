@@ -31,6 +31,8 @@ if (-not $devMode -and -not $isAdmin) {
 $links = @(
     @{ Source = ".config\git"; Dest = "$HOME\.config\git"; IsDir = $true }
     @{ Source = ".editorconfig"; Dest = "$HOME\.editorconfig"; IsDir = $false }
+    @{ Source = ".config\starship.toml"; Dest = "$HOME\.config\starship.toml"; IsDir = $false }
+    @{ Source = ".config\starship-powershell.toml"; Dest = "$HOME\.config\starship-powershell.toml"; IsDir = $false }
 )
 
 # Private context directory (gitignored)
@@ -64,6 +66,44 @@ foreach ($link in $links) {
 
     New-Item -ItemType SymbolicLink -Path $dest -Target $source | Out-Null
     Write-Host "Linked: $dest -> $source" -ForegroundColor Green
+}
+
+# PowerShell profile symlinks
+$profileSource = Join-Path $DotfilesDir "install\win\profile.ps1"
+if (Test-Path $profileSource) {
+    # Use MyDocuments to handle OneDrive redirection and non-English locale
+    $myDocs = [Environment]::GetFolderPath('MyDocuments')
+    $profileTargets = @()
+
+    # PowerShell 5 (Windows PowerShell)
+    if (Get-Command powershell.exe -ErrorAction SilentlyContinue) {
+        $profileTargets += "$myDocs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+    }
+
+    # PowerShell 7+ (pwsh)
+    if (Get-Command pwsh -ErrorAction SilentlyContinue) {
+        $profileTargets += "$myDocs\PowerShell\Microsoft.PowerShell_profile.ps1"
+    }
+
+    foreach ($dest in $profileTargets) {
+        $parentDir = Split-Path $dest -Parent
+        if (-not (Test-Path $parentDir)) {
+            New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
+        }
+
+        if (Test-Path $dest) {
+            $item = Get-Item $dest -Force
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                Write-Host "Already linked: $dest" -ForegroundColor DarkGray
+                continue
+            }
+            Write-Warning "Exists (not a symlink): $dest (skipping - merge manually)"
+            continue
+        }
+
+        New-Item -ItemType SymbolicLink -Path $dest -Target $profileSource | Out-Null
+        Write-Host "Linked: $dest -> $profileSource" -ForegroundColor Green
+    }
 }
 
 Write-Host ""
