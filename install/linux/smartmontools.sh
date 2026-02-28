@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 if [ "$OSDIST" != "macos" ]; then
     echo "Not macos. Abort smartmontools install & run."

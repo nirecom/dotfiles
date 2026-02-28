@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install keychain (SSH/GPG agent manager)
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 if command -v keychain &> /dev/null; then
     echo "keychain is already installed: $(keychain --version 2>&1 | head -1)"

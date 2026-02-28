@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install emacs
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 if [ "$OSDIST" = "amazon" ]; then
         echo "Amazon Linux supports older emacs only. Abort."
         exit 1

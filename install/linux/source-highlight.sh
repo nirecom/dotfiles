@@ -1,6 +1,6 @@
 #!/bin/bash
 # Source Highlighting for less command
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 echo "Installing less source-highlight ..."
 case "$OSDIST" in

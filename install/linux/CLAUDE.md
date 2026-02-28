@@ -26,7 +26,7 @@ Any script can also be run independently.
 
 ## Architecture
 
-**OS Detection**: All scripts source `./bin/detectos.sh` which sets:
+**OS Detection**: All scripts source `~/dotfiles/bin/detectos.sh` which sets:
 - `OSDIST` (macos, ubuntu, centos, amazon, mingw)
 - `ISWSL` (1 if WSL2)
 - `ISM1` (1 if ARM64 Mac)
@@ -38,14 +38,12 @@ Any script can also be run independently.
 - SSH keys retrieved from AWS S3 bucket `nirecom-home`
 
 **Key directories**:
-- `bin/` - Shared utilities (detectos.sh)
 - `react/` - React/Next.js project scaffolding scripts
-- `notused/` - Deprecated scripts (anyenv, nvm, docker, etc.)
 
 ## Shell Script Conventions
 
 - Shebang: `#!/bin/bash`
-- Source OS detection at top: `source ./bin/detectos.sh`
+- Source OS detection at top: `source ~/dotfiles/bin/detectos.sh`
 - Uppercase variable names (USERNAME, OSDIST, BUCKET)
 - Script names: lowercase with hyphens (e.g., `home-init.sh`, `fnm.sh`)
 - Some scripts use `set -e` for fail-fast

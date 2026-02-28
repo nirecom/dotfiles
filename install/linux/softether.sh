@@ -1,6 +1,6 @@
 #!/bin/bash
 # Initialize Ubuntu
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 case "$OSDIST" in
     "amazon" )

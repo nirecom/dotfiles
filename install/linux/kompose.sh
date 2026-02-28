@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install kompose
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 if type kompose >/dev/null 2>&1; then
     echo "Already installed."

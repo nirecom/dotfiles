@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 # Install AWS CLI
 if type aws >/dev/null 2>&1; then

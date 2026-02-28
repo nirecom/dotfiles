@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 # Install node, npm via anyenv
 case "$OSDIST" in

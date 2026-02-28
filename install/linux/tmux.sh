@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install tmux
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 echo "Installing tmux..."
 case "$OSDIST" in

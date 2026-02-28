@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install go
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 if type go >/dev/null 2>&1; then
     echo "go is installed."

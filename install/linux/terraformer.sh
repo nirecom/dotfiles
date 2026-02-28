@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./bin/detectos.sh
+source ~/dotfiles/bin/detectos.sh
 
 # Install tenv (version manager for Terraform/OpenTofu/Terragrunt)
 if type tenv >/dev/null 2>&1; then
