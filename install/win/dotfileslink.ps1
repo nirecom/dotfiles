@@ -85,6 +85,16 @@ foreach ($link in $links) {
     Write-Host "Linked: $dest -> $source" -ForegroundColor Green
 }
 
+# Generate Windows-specific git config.local
+$gitConfigLocal = Join-Path $DotfilesDir ".config\git\config.local"
+if (-not (Test-Path $gitConfigLocal)) {
+    @"
+[core]
+    sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
+"@ | Set-Content -Path $gitConfigLocal -Encoding UTF8
+    Write-Host "Generated: $gitConfigLocal" -ForegroundColor Green
+}
+
 # Set execution policy for Windows PowerShell 5.x (defaults to Restricted)
 # Write directly to the PS5 registry key since PS7's Set-ExecutionPolicy won't affect PS5
 $ps5RegPath = "HKCU:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell"
