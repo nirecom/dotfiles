@@ -46,6 +46,12 @@ Use generic placeholders or descriptions instead.
 
 ## Workflow Preferences
 
+### Shell Commands
+
+When providing shell commands (curl, docker, etc.):
+- Always write commands on a single line — do NOT use backslash `\` line continuation
+- The user may be running PowerShell, which does not support `\` as a line continuation character
+
 ### File Edits
 
 - Always show a diff before applying file edits. Do not apply edits without showing the diff first.
