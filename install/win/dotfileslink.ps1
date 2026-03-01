@@ -78,6 +78,19 @@ foreach ($link in $links) {
     Write-Host "Linked: $dest -> $source" -ForegroundColor Green
 }
 
+# Set execution policy for Windows PowerShell 5.x (defaults to Restricted)
+# Write directly to the PS5 registry key since PS7's Set-ExecutionPolicy won't affect PS5
+$ps5RegPath = "HKCU:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell"
+$ps5RegItem = Get-ItemProperty -Path $ps5RegPath -ErrorAction SilentlyContinue
+$ps5Policy = if ($ps5RegItem -and $ps5RegItem.PSObject.Properties.Name -contains 'ExecutionPolicy') { $ps5RegItem.ExecutionPolicy } else { $null }
+if (-not $ps5Policy -or $ps5Policy -eq 'Restricted') {
+    if (-not (Test-Path $ps5RegPath)) {
+        New-Item -Path $ps5RegPath -Force | Out-Null
+    }
+    Set-ItemProperty -Path $ps5RegPath -Name ExecutionPolicy -Value "RemoteSigned"
+    Write-Host "Set execution policy to RemoteSigned for Windows PowerShell (CurrentUser)" -ForegroundColor Green
+}
+
 # PowerShell profile symlinks
 $profileSource = Join-Path $DotfilesDir "install\win\profile.ps1"
 if (Test-Path $profileSource) {
