@@ -51,6 +51,9 @@ Use generic placeholders or descriptions instead.
 When providing shell commands (curl, docker, etc.):
 - Always write commands on a single line — do NOT use backslash `\` line continuation
 - The user may be running PowerShell, which does not support `\` as a line continuation character
+- For JSON in curl `-d` arguments, use single quotes for the outer string and double quotes inside:
+  `-d '{"key":"value"}'` — NOT `-d "{\"key\":\"value\"}"`
+- Use `curl.exe` (not `curl`) to avoid the PowerShell alias for `Invoke-WebRequest`
 
 ### File Edits
 
