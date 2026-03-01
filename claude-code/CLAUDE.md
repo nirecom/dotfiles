@@ -43,3 +43,9 @@ Use generic placeholders or descriptions instead.
 - Never commit private information. Use generic expressions when context is needed.
 - Always add `.env` to `.gitignore` to exclude secrets from version control.
 - Source code and config file messages/comments must be in English.
+
+## Workflow Preferences
+
+### File Edits
+
+- Always show a diff before applying file edits. Do not apply edits without showing the diff first.
