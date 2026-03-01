@@ -23,8 +23,15 @@ $devMode = if ($regKey -and ($regKey.PSObject.Properties.Name -contains "AllowDe
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 $canSymlink = $devMode -or $isAdmin
 
+if (-not $canSymlink) {
+    Write-Warning "Cannot create symlinks: Developer Mode is not enabled and not running as Administrator."
+    Write-Warning "Enable Developer Mode in Settings > For developers, or run as Administrator."
+    exit 1
+}
+
 # Symlink targets: source (in repo) -> destination (in $HOME)
 $links = @(
+    @{ Source = ".bash_profile"; Dest = "$HOME\.bash_profile"; IsDir = $false }
     @{ Source = ".config\git"; Dest = "$HOME\.config\git"; IsDir = $true }
     @{ Source = ".editorconfig"; Dest = "$HOME\.editorconfig"; IsDir = $false }
     @{ Source = ".config\starship.toml"; Dest = "$HOME\.config\starship.toml"; IsDir = $false }
