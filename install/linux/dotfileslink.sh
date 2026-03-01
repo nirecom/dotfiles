@@ -18,6 +18,20 @@ if [ ! -e ~/.config/git ]; then
     ln -sf ~/dotfiles/.config/git ~/.config/
 fi
 
+# Generate OS-specific git config.local
+GIT_CONFIG_LOCAL=~/dotfiles/.config/git/config.local
+if [ ! -e "$GIT_CONFIG_LOCAL" ]; then
+    source ~/dotfiles/bin/detectos.sh
+    case "$OSDIST" in
+        macos)
+            cat > "$GIT_CONFIG_LOCAL" << 'EOF'
+[credential]
+    helper = osxkeychain
+EOF
+            ;;
+    esac
+fi
+
 # Starship config
 if [ ! -e ~/.config/starship.toml ]; then
     ln -sf ~/dotfiles/.config/starship.toml ~/.config/
