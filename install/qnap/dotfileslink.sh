@@ -1,6 +1,9 @@
 #!/bin/sh
 # QNAP-minimal symlinks (no zsh, no tmux, no emacs)
 
+# Auto-switch to bash on login
+ln -sf ~/dotfiles/.profile_qnap ~/.profile
+
 ln -sf ~/dotfiles/.bash_profile ~/
 ln -sf ~/dotfiles/.vimrc ~/
 ln -sf ~/dotfiles/.inputrc ~/
