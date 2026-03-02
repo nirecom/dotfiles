@@ -8,6 +8,14 @@ set -e
 
 source ~/dotfiles/bin/detectos.sh
 
+if [ "$OSDIST" = "qnap" ]; then
+    echo "=== dotfiles installer (QNAP) ==="
+    ~/dotfiles/install/qnap/dotfileslink.sh
+    echo ""
+    echo "=== Done ==="
+    exit 0
+fi
+
 if [ "$OSDIST" = "mingw" ]; then
     echo "Windows detected. Use install/win/dotfileslink.ps1 instead."
     exit 1
