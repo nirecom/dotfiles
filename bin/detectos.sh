@@ -23,6 +23,8 @@ elif [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]; then
         OSDIST=amazon
     elif grep '^NAME="Ubuntu' "${RELEASE_FILE}" >/dev/null; then
         OSDIST=ubuntu
+    elif [ -x /sbin/getcfg ]; then
+        OSDIST=qnap
     else
         OSDIST=
     fi

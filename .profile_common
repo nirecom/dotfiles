@@ -20,7 +20,9 @@ export LC_IDENTIFICATION=ja_JP.UTF-8
 export TERM=xterm-256color
 # terraform does not read region from ~/.aws/config.
 # ref. https://ja.ojit.com/so/terraform/3413058
-export AWS_DEFAULT_REGION=$(aws configure get region --profile default)
+if type aws >/dev/null 2>&1 && [ "$OSDIST" != "qnap" ]; then
+    export AWS_DEFAULT_REGION=$(aws configure get region --profile default)
+fi
 #export BASH_SILENCE_DEPRECATION_WARNING=1
 #export LSCOLORS=Cxfxcxdxbxegedabagacad
 export LSCOLORS=gxfxcxdxbxegedabagacad
@@ -116,7 +118,7 @@ if command -v fnm &> /dev/null; then
 fi
 
 # git settings: common part
-source ~/completion/git-prompt.sh
+[ -f ~/completion/git-prompt.sh ] && source ~/completion/git-prompt.sh
 GIT_PS1_SHOWUPSTREAM=true
 GIT_PS1_SHOWUNTRACKEDFILES=true
 GIT_PS1_SHOWDIRTYSTATE=true
