@@ -12,7 +12,7 @@ fi
 
 # git settings
 # ref. https://qiita.com/varmil/items/9b0aeafa85975474e9b6
-source ~/completion/git-completion.bash
+[ -f ~/completion/git-completion.bash ] && source ~/completion/git-completion.bash
 export PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[1;34m\]\w\[\033[0;31m\]$(__git_ps1)\[\033[00m\]\$ '
 
 # nvm on macos
