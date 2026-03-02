@@ -99,6 +99,9 @@ fi
 #}
 export PATH="$HOME/.local/bin:$PATH:$HOME/.local/share/fnm:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
+# Entware (QNAP)
+[ -d /opt/bin ] && export PATH="/opt/bin:/opt/sbin:$PATH"
+
 # LM Studio CLI
 [ -d "$HOME/.lmstudio/bin" ] && export PATH="$PATH:$HOME/.lmstudio/bin"
 
