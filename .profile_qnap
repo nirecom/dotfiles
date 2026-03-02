@@ -1,0 +1,4 @@
+# QNAP: auto-switch to bash if available
+if [ -x /opt/bin/bash ] && [ "$0" != "bash" ] && [ "$0" != "-bash" ]; then
+    exec /opt/bin/bash -l
+fi
