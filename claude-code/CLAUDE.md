@@ -50,10 +50,13 @@ Use generic placeholders or descriptions instead.
 
 When providing shell commands (curl, docker, etc.):
 - Always write commands on a single line — do NOT use backslash `\` line continuation
-- The user may be running PowerShell, which does not support `\` as a line continuation character
-- For JSON in curl `-d` arguments, use single quotes for the outer string and double quotes inside:
-  `-d '{"key":"value"}'` — NOT `-d "{\"key\":\"value\"}"`
-- Use `curl.exe` (not `curl`) to avoid the PowerShell alias for `Invoke-WebRequest`
+
+**curl commands MUST follow all three rules (PowerShell compatibility):**
+1. Use `curl.exe` — NEVER bare `curl` (PowerShell aliases it to `Invoke-WebRequest`)
+2. Use single quotes for JSON body — NEVER escaped double quotes:
+   CORRECT: `curl.exe -d '{"key":"value"}'`
+   WRONG:   `curl -d "{\"key\":\"value\"}"`
+3. No line continuation — single line only
 
 ### File Edits
 
