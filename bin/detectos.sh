@@ -7,7 +7,7 @@ else
     ISWSL=false
 fi
 
-if [ ""`arch`"" = "arm64" ]; then
+if [ "$(uname -m)" = "arm64" ]; then
     ISM1=true
 else
     ISM1=false
