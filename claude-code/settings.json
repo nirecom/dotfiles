@@ -1,6 +1,12 @@
 {
   "permissions": {
-    "deny": ["Read(.env)"]
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Grep(**/.env)",
+      "Grep(**/.env.*)",
+      "Bash(*.env*)"
+    ]
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
