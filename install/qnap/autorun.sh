@@ -15,18 +15,18 @@ if [ ! -x /opt/bin/opkg ]; then
     fi
 fi
 
-# Install essential packages
-if [ -x /opt/bin/opkg ]; then
+# Install essential packages (only if not already installed)
+if [ -x /opt/bin/opkg ] && [ ! -x /opt/bin/git ]; then
     /opt/bin/opkg update
     /opt/bin/opkg install git git-http bash vim-full curl
 fi
 
 # Clone or pull dotfiles
-if [ -x /opt/bin/git ]; then
+if type git >/dev/null 2>&1; then
     if [ -d "$DOTFILES_DIR" ]; then
-        /opt/bin/git -C "$DOTFILES_DIR" pull
+        git -C "$DOTFILES_DIR" pull
     else
-        /opt/bin/git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+        git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
     fi
 fi
 
