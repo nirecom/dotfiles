@@ -7,6 +7,17 @@ ln -sf ~/dotfiles/.profile_qnap ~/.profile
 ln -sf ~/dotfiles/.bash_profile ~/
 ln -sf ~/dotfiles/.vimrc ~/
 ln -sf ~/dotfiles/.inputrc ~/
+
+# Vim plugins (pathogen + bundles)
+mkdir -p ~/.vim/autoload ~/.vim/bundle
+[ ! -f ~/.vim/autoload/pathogen.vim ] && curl -fsSLo ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+cd ~/.vim/bundle
+[ ! -d ./vim-colors-solarized ] && git clone https://github.com/altercation/vim-colors-solarized.git
+[ ! -d ./vim-sensible ] && git clone https://github.com/tpope/vim-sensible.git
+[ ! -d ./editorconfig-vim ] && git clone https://github.com/editorconfig/editorconfig-vim.git
+[ ! -d ./vim-json ] && git clone https://github.com/elzr/vim-json.git
+ln -sf ~/dotfiles/filetype.vim ~/.vim/
+cd ~
 ln -sf ~/dotfiles/.editorconfig ~/
 
 # Git config
