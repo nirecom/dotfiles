@@ -38,6 +38,7 @@ $links = @(
     @{ Source = ".config\starship-powershell.toml"; Dest = "$HOME\.config\starship-powershell.toml"; IsDir = $false }
     @{ Source = "claude-code\CLAUDE.md"; Dest = "$HOME\.claude\CLAUDE.md"; IsDir = $false }
     @{ Source = "claude-code\settings.json"; Dest = "$HOME\.claude\settings.json"; IsDir = $false }
+    @{ Source = "claude-code\commands"; Dest = "$HOME\.claude\commands"; IsDir = $true }
 )
 
 # Private context directory (gitignored)
