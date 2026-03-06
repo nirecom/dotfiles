@@ -10,8 +10,8 @@ DOTFILES_REPO="https://github.com/nirecom/dotfiles.git"
 
 # Restore Entware if /opt/bin is missing
 if [ ! -x /opt/bin/opkg ]; then
-    if [ -f /share/CACHEDEV1_DATA/.qpkg/Entware/entware_startup.sh ]; then
-        /bin/sh /share/CACHEDEV1_DATA/.qpkg/Entware/entware_startup.sh
+    if [ -f /share/CACHEDEV1_DATA/.qpkg/Entware/Entware.sh ]; then
+        /bin/sh /share/CACHEDEV1_DATA/.qpkg/Entware/Entware.sh start
     fi
 fi
 
