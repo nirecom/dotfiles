@@ -44,10 +44,13 @@ if [ -d ~/.claude/.git ]; then
 else
     ln -sf ~/dotfiles/claude-code/CLAUDE.md ~/.claude/
     ln -sf ~/dotfiles/claude-code/settings.json ~/.claude/
-    mkdir -p ~/.claude/commands
-    for f in ~/dotfiles/claude-code/commands/*.md; do
-        [ -e "$f" ] && ln -sf "$f" ~/.claude/commands/
-    done
+    if [ -L ~/.claude/commands ]; then
+        echo "Already linked: ~/.claude/commands"
+    elif [ -d ~/.claude/commands ]; then
+        echo "WARNING: ~/.claude/commands exists as directory (not symlink). Remove it and re-run."
+    else
+        ln -sf ~/dotfiles/claude-code/commands ~/.claude/commands
+    fi
 fi
 
 # Emacs
