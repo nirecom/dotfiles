@@ -17,7 +17,10 @@ export LC_TELEPHONE=ja_JP.UTF-8
 export LC_MEASUREMENT=ja_JP.UTF-8
 export LC_IDENTIFICATION=ja_JP.UTF-8
 
-if [ -d /usr/share/terminfo ] || [ -d /opt/share/terminfo ]; then
+if [ -d /opt/share/terminfo ]; then
+    export TERMINFO=/opt/share/terminfo
+    export TERM=xterm-256color
+elif [ -d /usr/share/terminfo ]; then
     export TERM=xterm-256color
 else
     export TERM=xterm
