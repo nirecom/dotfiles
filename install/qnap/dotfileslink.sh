@@ -15,6 +15,11 @@ if [ ! -e ~/.config/git ]; then
     ln -sf ~/dotfiles/.config/git ~/.config/
 fi
 
+# Entware packages required for proper terminal handling
+if command -v opkg >/dev/null 2>&1; then
+    opkg list-installed 2>/dev/null | grep -q '^terminfo ' || opkg install terminfo
+fi
+
 # Git completion scripts (for prompt and tab-completion)
 mkdir -p ~/completion
 if [ ! -f ~/completion/git-prompt.sh ]; then
