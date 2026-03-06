@@ -13,12 +13,7 @@ fi
 # git settings
 # ref. https://qiita.com/varmil/items/9b0aeafa85975474e9b6
 [ -f ~/completion/git-completion.bash ] && source ~/completion/git-completion.bash
-if [ "$OSDIST" = "qnap" ]; then
-    # QNAP Entware bash: \[...\] broken, use raw readline markers \001/\002
-    export PS1=$'\001\033[32m\002\\u@\\h\001\033[00m\002:\001\033[1;34m\002\\w\001\033[0;31m\002$(__git_ps1)\001\033[00m\002\\$ '
-else
-    export PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[1;34m\]\w\[\033[0;31m\]$(__git_ps1)\[\033[00m\]\$ '
-fi
+export PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[1;34m\]\w\[\033[0;31m\]$(__git_ps1)\[\033[00m\]\$ '
 
 # nvm on macos
 
