@@ -44,6 +44,10 @@ if [ -d ~/.claude/.git ]; then
 else
     ln -sf ~/dotfiles/claude-code/CLAUDE.md ~/.claude/
     ln -sf ~/dotfiles/claude-code/settings.json ~/.claude/
+    mkdir -p ~/.claude/commands
+    for f in ~/dotfiles/claude-code/commands/*.md; do
+        [ -e "$f" ] && ln -sf "$f" ~/.claude/commands/
+    done
 fi
 
 # Emacs
