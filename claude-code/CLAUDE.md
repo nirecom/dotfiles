@@ -34,6 +34,10 @@ Use generic placeholders or descriptions instead.
 **Hardware assets**
 - Specific manufacturer names and hardware model numbers
 
+**Local filesystem paths**
+- Absolute paths to local directories (e.g., `\Projects`, `/home/user/work`)
+- Use relative paths (`../sibling-repo/`) or generic placeholders instead
+
 ### Code State Claims
 
 "A field exists" and "a field holds a meaningful value" are distinct claims — never conflate them.
