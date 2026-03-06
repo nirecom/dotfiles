@@ -1,7 +1,12 @@
 {
-  "enableAllProjectMcpServers": false,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
-    "disableBypassPermissionsMode": "disable",
     "allow": [
       "Read(**/.env.example)",
       "Grep(**/.env.example)",
@@ -87,13 +92,8 @@
       "Edit(~/.profile)",
       "Edit(~/.bash_profile)",
       "Edit(~/.profile_common)"
-    ]
+    ],
+    "disableBypassPermissionsMode": "disable"
   },
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  }
+  "enableAllProjectMcpServers": false
 }
