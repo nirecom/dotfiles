@@ -17,7 +17,11 @@ export LC_TELEPHONE=ja_JP.UTF-8
 export LC_MEASUREMENT=ja_JP.UTF-8
 export LC_IDENTIFICATION=ja_JP.UTF-8
 
-export TERM=xterm-256color
+if [ -d /usr/share/terminfo ] || [ -d /opt/share/terminfo ]; then
+    export TERM=xterm-256color
+else
+    export TERM=xterm
+fi
 # terraform does not read region from ~/.aws/config.
 # ref. https://ja.ojit.com/so/terraform/3413058
 if type aws >/dev/null 2>&1 && [ "$OSDIST" != "qnap" ]; then
