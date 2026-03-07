@@ -1,17 +1,4 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '=== MANDATORY: Read these files before starting work, update after completing ===' && cat .claude/session-checklist.md"
-          }
-        ]
-      }
-    ]
-  },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
