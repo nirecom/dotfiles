@@ -22,6 +22,7 @@
 | QNAP vim plugins | vim errors on startup in QNAP | Added pathogen + solarized plugin installation to `dotfileslink.sh` | c3754ce |
 | Claude Code skill management | Manage Claude Code skills (commands) in dotfiles, improve symlinks | Changed commands symlink from per-file to directory-level, added langchain/instruction update skills | 9ec0c0b, 359d929, e442685 |
 | Claude Code security hardening | Review settings.json allow/deny rules. Cross-reviewed with ChatGPT: (1) adopt `git -C` as primary method (avoids compound commands), (2) `cd && git` fallback limited to status/diff/log minimum set, (3) wildcard prefix on deny rules (defense in depth), (4) curl/wget pipe deny acknowledged as glob-limited (future PreToolUse hook for strict enforcement) | Added `git -C` allow rules, `cd &&` fallback allow (minimal set), strengthened deny rule `*` prefixes, added `git -C` preference to CLAUDE.md, added local path rule to private information | 6e9eeb1, 18b0fd7 |
+| Claude Code git write permissions | `git push` failed with permission denied — only read-only git commands were in allow list. Cross-reviewed with ChatGPT: (1) allow `git commit -m *` only (not broad `git commit *` which passes `--amend`/`--no-verify`), (2) allow `git push` / `git push origin *` only (not broad `git push *` which passes `--force-with-lease`/`--mirror`/`--delete`), (3) deny side strengthened with `--force-with-lease`, `--mirror`, `--delete`, `--amend`, `--no-verify` | Added git add/commit/push allow rules (minimal), added 7 deny rules for dangerous git options | TBD |
 
 ---
 
