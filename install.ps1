@@ -19,12 +19,12 @@ Write-Host ""
 Write-Host "--- Creating symlinks ---"
 & "$DotfilesDir\install\win\dotfileslink.ps1"
 
-# Step 2: Install Claude Code
-Write-Host ""
-Write-Host "--- Installing Claude Code ---"
-& "$DotfilesDir\install\win\claude-code.ps1"
-
 if ($Full) {
+    # Step 2: Install Claude Code
+    Write-Host ""
+    Write-Host "--- Installing Claude Code ---"
+    & "$DotfilesDir\install\win\claude-code.ps1"
+
     # Step 3: Install packages
     Write-Host ""
     Write-Host "--- Installing packages ---"
