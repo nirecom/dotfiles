@@ -1,10 +1,5 @@
 # Global Claude Code Instructions
 
-## Private task instructions
-
-Work instructions received from Claude.ai or other external sources that contain private information must be saved under
-`.context-private/`, not in `CLAUDE.md` or `context/`.
-
 ## Coding Guidelines
 
 ### Private Information
@@ -26,12 +21,8 @@ Use generic placeholders or descriptions instead.
 - Specific manufacturer names and hardware model numbers
 
 **Local filesystem paths**
-- Absolute paths to local directories (e.g., `\Projects`, `/home/user/work`)
+- Absolute paths to local directories
 - Use relative paths (`../sibling-repo/`) or generic placeholders instead
-
-### Code State Claims
-
-"A field exists" and "a field holds a meaningful value" are distinct claims — never conflate them.
 
 ### Public GitHub Rules
 
@@ -65,15 +56,7 @@ WRONG:   `cd /path/to/repo && git log --oneline -5`
 
 - Always show a diff before applying file edits. Do not apply edits without showing the diff first.
 
-## Session Workflow
+## Private task instructions
 
-A list of target files is injected via SessionStart hook at the beginning of each session
-(from `.claude/session-checklist.md`).
-
-### Pre-processing (before starting work)
-- Read all files listed in the injected checklist to understand current context
-
-### Post-processing (after completing work)
-- Re-read `.claude/session-checklist.md` to confirm the target file list
-- Update all listed files if the work changed their relevant content
-- Confirm with user before commit/push
+Work instructions received from Claude.ai or other external sources that contain private information must be saved under
+`.context-private/`, not in `CLAUDE.md` or `context/`.
