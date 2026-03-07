@@ -7,6 +7,7 @@ Personal dotfiles and install scripts for cross-platform development environment
 - Ubuntu (native or WSL2)
 - macOS (Intel / Apple Silicon)
 - Windows (native, for git config and editorconfig)
+- QNAP NAS (minimal set via Entware)
 
 ## Install
 
@@ -28,30 +29,52 @@ cd $HOME\dotfiles
 .\install.ps1 -Full    # Symlinks + additional setup
 ```
 
-Requires Developer Mode (Settings > System > For developers) or Administrator privileges.
+Requires Developer Mode (Settings > System > For developers) or Administrator privileges. On PowerShell 5, the execution policy is automatically set to `RemoteSigned` via the registry.
+
+### QNAP NAS
+
+**Initial setup**:
+
+1. Install Entware from QNAP App Center
+2. Install required packages: `opkg install git git-http bash vim-full curl`
+3. Clone and install:
+   ```bash
+   git clone git@github.com:nirecom/dotfiles.git ~/dotfiles
+   cd ~/dotfiles
+   ./install.sh
+   ```
+   QNAP is auto-detected — only the minimal symlink set is deployed.
+4. Enable the Entware QPKG: `sudo /sbin/setcfg Entware Enable TRUE -f /etc/config/qpkg.conf`
+
+**Post-reboot auto-recovery**: QTS automatically runs the Entware startup script (`Entware.sh start`) for enabled QPKGs, which creates the `/opt` symlink to the Entware installation on the storage volume. Packages persist across reboots.
+
+**autorun.sh fallback**: `dotfileslink.sh` deploys `autorun.sh` to the flash config partition via `hal_app`. Enable "Run user defined startup processes" in QNAP Control Panel > Hardware > General (one-time manual step, required on QTS 4.3.3+). This handles auto-recovery if Entware is removed by a firmware update.
 
 ## Repository Structure
 
 ```
 dotfiles/
-├── .config/git/         # Git config and global gitignore
-├── .emacs.d/            # Emacs config
-├── bin/                 # Utility scripts (detectos.sh, etc.)
-├── source-highlight/    # GNU source-highlight config
+├── .config/
+│   ├── git/                 # Git config and global gitignore
+│   ├── starship.toml        # Starship prompt (Linux/macOS)
+│   └── starship-powershell.toml  # Starship prompt (Windows)
+├── .emacs.d/                # Emacs config
+├── bin/                     # Utility scripts (detectos.sh, etc.)
+├── claude-code/             # Claude Code global settings
+├── docs/                    # Architecture and history documentation
+├── source-highlight/        # GNU source-highlight config
 ├── install/
-│   ├── linux/           # Linux/macOS install scripts
-│   └── win/             # Windows install scripts
-├── install.sh           # Unified installer (Linux/macOS)
-├── install.ps1          # Unified installer (Windows)
+│   ├── linux/               # Linux/macOS install scripts
+│   ├── win/                 # Windows install scripts
+│   └── qnap/                # QNAP NAS install scripts
+├── install.sh               # Unified installer (Linux/macOS)
+├── install.ps1              # Unified installer (Windows)
 ├── .bash_profile
 ├── .editorconfig
 ├── .inputrc
-├── .profile_common      # Shared shell config (aliases, PATH, tools)
+├── .profile_common          # Shared shell config (aliases, PATH, tools)
+├── .profile_qnap            # QNAP sh-to-bash bootstrap
 ├── .tmux.conf
 ├── .vimrc
 └── .zshrc
 ```
-
-## Migration from nirecom/install
-
-The [nirecom/install](https://github.com/nirecom/install) repository has been merged into `install/linux/`. The separate install repo is no longer needed and can be deleted.
