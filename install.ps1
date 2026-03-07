@@ -10,7 +10,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$DotfilesDir = "$HOME\dotfiles"
+$DotfilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Host "=== dotfiles installer (Windows) ===" -ForegroundColor Cyan
 
