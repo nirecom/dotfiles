@@ -44,16 +44,3 @@ Default: 4-space indent, LF, UTF-8. TypeScript/JavaScript/JSON/YAML/CSS use 2-sp
 ## Git Config
 
 Located at `.config/git/config` and `.config/git/ignore` (not `~/.gitconfig`). Default branch is `main`. Global gitignore covers node_modules, .class, Terraform state, editor temps, OS files, and AI tool artifacts.
-
-## Session Workflow
-
-A list of target files is injected via SessionStart hook at the beginning of each session
-(from `.claude/session-checklist.md`).
-
-### Pre-processing (before starting work)
-- Read all files listed in the injected checklist to understand current context
-
-### Post-processing (after completing work)
-- Re-read `.claude/session-checklist.md` to confirm the target file list
-- Update all listed files if the work changed their relevant content
-- Confirm with user before commit/push
