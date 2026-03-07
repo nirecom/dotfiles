@@ -126,5 +126,6 @@
     ],
     "disableBypassPermissionsMode": "disable"
   },
-  "enableAllProjectMcpServers": false
+  "enableAllProjectMcpServers": false,
+  "autoUpdatesChannel": "latest"
 }
