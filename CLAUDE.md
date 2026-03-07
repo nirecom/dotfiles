@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Personal dotfiles and install scripts repository for cross-platform use (Ubuntu/WSL2, macOS Intel & Apple Silicon, Windows native). Configs are symlinked into `$HOME` via `install/linux/dotfileslink.sh` (Linux/macOS) or `install/win/dotfileslink.ps1` (Windows).
+Personal dotfiles and install scripts repository for cross-platform use (Ubuntu/WSL2, macOS Intel & Apple Silicon, Windows native, QNAP NAS). Configs are symlinked into `$HOME` via `install/linux/dotfileslink.sh` (Linux/macOS) or `install/win/dotfileslink.ps1` (Windows).
 
 ## Installation
 
@@ -21,7 +21,7 @@ cd ~/dotfiles
 
 - **Primary shell:** Zsh (`.zshrc`) with Zinit plugin manager
 - **Shared config:** `.profile_common` — the main configuration file (aliases, PATH, tool setup). Sourced by both `.zshrc` and `.bash_profile`.
-- **OS detection:** `bin/detectos.sh` sets `$OSDIST` (macos/ubuntu/amazon/centos/mingw), `$ISWSL`, `$ISM1`. Used throughout `.profile_common` for conditional config via `case "$OSDIST"`.
+- **OS detection:** `bin/detectos.sh` sets `$OSDIST` (macos/ubuntu/amazon/centos/qnap/mingw), `$ISWSL`, `$ISM1`. Used throughout `.profile_common` for conditional config via `case "$OSDIST"`.
 
 ### Key Patterns
 
@@ -44,3 +44,8 @@ Default: 4-space indent, LF, UTF-8. TypeScript/JavaScript/JSON/YAML/CSS use 2-sp
 ## Git Config
 
 Located at `.config/git/config` and `.config/git/ignore` (not `~/.gitconfig`). Default branch is `main`. Global gitignore covers node_modules, .class, Terraform state, editor temps, OS files, and AI tool artifacts.
+
+## Documentation
+
+- `docs/architecture.md` — detailed architecture, design principles, file responsibilities, and OS detection logic
+- `docs/history.md` — change history and incident log with commit references
