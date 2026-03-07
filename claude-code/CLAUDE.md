@@ -52,6 +52,19 @@ When running git commands outside the current working directory, always use
 CORRECT: `git -C /path/to/repo log --oneline -5`
 WRONG:   `cd /path/to/repo && git log --oneline -5`
 
+### Git Write Commands
+
+When running `git add`, `git commit`, and `git push`, always run them as **separate sequential Bash calls** — do NOT chain them with `&&`.
+
+CORRECT (separate calls):
+1. `git add file1 file2`
+2. `git commit -m "message"`
+3. `git push`
+
+WRONG (chained): `git add file1 && git commit -m "msg" && git push`
+
+This ensures each command matches its individual permission rule in `settings.json`.
+
 ### File Edits
 
 - Always show a diff before applying file edits. Do not apply edits without showing the diff first.
