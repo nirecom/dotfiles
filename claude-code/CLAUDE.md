@@ -64,3 +64,16 @@ WRONG:   `cd /path/to/repo && git log --oneline -5`
 ### File Edits
 
 - Always show a diff before applying file edits. Do not apply edits without showing the diff first.
+
+## Session Workflow
+
+A list of target files is injected via SessionStart hook at the beginning of each session
+(from `.claude/session-checklist.md`).
+
+### Pre-processing (before starting work)
+- Read all files listed in the injected checklist to understand current context
+
+### Post-processing (after completing work)
+- Re-read `.claude/session-checklist.md` to confirm the target file list
+- Update all listed files if the work changed their relevant content
+- Confirm with user before commit/push
