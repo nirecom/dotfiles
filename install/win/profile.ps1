@@ -2,8 +2,8 @@
 # Symlinked by install/win/dotfileslink.ps1
 
 # Auto-pull dotfiles on startup
-$DotfilesDir = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent (Resolve-Path $MyInvocation.MyCommand.Path)))
-if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path $DotfilesDir)) {
+$DotfilesDir = "$HOME\dotfiles"
+if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
     Write-Host "git pull $DotfilesDir ..."
     git -C $DotfilesDir pull
 }
