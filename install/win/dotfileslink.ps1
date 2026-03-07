@@ -5,7 +5,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$DotfilesDir = "$HOME\dotfiles"
+$DotfilesDir = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
 
 # Check PowerShell version
 if ($PSVersionTable.PSVersion.Major -le 5) {
