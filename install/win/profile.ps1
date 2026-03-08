@@ -18,16 +18,6 @@ if ($loadedKeys -match 'no identities|agent.*not running|error') {
     }
 }
 
-# Ensure git uses Windows OpenSSH (not Git-bundled SSH) to work with ssh-agent
-$winSsh = "C:/Windows/System32/OpenSSH/ssh.exe"
-if (Test-Path $winSsh) {
-    $currentSshCmd = git config --global core.sshCommand 2>$null
-    if (-not $currentSshCmd -or $currentSshCmd -notmatch 'System32\\OpenSSH') {
-        git config --global core.sshCommand $winSsh
-        Write-Host "git core.sshCommand set to Windows OpenSSH"
-    }
-}
-
 # Auto-pull dotfiles on startup
 $DotfilesDir = "$HOME\dotfiles"
 if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
