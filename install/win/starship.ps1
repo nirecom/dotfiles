@@ -4,12 +4,13 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$starshipExe = Join-Path $env:ProgramFiles "starship\bin\starship.exe"
-if (-not ((Get-Command starship -ErrorAction SilentlyContinue) -or (Test-Path $starshipExe))) {
-    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        Write-Warning "winget not found. Install Starship manually: https://starship.rs"
-        return
-    }
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Write-Warning "winget not found. Install Starship manually: https://starship.rs"
+    return
+}
+winget list --id Starship.Starship 2>$null | Out-Null
+$starshipInstalled = $LASTEXITCODE -eq 0
+if (-not $starshipInstalled) {
     Write-Host "Installing Starship via winget..."
     winget install --id Starship.Starship --accept-source-agreements --accept-package-agreements
     Write-Host "Starship installed." -ForegroundColor Green
