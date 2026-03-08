@@ -34,6 +34,7 @@ if ($Full) {
     Write-Host ""
     Write-Host "--- Installing packages ---"
     & "$DotfilesDir\install\win\starship.ps1"
+    & "$DotfilesDir\install\win\fnm.ps1"
 
     # Step 5: Install AutoHotkey (Japanese layout enforcer)
     Write-Host ""

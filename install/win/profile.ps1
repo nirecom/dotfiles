@@ -37,4 +37,7 @@ if (Get-Command starship -ErrorAction SilentlyContinue) {
     Invoke-Expression (&starship init powershell)
 }
 
-fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+# Initialize fnm (Fast Node Manager) if installed
+if (Get-Command fnm -ErrorAction SilentlyContinue) {
+    fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+}
