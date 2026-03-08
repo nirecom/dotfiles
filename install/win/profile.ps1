@@ -46,3 +46,5 @@ if (Get-Command starship -ErrorAction SilentlyContinue) {
     $ENV:STARSHIP_CONFIG = "$HOME\.config\starship-powershell.toml"
     Invoke-Expression (&starship init powershell)
 }
+
+fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
