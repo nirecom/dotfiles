@@ -21,12 +21,13 @@ if (-not ($firstLang -like "ja*")) {
 }
 
 # --- Step 2: Install AutoHotkey v2 via winget ---
-$ahkExe = Join-Path $env:ProgramFiles "AutoHotkey\v2\AutoHotkey64.exe"
-if (-not ((Get-Command AutoHotkey64 -ErrorAction SilentlyContinue) -or (Test-Path $ahkExe))) {
-    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        Write-Warning "winget not found. Install AutoHotkey manually: https://www.autohotkey.com/"
-        return
-    }
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Write-Warning "winget not found. Install AutoHotkey manually: https://www.autohotkey.com/"
+    return
+}
+winget list --id AutoHotkey.AutoHotkey 2>$null | Out-Null
+$ahkInstalled = $LASTEXITCODE -eq 0
+if (-not $ahkInstalled) {
     Write-Host "Installing AutoHotkey v2 via winget..."
     winget install --id AutoHotkey.AutoHotkey --accept-source-agreements --accept-package-agreements
     Write-Host "AutoHotkey v2 installed." -ForegroundColor Green
