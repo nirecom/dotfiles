@@ -19,16 +19,26 @@ Write-Host ""
 Write-Host "--- Creating symlinks ---"
 & "$DotfilesDir\install\win\dotfileslink.ps1"
 
+# Step 2: Clean up obsolete files
+Write-Host ""
+Write-Host "--- Cleaning up obsolete files ---"
+& "$DotfilesDir\install\win\home-obsolete.ps1"
+
 if ($Full) {
-    # Step 2: Install Claude Code
+    # Step 3: Install Claude Code
     Write-Host ""
     Write-Host "--- Installing Claude Code ---"
     & "$DotfilesDir\install\win\claude-code.ps1"
 
-    # Step 3: Install packages
+    # Step 4: Install packages
     Write-Host ""
     Write-Host "--- Installing packages ---"
     & "$DotfilesDir\install\win\starship.ps1"
+
+    # Step 5: Install AutoHotkey (Japanese layout enforcer)
+    Write-Host ""
+    Write-Host "--- Setting up AutoHotkey ---"
+    & "$DotfilesDir\install\win\autohotkey.ps1"
 }
 
 Write-Host ""

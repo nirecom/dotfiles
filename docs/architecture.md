@@ -63,6 +63,8 @@
 | [install.ps1](https://github.com/nirecom/dotfiles/blob/main/install.ps1) | Unified entry point (Windows) | `-Full` includes setup |
 | [install/linux/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/dotfileslink.sh) | Create symlinks on Linux/macOS | |
 | [install/win/dotfileslink.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/dotfileslink.ps1) | Create symlinks on Windows | Requires Developer Mode or admin |
+| [install/win/autohotkey.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/autohotkey.ps1) | Install AutoHotkey v2 and Japanese layout enforcer | English UI + Japanese preferred only |
+| [install/win/home-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/home-obsolete.ps1) | Remove obsolete files and shortcuts | |
 | [install/qnap/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/dotfileslink.sh) | Minimal symlinks for QNAP | Skips Zsh, tmux, Emacs |
 | [install/qnap/autorun.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/autorun.sh) | QNAP boot-time Entware activation + dotfiles auto-recovery | Runs as root. `dotfileslink.sh` auto-deploys to flash |
 | [install/linux/claude-code.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/claude-code.sh) | Claude Code installation | |
@@ -77,6 +79,7 @@
 | `.emacs.d/` | Emacs configuration (init-loader pattern) | |
 | `.config/starship.toml` | Starship prompt (Linux/macOS) | |
 | `.config/starship-powershell.toml` | Starship prompt (Windows PowerShell) | |
+| [win/config/autohotkey/force-japanese-layout.ahk](https://github.com/nirecom/dotfiles/blob/main/win/config/autohotkey/force-japanese-layout.ahk) | AutoHotkey v2: force Japanese keyboard layout | Windows only |
 
 ### Claude Code Configuration
 
@@ -156,7 +159,9 @@ Variables set by `bin/detectos.sh`:
 
 ### Execution order
 
-`install.sh` runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `home-obsolete.sh` → (`--full`: `home-init.sh` + package scripts)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `home-obsolete.sh` → (`--full`: `home-init.sh` + package scripts)
+
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `home-obsolete.ps1` → (`-Full`: `claude-code.ps1` → `starship.ps1` → `autohotkey.ps1`)
 
 See [README.md](../README.md) for full platform-specific installation instructions.
 
