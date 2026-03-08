@@ -1,10 +1,10 @@
-Update `langchain-ops.md` to reflect infrastructure changes in the LangChain LLM-as-a-Judge project
+Update `ops.md` to reflect infrastructure changes in the LangChain LLM-as-a-Judge project
 
 ## Target files
 
-- `langchain-ops.md` is searched in this order:
-  - Local directory `../ai-specs/projects/engineering/`
-  - git repo `git@github.com:nirecom/ai-specs.git` (path: `projects/engineering/langchain-ops.md`)
+- `ops.md` is searched in this order:
+  - Local directory `../ai-specs/projects/engineering/langchain/`
+  - git repo `git@github.com:nirecom/ai-specs.git` (path: `projects/engineering/langchain/ops.md`)
 
 - Source repos (for detecting infrastructure changes):
   - langchain-stack: `../langchain-stack/` → `git@github.com:nirecom/langchain-stack.git`
@@ -15,7 +15,7 @@ Update `langchain-ops.md` to reflect infrastructure changes in the LangChain LLM
 ## Procedure
 
 1. **Gather recent changes**: For each source repo, run `git log --oneline -20` and check for infrastructure-related commits (docker-compose, .env, ports, services, config)
-2. **Read current ops doc**: Read `langchain-ops.md`
+2. **Read current ops doc**: Read `ops.md`
 3. **Identify updates**: Compare commits against the ops document:
    - Port allocation changes
    - New services or service configuration changes
@@ -32,7 +32,7 @@ Update `langchain-ops.md` to reflect infrastructure changes in the LangChain LLM
 ## Rules
 
 - Language: Japanese (the document is written in Japanese)
-- Do NOT duplicate architecture or design decisions — reference `langchain-design.md` instead
-- Do NOT include phase progress — reference `langchain-progress.md` instead
+- Do NOT duplicate architecture or design decisions — reference `architecture.md` instead
+- Do NOT include phase progress — reference `progress.md` instead
 - Keep setup procedures actionable (include actual commands)
 - New environment variables must document: variable name, default, purpose, and which phase introduced them

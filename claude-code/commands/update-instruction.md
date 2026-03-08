@@ -13,12 +13,12 @@ Update `instruction.md` to reflect infrastructure changes across all stacks and 
   - portable-llm-server: `../portable-llm-server/` → `git@github.com:nirecom/portable-llm-server.git`
 
 - Related design docs (already-documented changes to reflect):
-  - `langchain-design.md` (same directory as instruction.md)
-  - `langchain-ops.md` (same directory as instruction.md)
+  - `langchain/architecture.md` (subdirectory of instruction.md's directory)
+  - `langchain/ops.md` (subdirectory of instruction.md's directory)
 
 ## Procedure
 
-1. **Gather recent changes**: For each source repo, run `git log --oneline -20`. Also check `langchain-design.md` and `langchain-ops.md` for recently documented changes not yet in instruction.md
+1. **Gather recent changes**: For each source repo, run `git log --oneline -20`. Also check `langchain/architecture.md` and `langchain/ops.md` for recently documented changes not yet in instruction.md
 2. **Read current instruction.md**: Understand what is already documented
 3. **Identify gaps**: Compare against instruction.md. Look for:
    - Host service changes (penpen services, Mac services, QNAP docker-stacks)
@@ -36,7 +36,7 @@ Update `instruction.md` to reflect infrastructure changes across all stacks and 
 
 - Language: Japanese/English mixed (match existing style per section)
 - instruction.md is pasted into a Claude.ai web project — keep it concise (~200 lines)
-- Show **structure only** — do not add operational procedures (those belong in `langchain-ops.md`)
-- Do not duplicate design details — reference `langchain-design.md` instead
-- Do not add phase progress — reference `langchain-progress.md` instead
+- Show **structure only** — do not add operational procedures (those belong in `langchain/ops.md`)
+- Do not duplicate design details — reference `langchain/architecture.md` instead
+- Do not add phase progress — reference `langchain/progress.md` instead
 - The "Coding Guidelines" and "Agent Context File Conventions" sections are maintained separately; do not modify unless explicitly requested

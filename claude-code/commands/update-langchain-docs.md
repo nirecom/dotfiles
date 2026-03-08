@@ -2,13 +2,13 @@ Update all LangChain project documents by running the three individual update sk
 
 ## Documents
 
-The LangChain LLM-as-a-Judge project has three design documents in `ai-specs/projects/engineering/`:
+The LangChain LLM-as-a-Judge project has three design documents in `ai-specs/projects/engineering/langchain/`:
 
 | Document | Responsibility | Language |
 |----------|---------------|----------|
-| `langchain-design.md` | Architecture, design decisions (What/Why) | Japanese |
-| `langchain-progress.md` | Phase progress tracking (Status) | English |
-| `langchain-ops.md` | Setup procedures, operations, gotchas (How) | Japanese |
+| `architecture.md` | Architecture, design decisions (What/Why) | Japanese |
+| `progress.md` | Phase progress tracking (Status) | English |
+| `ops.md` | Setup procedures, operations, gotchas (How) | Japanese |
 
 ## Procedure
 
