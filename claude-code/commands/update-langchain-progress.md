@@ -1,10 +1,10 @@
-Update `langchain-progress.md` to reflect the latest phase progress of the LangChain LLM-as-a-Judge project
+Update `progress.md` to reflect the latest phase progress of the LangChain LLM-as-a-Judge project
 
 ## Target files
 
-- `langchain-progress.md` is searched in this order:
-  - Local directory `../ai-specs/projects/engineering/`
-  - git repo `git@github.com:nirecom/ai-specs.git` (path: `projects/engineering/langchain-progress.md`)
+- `progress.md` is searched in this order:
+  - Local directory `../ai-specs/projects/engineering/langchain/`
+  - git repo `git@github.com:nirecom/ai-specs.git` (path: `projects/engineering/langchain/progress.md`)
 
 - Source repos (for detecting progress):
   - langchain-stack: `../langchain-stack/` → `git@github.com:nirecom/langchain-stack.git`
@@ -12,13 +12,13 @@ Update `langchain-progress.md` to reflect the latest phase progress of the LangC
   - open-webui-stack: `../open-webui-stack/` → `git@github.com:nirecom/open-webui-stack.git`
   - portable-llm-server: `../portable-llm-server/` → `git@github.com:nirecom/portable-llm-server.git`
 
-- Phase definitions: `langchain-design.md` §11 (same directory as progress.md)
+- Phase definitions: `architecture.md` §11 (same directory as progress.md)
 
 ## Procedure
 
 1. **Gather recent commits**: For each source repo, run `git log --oneline -20`
-2. **Read current progress**: Read `langchain-progress.md`
-3. **Read phase definitions**: Read `langchain-design.md` §11 to understand phase scope
+2. **Read current progress**: Read `progress.md`
+3. **Read phase definitions**: Read `architecture.md` §11 to understand phase scope
 4. **Identify updates**: Compare commits against the progress document:
    - New phase completions or partial progress
    - Task items that have been completed

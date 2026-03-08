@@ -1,10 +1,10 @@
-Update `langchain-design.md` to reflect recent design changes in the LangChain LLM-as-a-Judge project
+Update `architecture.md` to reflect recent design changes in the LangChain LLM-as-a-Judge project
 
 ## Target files
 
-- `langchain-design.md` is searched in this order:
-  - Local directory `../ai-specs/projects/engineering/`
-  - git repo `git@github.com:nirecom/ai-specs.git` (path: `projects/engineering/langchain-design.md`)
+- `architecture.md` is searched in this order:
+  - Local directory `../ai-specs/projects/engineering/langchain/`
+  - git repo `git@github.com:nirecom/ai-specs.git` (path: `projects/engineering/langchain/architecture.md`)
 
 - Source repos (for detecting changes):
   - langchain-stack: `../langchain-stack/` → `git@github.com:nirecom/langchain-stack.git`
@@ -15,7 +15,7 @@ Update `langchain-design.md` to reflect recent design changes in the LangChain L
 ## Procedure
 
 1. **Gather recent changes**: For each source repo, run `git log --oneline -20` to identify recent commits
-2. **Read current design**: Read `langchain-design.md` to understand what is already documented
+2. **Read current design**: Read `architecture.md` to understand what is already documented
 3. **Identify gaps**: Compare git log entries against the design document. Look for:
    - New or changed architecture decisions
    - New or modified modules, config files, or dependencies
@@ -31,7 +31,7 @@ Update `langchain-design.md` to reflect recent design changes in the LangChain L
 
 - Language: Japanese (the document is written in Japanese)
 - Keep the document concise (~500 lines target)
-- Do NOT add phase progress details — those belong in `langchain-progress.md`
-- Do NOT add infrastructure setup procedures — those belong in `langchain-ops.md`
+- Do NOT add phase progress details — those belong in `progress.md`
+- Do NOT add infrastructure setup procedures — those belong in `ops.md`
 - Config files that embody design decisions may stay inline
 - Follow the existing document structure (sections 1-13)
