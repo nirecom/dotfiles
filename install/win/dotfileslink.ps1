@@ -68,14 +68,26 @@ foreach ($link in $links) {
         continue
     }
 
-    if (Test-Path $dest) {
+    if (Test-Path $dest -PathType Any) {
         $item = Get-Item $dest -Force
         if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
-            Write-Host "Already linked: $dest" -ForegroundColor DarkGray
+            if ($item.Target -eq $source) {
+                Write-Host "Already linked: $dest" -ForegroundColor DarkGray
+                continue
+            }
+            # Symlink exists but points to wrong target (e.g. dotfiles moved)
+            if (-not $canSymlink) {
+                Write-Warning "Cannot relink (no permission): $dest -> $($item.Target)"
+                continue
+            }
+            Write-Host "Relinking: $dest" -ForegroundColor Yellow
+            Write-Host "  was: $($item.Target)" -ForegroundColor DarkGray
+            Write-Host "  now: $source" -ForegroundColor DarkGray
+            Remove-Item $dest -Force
+        } else {
+            Write-Warning "Exists (not a symlink): $dest (skipping)"
             continue
         }
-        Write-Warning "Exists (not a symlink): $dest (skipping)"
-        continue
     }
 
     if (-not $canSymlink) {
@@ -132,14 +144,26 @@ if (Test-Path $profileSource) {
             New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
         }
 
-        if (Test-Path $dest) {
+        if (Test-Path $dest -PathType Any) {
             $item = Get-Item $dest -Force
             if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
-                Write-Host "Already linked: $dest" -ForegroundColor DarkGray
+                if ($item.Target -eq $profileSource) {
+                    Write-Host "Already linked: $dest" -ForegroundColor DarkGray
+                    continue
+                }
+                # Symlink exists but points to wrong target (e.g. dotfiles moved)
+                if (-not $canSymlink) {
+                    Write-Warning "Cannot relink (no permission): $dest -> $($item.Target)"
+                    continue
+                }
+                Write-Host "Relinking: $dest" -ForegroundColor Yellow
+                Write-Host "  was: $($item.Target)" -ForegroundColor DarkGray
+                Write-Host "  now: $profileSource" -ForegroundColor DarkGray
+                Remove-Item $dest -Force
+            } else {
+                Write-Warning "Exists (not a symlink): $dest (skipping - merge manually)"
                 continue
             }
-            Write-Warning "Exists (not a symlink): $dest (skipping - merge manually)"
-            continue
         }
 
         if (-not $canSymlink) {
