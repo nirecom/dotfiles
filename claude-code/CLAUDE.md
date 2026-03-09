@@ -20,6 +20,10 @@ Use generic placeholders or descriptions instead.
 **Hardware assets**
 - Specific manufacturer names and hardware model numbers
 
+**Private repositories**
+- Names and URLs of private repositories
+- Internal project names, directory structures, or content from private repositories
+
 **Local filesystem paths**
 - Absolute paths to local directories
 - Use relative paths (`../sibling-repo/`) or generic placeholders instead
