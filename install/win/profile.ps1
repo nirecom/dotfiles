@@ -22,7 +22,11 @@ if ($loadedKeys -match 'no identities|agent.*not running|error') {
 $DotfilesDir = "$HOME\dotfiles"
 if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
     Write-Host "git pull $DotfilesDir ..."
-    git -C $DotfilesDir pull
+    $pullProcess = Start-Process -FilePath git -ArgumentList "-C $DotfilesDir pull" -NoNewWindow -PassThru
+    if (-not $pullProcess.WaitForExit(3000)) {
+        $pullProcess.Kill()
+        Write-Warning "git pull timed out after 3s — skipped"
+    }
 }
 
 # Add ~/.local/bin to PATH (used by Claude Code and other user-installed tools)
