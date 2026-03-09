@@ -69,6 +69,11 @@ WRONG (chained): `git add file1 && git commit -m "msg" && git push`
 
 This ensures each command matches its individual permission rule in `settings.json`.
 
+### Verification Before Proceeding
+
+When the user asks you to verify or test something, complete it and report results
+BEFORE moving to the next task. Never skip or assume success.
+
 ### File Edits
 
 - Always show a diff before applying file edits. Do not apply edits without showing the diff first.
