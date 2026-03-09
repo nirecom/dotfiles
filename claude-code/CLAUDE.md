@@ -69,6 +69,10 @@ This ensures each command matches its individual permission rule in `settings.js
 
 - Always show a diff before applying file edits. Do not apply edits without showing the diff first.
 
+### Cross-Platform Orthogonality
+
+- When adding or modifying functionality for one platform (e.g., `install/win/`), apply the equivalent change to other platforms (e.g., `install/linux/`) unless there is a platform-specific reason not to.
+
 ## Private task instructions
 
 Work instructions received from Claude.ai or other external sources that contain private information must be saved under
