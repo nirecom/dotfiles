@@ -104,6 +104,8 @@ if (-not (Test-Path $gitConfigLocal)) {
     @"
 [core]
     sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
+    fsmonitor = true
+    untrackedCache = true
 "@ | Set-Content -Path $gitConfigLocal -Encoding UTF8
     Write-Host "Generated: $gitConfigLocal" -ForegroundColor Green
 }
