@@ -21,11 +21,13 @@ if ($loadedKeys -match 'no identities|agent.*not running|error') {
 # Auto-pull dotfiles on startup
 $DotfilesDir = "$HOME\dotfiles"
 if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
-    Write-Host "git pull $DotfilesDir ..."
-    $pullProcess = Start-Process -FilePath git -ArgumentList "-C $DotfilesDir pull" -NoNewWindow -PassThru
-    if (-not $pullProcess.WaitForExit(3000)) {
-        $pullProcess.Kill()
-        Write-Warning "git pull timed out after 3s — skipped"
+    Write-Host "git fetch $DotfilesDir ..."
+    $fetchProcess = Start-Process -FilePath git -ArgumentList "-C $DotfilesDir fetch" -NoNewWindow -PassThru
+    if (-not $fetchProcess.WaitForExit(3000)) {
+        $fetchProcess.Kill()
+        Write-Warning "git fetch timed out after 3s — skipped"
+    } else {
+        git -C $DotfilesDir merge --ff-only FETCH_HEAD 2>&1 | Out-Null
     }
 }
 
