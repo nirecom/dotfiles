@@ -25,3 +25,5 @@ $TASK_ID - Task identifier (e.g., 3E, 4, incident-xxx)
 - If no handoff document exists, ask the user for task scope
 - Never start implementation without presenting the plan first
 - ai-specs is PRIVATE — never reference its content in commits to public repos
+- `.context-private/` is gitignored — Glob and Grep cannot see it.
+  Use `ls` (Bash) to list files, and `Read` to read them directly by path.

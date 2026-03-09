@@ -22,4 +22,6 @@ $TASK_ID - Task identifier (e.g., 3E, 4, incident-xxx)
 
 - Confirm with user before committing
 - ai-specs is PRIVATE — never reference its content in commits to public repos
+- `.context-private/` is gitignored — Glob and Grep cannot see it.
+  Use `ls` (Bash) to list files, and `Read` to read them directly by path.
 - If completion criteria are not fully met, report the gaps and ask user how to proceed
