@@ -45,5 +45,9 @@ if (Get-Command starship -ErrorAction SilentlyContinue) {
 
 # Initialize fnm (Fast Node Manager) if installed
 if (Get-Command fnm -ErrorAction SilentlyContinue) {
-    fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+    try {
+        fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+    } catch {
+        Write-Warning "fnm: blocked by App Control policy — skipped"
+    }
 }
