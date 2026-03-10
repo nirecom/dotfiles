@@ -24,20 +24,25 @@ Write-Host ""
 Write-Host "--- Cleaning up obsolete files ---"
 & "$DotfilesDir\install\win\home-obsolete.ps1"
 
+# Step 3: Configure notification sounds
+Write-Host ""
+Write-Host "--- Configuring notification sounds ---"
+& "$DotfilesDir\install\win\sounds.ps1"
+
 if ($Full) {
-    # Step 3: Install Claude Code
+    # Step 4: Install Claude Code
     Write-Host ""
     Write-Host "--- Installing Claude Code ---"
     & "$DotfilesDir\install\win\claude-code.ps1"
 
-    # Step 4: Install packages
+    # Step 5: Install packages
     Write-Host ""
     Write-Host "--- Installing packages ---"
     & "$DotfilesDir\install\win\starship.ps1"
     & "$DotfilesDir\install\win\fnm.ps1"
     & "$DotfilesDir\install\win\uv.ps1"
 
-    # Step 5: Install AutoHotkey (Japanese layout enforcer)
+    # Step 6: Install AutoHotkey (Japanese layout enforcer)
     Write-Host ""
     Write-Host "--- Setting up AutoHotkey ---"
     & "$DotfilesDir\install\win\autohotkey.ps1"
