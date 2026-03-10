@@ -74,6 +74,9 @@ This ensures each command matches its individual permission rule in `settings.js
 When the user asks you to verify or test something, complete it and report results
 BEFORE moving to the next task. Never skip or assume success.
 
+For any implementation task, complete both normal-case and abnormal-case testing
+before proceeding to commit or the next step.
+
 ### File Edits
 
 - Always show a diff before applying file edits. Do not apply edits without showing the diff first.
