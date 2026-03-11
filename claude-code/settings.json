@@ -72,7 +72,8 @@
       "Bash(git push)",
       "Bash(git push origin *)",
       "Bash(git -C * push)",
-      "Bash(git -C * push origin *)"
+      "Bash(git -C * push origin *)",
+      "Bash(git -C * push -u origin *)"
     ],
     "deny": [
       "Read(**/.env)",
