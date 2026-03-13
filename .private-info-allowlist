@@ -1,0 +1,15 @@
+# Private information scan exceptions
+# Format: [filepath:]pattern (global or per-file)
+
+# Git SSH URLs (not personal email)
+git@github.com
+
+# GitHub noreply email (used in git config)
+noreply.github.com
+
+# Documentation examples (not real private info)
+docs/private-info-scanning.md:192.168.1.1
+docs/private-info-scanning.md:10.0.0.1
+docs/private-info-scanning.md:user@domain.tld
+docs/private-info-scanning.md:aa:bb:cc:dd:ee:ff
+docs/private-info-scanning.md:/Users/

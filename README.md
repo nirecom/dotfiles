@@ -78,3 +78,7 @@ dotfiles/
 ├── .vimrc
 └── .zshrc
 ```
+
+## Private Information Scanning
+
+Automated scanning prevents private information (IP addresses, email addresses, etc.) from being committed to public repositories. See [docs/private-info-scanning.md](docs/private-info-scanning.md) for details.
