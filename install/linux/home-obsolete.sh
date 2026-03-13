@@ -37,3 +37,8 @@ if [ -d $HOME/.tfenv ]; then
     rm -rf $HOME/.tfenv
     sudo rm -f /usr/local/bin/tfenv /usr/local/bin/terraform
 fi
+
+if [ -L ~/dotfiles/claude-code ]; then
+    echo "Removing obsolete symlink: ~/dotfiles/claude-code (renamed to claude-global)"
+    rm ~/dotfiles/claude-code
+fi
