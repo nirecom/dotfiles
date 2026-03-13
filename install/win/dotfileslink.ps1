@@ -36,9 +36,9 @@ $links = @(
     @{ Source = ".editorconfig"; Dest = "$HOME\.editorconfig"; IsDir = $false }
     @{ Source = ".config\starship.toml"; Dest = "$HOME\.config\starship.toml"; IsDir = $false }
     @{ Source = ".config\starship-powershell.toml"; Dest = "$HOME\.config\starship-powershell.toml"; IsDir = $false }
-    @{ Source = "claude-code\CLAUDE.md"; Dest = "$HOME\.claude\CLAUDE.md"; IsDir = $false }
-    @{ Source = "claude-code\settings.json"; Dest = "$HOME\.claude\settings.json"; IsDir = $false }
-    @{ Source = "claude-code\commands"; Dest = "$HOME\.claude\commands"; IsDir = $true }
+    @{ Source = "claude-global\CLAUDE.md"; Dest = "$HOME\.claude\CLAUDE.md"; IsDir = $false }
+    @{ Source = "claude-global\settings.json"; Dest = "$HOME\.claude\settings.json"; IsDir = $false }
+    @{ Source = "claude-global\commands"; Dest = "$HOME\.claude\commands"; IsDir = $true }
 )
 
 # Private context directory (gitignored)

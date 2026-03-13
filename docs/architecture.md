@@ -85,9 +85,9 @@
 
 | File | Responsibility | Notes |
 |:---|:---|:---|
-| [claude-code/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-code/CLAUDE.md) | Global Claude Code instructions | Symlinked to `~/.claude/CLAUDE.md` |
-| [claude-code/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-code/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
-| [claude-code/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-code/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
+| [claude-global/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-global/CLAUDE.md) | Global Claude Code instructions | Symlinked to `~/.claude/CLAUDE.md` |
+| [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
+| [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 
 ### Git Configuration
 
@@ -170,11 +170,11 @@ See [README.md](../README.md) for full platform-specific installation instructio
 
 ## 7. Claude Code Configuration
 
-The `claude-code/` directory manages global Claude Code settings centrally. The directory is named `claude-code/` (not `.claude/`) to avoid conflicts with project-level `.claude/` directories.
+The `claude-global/` directory manages global Claude Code settings centrally. The directory is named `claude-global/` (not `.claude/`) to avoid conflicts with project-level `.claude/` directories.
 
 **Symlink structure**:
-- `claude-code/CLAUDE.md` → `~/.claude/CLAUDE.md`
-- `claude-code/settings.json` → `~/.claude/settings.json`
+- `claude-global/CLAUDE.md` → `~/.claude/CLAUDE.md`
+- `claude-global/settings.json` → `~/.claude/settings.json`
 
 ### settings.json Design
 
@@ -218,7 +218,7 @@ Located in `.config/git/` (XDG-compliant, not `~/.gitconfig`).
 | QNAP Entware QPKG gets disabled | `autorun.sh` includes `setcfg Enable TRUE` fallback |
 | Windows symlinks require Developer Mode or admin | `dotfileslink.ps1` checks prerequisites and skips on failure |
 | `.profile_common` grows too large | OS-specific logic is consolidated in `case` blocks; new tools follow the same pattern |
-| `claude-code/settings.json` deny rule gaps | Review allow/deny rules when adding new tools |
+| `claude-global/settings.json` deny rule gaps | Review allow/deny rules when adding new tools |
 | `git auto-pull` merge conflict | Fast-forward only; on conflict, displays error and continues |
 | QNAP default shell resets to `/bin/sh` on reboot | `.profile_qnap` → `exec bash -l` handles this on every login |
 
@@ -230,8 +230,8 @@ Two checkpoints prevent private information from being committed:
 
 | Checkpoint | Mechanism | Script |
 |:---|:---|:---|
-| Git commit | `claude-code/hooks/pre-commit` (via `core.hooksPath`) | Scans staged file content |
-| Claude Code edit | `claude-code/hooks/check-private-info.js` (PreToolUse) | Scans Edit/Write content |
+| Git commit | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Scans staged file content |
+| Claude Code edit | `claude-global/hooks/check-private-info.js` (PreToolUse) | Scans Edit/Write content |
 
 Both call `bin/check-private-info.sh` (single source of truth for detection patterns).
 
