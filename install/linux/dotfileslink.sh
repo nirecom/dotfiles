@@ -45,13 +45,13 @@ if [ -d ~/.claude/.git ]; then
 else
     ln -sf ~/dotfiles/claude-global/CLAUDE.md ~/.claude/
     ln -sf ~/dotfiles/claude-global/settings.json ~/.claude/
-    if [ -L ~/.claude/commands ]; then
-        echo "Already linked: ~/.claude/commands"
-    elif [ -d ~/.claude/commands ]; then
+    # --- BEGIN temporary: claude-code → claude-global migration ---
+    if [ -d ~/.claude/commands ] && [ ! -L ~/.claude/commands ]; then
         echo "WARNING: ~/.claude/commands exists as directory (not symlink). Remove it and re-run."
     else
-        ln -sf ~/dotfiles/claude-global/commands ~/.claude/commands
+        ln -snf ~/dotfiles/claude-global/commands ~/.claude/commands
     fi
+    # --- END temporary: claude-code → claude-global migration ---
 fi
 
 # Emacs
