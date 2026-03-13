@@ -65,6 +65,7 @@
       "Bash(stat *)",
       "Bash(ls *)",
       "Bash(ls)",
+      "Bash(ls * | head *)",
       "Bash(tree *)",
       "Bash(tree)",
       "Bash(du *)",
