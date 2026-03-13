@@ -65,6 +65,10 @@
 | [install/win/dotfileslink.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/dotfileslink.ps1) | Create symlinks on Windows | Requires Developer Mode or admin |
 | [install/win/autohotkey.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/autohotkey.ps1) | Install AutoHotkey v2 and Japanese layout enforcer | English UI + Japanese preferred only |
 | [install/win/home-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/home-obsolete.ps1) | Remove obsolete files and shortcuts | |
+| [install/win/sounds.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/sounds.ps1) | Mute notification sounds | |
+| [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget | |
+| [install/win/uv.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/uv.ps1) | Install uv (Python package manager) | |
+| [install/linux/uv.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/uv.sh) | Install uv (Python package manager) | |
 | [install/qnap/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/dotfileslink.sh) | Minimal symlinks for QNAP | Skips Zsh, tmux, Emacs |
 | [install/qnap/autorun.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/autorun.sh) | QNAP boot-time Entware activation + dotfiles auto-recovery | Runs as root. `dotfileslink.sh` auto-deploys to flash |
 | [install/linux/claude-code.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/claude-code.sh) | Claude Code installation | |
@@ -162,7 +166,7 @@ Variables set by `bin/detectos.sh`:
 
 `install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `home-obsolete.sh` → (`--full`: `home-init.sh` + package scripts)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `home-obsolete.ps1` → (`-Full`: `claude-code.ps1` → `starship.ps1` → `autohotkey.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `home-obsolete.ps1` → `sounds.ps1` → (`-Full`: `claude-code.ps1` → `starship.ps1` → `fnm.ps1` → `uv.ps1` → `autohotkey.ps1`)
 
 See [README.md](../README.md) for full platform-specific installation instructions.
 
