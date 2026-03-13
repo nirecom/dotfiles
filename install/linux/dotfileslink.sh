@@ -52,6 +52,7 @@ else
         ln -snf ~/dotfiles/claude-global/commands ~/.claude/commands
     fi
     # --- END temporary: claude-code → claude-global migration ---
+    ln -snf ~/dotfiles/claude-global/rules ~/.claude/rules
 fi
 
 # Emacs
