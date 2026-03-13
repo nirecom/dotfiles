@@ -11,11 +11,9 @@ if ($sshAgent -and $sshAgent.Status -ne 'Running') {
 }
 $loadedKeys = ssh-add -l 2>&1
 if ($loadedKeys -match 'no identities|agent.*not running|error') {
-    $sshKey = "$HOME\.ssh\id_ed25519"
-    if (-not (Test-Path $sshKey)) { $sshKey = "$HOME\.ssh\id_rsa" }
-    if (Test-Path $sshKey) {
-        ssh-add $sshKey 2>&1 | Out-Null
-    }
+    Get-ChildItem "$HOME\.ssh\id_*" -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Extension -ne '.pub' } |
+        ForEach-Object { ssh-add $_.FullName 2>&1 | Out-Null }
 }
 
 # Auto-pull dotfiles on startup
@@ -39,7 +37,13 @@ if ((Test-Path $newClaude) -and -not ((Test-Path $oldClaude) -and (Get-Item $old
     if ((Test-Path $oldClaude) -and (Test-Path $oldClaude -PathType Container)) {
         Remove-Item $oldClaude -Recurse -Force -ErrorAction SilentlyContinue
     }
-    New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude | Out-Null
+    # Check symlink capability (Developer Mode or Administrator)
+    $regKey = Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock -ErrorAction SilentlyContinue
+    $devMode = if ($regKey -and ($regKey.PSObject.Properties.Name -contains "AllowDevelopmentWithoutDevLicense")) { $regKey.AllowDevelopmentWithoutDevLicense } else { $false }
+    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if ($devMode -or $isAdmin) {
+        New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude | Out-Null
+    }
 }
 $claudeSettings = "$HOME\.claude\settings.json"
 if ((Test-Path $claudeSettings) -and ((Get-Item $claudeSettings -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
