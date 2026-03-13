@@ -33,6 +33,11 @@ function block(reason) {
   process.exit(0);
 }
 
+// Normalize path for shell commands (Windows backslashes → forward slashes)
+function shellPath(p) {
+  return p.split(path.sep).join("/");
+}
+
 // Determine dotfiles directory (this script lives in dotfiles/claude-code/hooks/)
 const DOTFILES_DIR = path.resolve(__dirname, "..", "..");
 const SCANNER = path.join(DOTFILES_DIR, "bin", "check-private-info.sh");
@@ -69,15 +74,17 @@ if (!content) {
 // Check if the target file is in a private repo
 if (filePath && fs.existsSync(PRIVATE_REPOS)) {
   try {
-    const repoRoot = execSync(`git -C "${path.dirname(filePath)}" rev-parse --show-toplevel 2>/dev/null`, {
+    const repoRoot = execSync(`git -C "${shellPath(path.dirname(filePath))}" rev-parse --show-toplevel`, {
       encoding: "utf8",
       timeout: 5000,
+      stdio: ["pipe", "pipe", "pipe"],
     }).trim();
 
     if (repoRoot) {
-      const remoteUrl = execSync(`git -C "${repoRoot}" remote get-url origin 2>/dev/null`, {
+      const remoteUrl = execSync(`git -C "${repoRoot}" remote get-url origin`, {
         encoding: "utf8",
         timeout: 5000,
+        stdio: ["pipe", "pipe", "pipe"],
       }).trim();
 
       if (remoteUrl) {
@@ -103,7 +110,7 @@ if (filePath && fs.existsSync(PRIVATE_REPOS)) {
 // Run scanner on the content
 try {
   const label = filePath || "stdin";
-  execSync(`bash "${SCANNER}" --stdin "${label}"`, {
+  execSync(`bash "${shellPath(SCANNER)}" --stdin "${shellPath(label)}"`, {
     input: content,
     encoding: "utf8",
     timeout: 10000,
