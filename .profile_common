@@ -164,6 +164,19 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
+# One-time migration: claude-code → claude-global (compat symlink + relink)
+if [ -d ~/dotfiles/claude-global ] && [ ! -e ~/dotfiles/claude-code ]; then
+    ln -s claude-global ~/dotfiles/claude-code
+fi
+if [ -L ~/.claude/settings.json ]; then
+    _target=$(readlink ~/.claude/settings.json 2>/dev/null || true)
+    if echo "$_target" | grep -q "claude-code"; then
+        echo "Migrating Claude Code symlinks (claude-code → claude-global)..."
+        ~/dotfiles/install/linux/dotfileslink.sh
+    fi
+    unset _target
+fi
+
 # Source code highlighting
 case "$OSDIST" in
     "macos" )

@@ -31,6 +31,21 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDi
     }
 }
 
+# One-time migration: claude-code → claude-global (compat symlink + relink)
+$oldClaude = Join-Path $DotfilesDir "claude-code"
+$newClaude = Join-Path $DotfilesDir "claude-global"
+if ((Test-Path $newClaude) -and -not (Test-Path $oldClaude)) {
+    New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude | Out-Null
+}
+$claudeSettings = "$HOME\.claude\settings.json"
+if ((Test-Path $claudeSettings) -and ((Get-Item $claudeSettings -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    $target = (Get-Item $claudeSettings -Force).Target
+    if ($target -like "*claude-code*") {
+        Write-Host "Migrating Claude Code symlinks (claude-code -> claude-global)..."
+        & "$DotfilesDir\install\win\dotfileslink.ps1"
+    }
+}
+
 # Add ~/.local/bin to PATH (used by Claude Code and other user-installed tools)
 $localBin = Join-Path $HOME ".local\bin"
 if ((Test-Path $localBin) -and ($env:PATH -notlike "*$localBin*")) {

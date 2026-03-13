@@ -22,3 +22,10 @@ Get-ChildItem -Path "$env:USERPROFILE\OneDrive*\AutoHotKey\*.ahk" -ErrorAction S
     Write-Host "Removing obsolete AHK script from OneDrive: $($_.FullName)"
     Remove-Item $_.FullName
 }
+
+# --- Remove claude-code compatibility symlink ---
+$oldClaude = Join-Path $DotfilesDir "claude-code"
+if ((Test-Path $oldClaude) -and ((Get-Item $oldClaude -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    Write-Host "Removing obsolete symlink: claude-code (renamed to claude-global)"
+    Remove-Item $oldClaude -Force
+}
