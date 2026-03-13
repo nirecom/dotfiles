@@ -37,7 +37,7 @@ $newClaude = Join-Path $DotfilesDir "claude-global"
 if ((Test-Path $newClaude) -and -not ((Test-Path $oldClaude) -and (Get-Item $oldClaude -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
     # Remove empty directory left by git (git doesn't clean up empty dirs after rename)
     if ((Test-Path $oldClaude) -and (Test-Path $oldClaude -PathType Container)) {
-        Remove-Item $oldClaude -Force -ErrorAction SilentlyContinue
+        Remove-Item $oldClaude -Recurse -Force -ErrorAction SilentlyContinue
     }
     New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude | Out-Null
 }
