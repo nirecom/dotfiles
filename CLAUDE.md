@@ -32,7 +32,7 @@ cd ~/dotfiles
 - **Defensive loading:** All external tools/files are checked before use (`type cmd >/dev/null 2>&1`, `[ -e $FILE ]`)
 - **Cross-platform branching:** Feature setup branches on `$OSDIST` — always maintain this pattern when adding new tool configurations
 - **Modular Emacs:** `.emacs.d/inits/` uses numbered prefixes (20_, 30_, 50_, etc.) loaded by `init-loader.el`
-- **Claude Code config:** `claude-code/` stores global Claude Code settings (CLAUDE.md, settings.json). Symlinked to `~/.claude/` by install scripts. Named `claude-code/` (not `.claude/`) to avoid conflict with project-level settings
+- **Claude Code config:** `claude-global/` stores global Claude Code settings (CLAUDE.md, settings.json). Symlinked to `~/.claude/` by install scripts. Named `claude-global/` (not `.claude/`) to avoid conflict with project-level settings
 
 ## Documentation
 

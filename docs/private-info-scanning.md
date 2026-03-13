@@ -8,9 +8,9 @@ Two checkpoints scan for private information:
 
 | Checkpoint | When | Mechanism |
 |:---|:---|:---|
-| Git commit | Every `git commit` | Pre-commit hook (`claude-code/hooks/pre-commit`) |
-| Claude Code edit | Every Edit/Write tool call | PreToolUse hook (`claude-code/hooks/check-private-info.js`) |
-| Claude Code commit | Every `git commit` via Bash tool | PreToolUse hook (`claude-code/hooks/check-private-info.js`) |
+| Git commit | Every `git commit` | Pre-commit hook (`claude-global/hooks/pre-commit`) |
+| Claude Code edit | Every Edit/Write tool call | PreToolUse hook (`claude-global/hooks/check-private-info.js`) |
+| Claude Code commit | Every `git commit` via Bash tool | PreToolUse hook (`claude-global/hooks/check-private-info.js`) |
 
 Both call `bin/check-private-info.sh` as the scanner (single source of truth for patterns).
 
@@ -28,7 +28,7 @@ Both call `bin/check-private-info.sh` as the scanner (single source of truth for
 
 ## Setup
 
-Automatically enabled after running `install.sh` / `install.ps1`. The global git config (`.config/git/config`) sets `core.hooksPath` to `~/dotfiles/claude-code/hooks`, activating the pre-commit hook for all repos.
+Automatically enabled after running `install.sh` / `install.ps1`. The global git config (`.config/git/config`) sets `core.hooksPath` to `~/dotfiles/claude-global/hooks`, activating the pre-commit hook for all repos.
 
 ### Initial Private Repo Whitelist
 
@@ -107,7 +107,7 @@ Verify that `core.hooksPath` is set:
 
 ```bash
 git config --get core.hooksPath
-# Should show: ~/dotfiles/claude-code/hooks
+# Should show: ~/dotfiles/claude-global/hooks
 ```
 
 ### Claude Code hook not blocking
@@ -120,8 +120,8 @@ Ensure `settings.json` has the hooks section (check `~/.claude/settings.json`).
 |:---|:---|
 | `bin/check-private-info.sh` | Scanner script (detection patterns) |
 | `bin/update-private-repos.sh` | Private repo whitelist generator |
-| `claude-code/hooks/pre-commit` | Git pre-commit hook |
-| `claude-code/hooks/check-private-info.js` | Claude Code PreToolUse hook |
+| `claude-global/hooks/pre-commit` | Git pre-commit hook |
+| `claude-global/hooks/check-private-info.js` | Claude Code PreToolUse hook |
 | `.private-info-allowlist` | Exception patterns |
 | `.private-info-blocklist` | Additional detection patterns |
 | `.context-private/private-repos.txt` | Private repo whitelist (gitignored) |

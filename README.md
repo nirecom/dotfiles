@@ -60,7 +60,7 @@ dotfiles/
 │   └── starship-powershell.toml  # Starship prompt (Windows)
 ├── .emacs.d/                # Emacs config
 ├── bin/                     # Utility scripts (detectos.sh, etc.)
-├── claude-code/             # Claude Code global settings
+├── claude-global/             # Claude Code global settings
 ├── docs/                    # Architecture and history documentation
 ├── source-highlight/        # GNU source-highlight config
 ├── install/

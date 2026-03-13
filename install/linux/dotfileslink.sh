@@ -43,14 +43,14 @@ mkdir -p ~/.claude
 if [ -d ~/.claude/.git ]; then
     echo "WARNING: ~/.claude is a git repo (dotclaude). Remove .git dir to enable symlinks."
 else
-    ln -sf ~/dotfiles/claude-code/CLAUDE.md ~/.claude/
-    ln -sf ~/dotfiles/claude-code/settings.json ~/.claude/
+    ln -sf ~/dotfiles/claude-global/CLAUDE.md ~/.claude/
+    ln -sf ~/dotfiles/claude-global/settings.json ~/.claude/
     if [ -L ~/.claude/commands ]; then
         echo "Already linked: ~/.claude/commands"
     elif [ -d ~/.claude/commands ]; then
         echo "WARNING: ~/.claude/commands exists as directory (not symlink). Remove it and re-run."
     else
-        ln -sf ~/dotfiles/claude-code/commands ~/.claude/commands
+        ln -sf ~/dotfiles/claude-global/commands ~/.claude/commands
     fi
 fi
 
