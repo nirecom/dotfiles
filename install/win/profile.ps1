@@ -74,6 +74,19 @@ if (Get-Command starship -ErrorAction SilentlyContinue) {
 if (Get-Command fnm -ErrorAction SilentlyContinue) {
     try {
         fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+        # Override fnm's cd wrapper to produce clean error messages
+        function global:Set-LocationWithFnm {
+            param($path)
+            if ($null -eq $path) {
+                Set-Location $HOME
+            } elseif (Test-Path -LiteralPath $path) {
+                Set-Location -LiteralPath $path
+            } else {
+                Write-Error "cd: no such directory: $path" -ErrorAction Continue
+                return
+            }
+            Set-FnmOnLoad
+        }
     } catch {
         Write-Warning "fnm: blocked by App Control policy — skipped"
     }
