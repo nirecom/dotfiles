@@ -52,8 +52,8 @@ const input = JSON.parse(readStdin());
 const toolName = input.tool_name;
 const toolInput = input.tool_input || {};
 
-// Only check Edit and Write tools
-if (toolName !== "Edit" && toolName !== "Write") {
+// Only check Edit, Write, and Bash tools
+if (toolName !== "Edit" && toolName !== "Write" && toolName !== "Bash") {
   approve();
 }
 
@@ -65,6 +65,24 @@ if (toolName === "Write") {
   content = toolInput.content || "";
 } else if (toolName === "Edit") {
   content = toolInput.new_string || "";
+} else if (toolName === "Bash") {
+  const command = toolInput.command || "";
+  // Only scan git commit messages, approve all other commands immediately
+  const commitMatch = command.match(/git\s+(?:-C\s+\S+\s+)?commit\s/);
+  if (!commitMatch) {
+    approve();
+  }
+  // Extract commit message: support -m "msg", -m 'msg', and heredoc $(cat <<'EOF'...EOF)
+  const heredocMatch = command.match(/<<'?EOF'?\s*\n([\s\S]*?)\nEOF/);
+  if (heredocMatch) {
+    content = heredocMatch[1];
+  } else {
+    const msgMatch = command.match(/(?:-m\s+)(["'])([\s\S]*?)\1/);
+    content = msgMatch ? msgMatch[2] : "";
+  }
+  if (!content) {
+    approve();
+  }
 }
 
 if (!content) {

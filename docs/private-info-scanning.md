@@ -10,6 +10,7 @@ Two checkpoints scan for private information:
 |:---|:---|:---|
 | Git commit | Every `git commit` | Pre-commit hook (`claude-code/hooks/pre-commit`) |
 | Claude Code edit | Every Edit/Write tool call | PreToolUse hook (`claude-code/hooks/check-private-info.js`) |
+| Claude Code commit | Every `git commit` via Bash tool | PreToolUse hook (`claude-code/hooks/check-private-info.js`) |
 
 Both call `bin/check-private-info.sh` as the scanner (single source of truth for patterns).
 
@@ -60,6 +61,9 @@ Add patterns to `.private-info-blocklist`, one regex per line:
 # Hostname patterns
 myhost\.local
 internal\.example\.com
+
+# Block unwanted commit message content
+Co-Authored-By
 ```
 
 ## Manual Scanning
