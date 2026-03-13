@@ -2,35 +2,9 @@
 
 ## Coding Guidelines
 
-### Private Information
-
-Never include the following in any file that may be committed to a public repository.
-Use generic placeholders or descriptions instead.
-
-**Personal information**
-- Name, address, phone number, email address
-- PII, My Number
-
-**Local network information**
-- IP addresses and subnet patterns
-- Hostnames and domain names
-- Internal URLs
-- MAC addresses
-
-**Hardware assets**
-- Specific manufacturer names and hardware model numbers
-
-**Private repositories**
-- Names and URLs of private repositories
-- Internal project names, directory structures, or content from private repositories
-
-**Local filesystem paths**
-- Absolute paths to local directories
-- Use relative paths (`../sibling-repo/`) or generic placeholders instead
-
 ### Public GitHub Rules
 
-- Never commit private information. Use generic expressions when context is needed.
+- Never commit private information (automatically enforced by pre-commit hook and Claude Code PreToolUse hook — see `docs/private-info-scanning.md` for the full list of detected patterns). Use generic placeholders or descriptions instead.
 - Always add `.env` to `.gitignore` to exclude secrets from version control.
 - Source code and config file messages/comments must be in English.
 

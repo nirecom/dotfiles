@@ -110,6 +110,7 @@ if (-not (Test-Path $gitConfigLocal)) {
     Write-Host "Generated: $gitConfigLocal" -ForegroundColor Green
 }
 
+
 # Set execution policy for Windows PowerShell 5.x (defaults to Restricted)
 # Write directly to the PS5 registry key since PS7's Set-ExecutionPolicy won't affect PS5
 $ps5RegPath = "HKCU:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell"
