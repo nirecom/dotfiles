@@ -8,5 +8,7 @@ if command -v uv &> /dev/null; then
 else
   echo "Installing uv..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
+  # Refresh PATH so the newly installed uv is found
+  export PATH="$HOME/.local/bin:$PATH"
   echo "uv installed: $(uv --version)"
 fi

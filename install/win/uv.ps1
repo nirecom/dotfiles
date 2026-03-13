@@ -9,5 +9,10 @@ if (Get-Command uv -ErrorAction SilentlyContinue) {
 } else {
     Write-Host "Installing uv..."
     irm https://astral.sh/uv/install.ps1 | iex
+    # Refresh PATH so the newly installed uv is found
+    $uvBin = Join-Path $HOME ".local\bin"
+    if ($env:Path -notlike "*$uvBin*") {
+        $env:Path = "$uvBin;$env:Path"
+    }
     Write-Host "uv installed: $(uv --version)" -ForegroundColor Green
 }
