@@ -32,6 +32,7 @@ EOF
     esac
 fi
 
+
 # Starship config
 if [ ! -e ~/.config/starship.toml ]; then
     ln -sf ~/dotfiles/.config/starship.toml ~/.config/
