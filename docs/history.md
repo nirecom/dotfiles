@@ -37,6 +37,7 @@
 | claude-code → claude-global rename | Rename directory to avoid project-level conflict | Renamed `claude-code/` to `claude-global/`, migration logic in install scripts, handles empty dir left by git, `-Recurse` fix for non-empty directory | 597bf88–f83e98c |
 | uv install PATH fix | `uv --version` fails on fresh install | Refresh `$env:Path` (Win) / `$PATH` (Linux) after uv install so version check succeeds | d82c026 |
 | Profile hardening (Windows) | SSH key loading and migration symlink fail on some machines | SSH key loading now globs `$HOME\.ssh\id_*` instead of hardcoded `id_ed25519`/`id_rsa`. Migration symlink (claude-code → claude-global) checks Developer Mode / admin before creating. PS5 `New-Item` wrapped in try/catch for permission errors. Added Pester tests | a64aca9 |
+| Claude Code rules reorganization | Split monolithic `claude-global/CLAUDE.md` into `rules/` directory (6 rule files) + docs lifecycle rule. Unified langchain-specific commands into generic `/update-docs`, `/start-task`, `/complete-task`. Deleted 7 old langchain-specific commands. Added `rules/` symlink to install scripts (Linux + Windows). Added `tests/test-claude-rules.sh` verification script | (pending) |
 
 ---
 
