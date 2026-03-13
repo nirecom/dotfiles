@@ -81,7 +81,9 @@
       "Bash(git push origin *)",
       "Bash(git -C * push)",
       "Bash(git -C * push origin *)",
-      "Bash(git -C * push -u origin *)"
+      "Bash(git -C * push -u origin *)",
+      "Bash(chmod +x *.sh)",
+      "Bash(chmod +x */hooks/*)"
     ],
     "deny": [
       "Read(**/.env)",
