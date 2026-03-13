@@ -38,7 +38,7 @@ function shellPath(p) {
   return p.split(path.sep).join("/");
 }
 
-// Determine dotfiles directory (this script lives in dotfiles/claude-code/hooks/)
+// Determine dotfiles directory (this script lives in dotfiles/claude-global/hooks/)
 const DOTFILES_DIR = path.resolve(__dirname, "..", "..");
 const SCANNER = path.join(DOTFILES_DIR, "bin", "check-private-info.sh");
 const PRIVATE_REPOS = path.join(
