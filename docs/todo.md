@@ -36,8 +36,8 @@ readlink ~/.claude/commands
 # 期待: パスに claude-global を含む
 
 # 5. git hooksPath が claude-global を指しているか
-git config --global core.hooksPath
-# 期待: ~/dotfiles/claude-global/hooks
+git config core.hooksPath
+# 期待: ~/dotfiles/claude-global/hooks (via ~/.config/git/config symlink)
 
 # 6. settings.json 内の hook パスが claude-global を参照しているか
 grep "claude-global" ~/.claude/settings.json
@@ -68,8 +68,8 @@ ls ~/dotfiles/claude-global/
 # 期待: パスに claude-global を含む
 
 # 5. git hooksPath が claude-global を指しているか
-git config --global core.hooksPath
-# 期待: ~/dotfiles/claude-global/hooks
+git config core.hooksPath
+# 期待: ~/dotfiles/claude-global/hooks (via ~/.config/git/config symlink)
 
 # 6. settings.json 内の hook パスが claude-global を参照しているか
 Select-String "claude-global" ~/.claude/settings.json
