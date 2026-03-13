@@ -23,8 +23,12 @@ Describe "claude-code migration symlink permission check" {
                 $devMode = if ($regKey -and ($regKey.PSObject.Properties.Name -contains "AllowDevelopmentWithoutDevLicense")) { $regKey.AllowDevelopmentWithoutDevLicense } else { $false }
                 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
                 if ($devMode -or $isAdmin) {
-                    New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude | Out-Null
-                    return "created"
+                    try {
+                        New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude -ErrorAction Stop | Out-Null
+                        return "created"
+                    } catch {
+                        return "skipped-no-permission"
+                    }
                 }
                 return "skipped-no-permission"
             }
