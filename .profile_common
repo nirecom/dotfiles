@@ -165,7 +165,11 @@ if type git > /dev/null 2>&1; then # if git is installed
 fi
 
 # One-time migration: claude-code → claude-global (compat symlink + relink)
-if [ -d ~/dotfiles/claude-global ] && [ ! -e ~/dotfiles/claude-code ]; then
+if [ -d ~/dotfiles/claude-global ] && [ ! -L ~/dotfiles/claude-code ]; then
+    # Remove empty directory left by git (git doesn't clean up empty dirs after rename)
+    if [ -d ~/dotfiles/claude-code ]; then
+        rmdir ~/dotfiles/claude-code 2>/dev/null || true
+    fi
     ln -s claude-global ~/dotfiles/claude-code
 fi
 if [ -L ~/.claude/settings.json ]; then
