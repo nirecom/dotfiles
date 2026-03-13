@@ -42,7 +42,11 @@ if ((Test-Path $newClaude) -and -not ((Test-Path $oldClaude) -and (Get-Item $old
     $devMode = if ($regKey -and ($regKey.PSObject.Properties.Name -contains "AllowDevelopmentWithoutDevLicense")) { $regKey.AllowDevelopmentWithoutDevLicense } else { $false }
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if ($devMode -or $isAdmin) {
-        New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude | Out-Null
+        try {
+            New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude -ErrorAction Stop | Out-Null
+        } catch {
+            # PS5 requires admin even with Developer Mode; silently skip
+        }
     }
 }
 $claudeSettings = "$HOME\.claude\settings.json"

@@ -67,6 +67,7 @@
 | [install/win/home-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/home-obsolete.ps1) | Remove obsolete files and shortcuts | |
 | [install/win/sounds.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/sounds.ps1) | Mute notification sounds | |
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget | |
+| [install/win/profile.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/profile.ps1) | PowerShell profile (SSH agent, auto-pull, migration) | Symlinked to PS5 and PS7 profile paths |
 | [install/win/uv.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/uv.ps1) | Install uv (Python package manager) | |
 | [install/linux/uv.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/uv.sh) | Install uv (Python package manager) | |
 | [install/qnap/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/dotfileslink.sh) | Minimal symlinks for QNAP | Skips Zsh, tmux, Emacs |
@@ -92,6 +93,13 @@
 | [claude-global/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-global/CLAUDE.md) | Global Claude Code instructions | Symlinked to `~/.claude/CLAUDE.md` |
 | [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
+
+### Tests
+
+| File | Responsibility | Notes |
+|:---|:---|:---|
+| [tests/profile-migration-symlink.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-migration-symlink.Tests.ps1) | Pester tests for claude-code → claude-global migration | Covers permission check, symlink creation, edge cases |
+| [tests/profile-ssh-keys.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-ssh-keys.Tests.ps1) | Pester tests for SSH key discovery | Covers glob-based key loading |
 
 ### Git Configuration
 
@@ -125,6 +133,20 @@ login
     → source .profile_common
     → PS1 with __git_ps1
     → git auto-pull (fast-forward only, first shell only)
+```
+
+### Windows PowerShell (PS5 / PS7)
+
+```
+PowerShell startup
+  → Microsoft.PowerShell_profile.ps1 (symlink → install/win/profile.ps1)
+    → ssh-agent start + load all keys ($HOME\.ssh\id_*)
+    → git fetch + merge --ff-only (auto-pull dotfiles, 3s timeout)
+    → claude-code → claude-global migration symlink (one-time, permission check + try/catch)
+    → claude settings symlink migration (if still pointing to claude-code)
+    → ~/.local/bin PATH addition
+    → Starship prompt init
+    → fnm init (try/catch for SAC App Control)
 ```
 
 ### QNAP NAS
