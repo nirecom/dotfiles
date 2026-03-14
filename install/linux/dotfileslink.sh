@@ -46,14 +46,14 @@ else
     ln -sf ~/dotfiles/claude-global/CLAUDE.md ~/.claude/
     ln -sf ~/dotfiles/claude-global/settings.json ~/.claude/
     # Back up regular directories before symlinking (Claude Code may auto-create them)
-    for dir in commands rules; do
+    for dir in skills rules; do
         if [ -d ~/.claude/$dir ] && [ ! -L ~/.claude/$dir ]; then
             echo "Backing up ~/.claude/$dir -> ~/.claude/$dir.bak"
             rm -rf ~/.claude/$dir.bak
             mv ~/.claude/$dir ~/.claude/$dir.bak
         fi
     done
-    ln -snf ~/dotfiles/claude-global/commands ~/.claude/commands
+    ln -snf ~/dotfiles/claude-global/skills ~/.claude/skills
     ln -snf ~/dotfiles/claude-global/rules ~/.claude/rules
 fi
 
