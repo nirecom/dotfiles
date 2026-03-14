@@ -38,11 +38,11 @@ export LSCOLORS=gxfxcxdxbxegedabagacad
 alias em='emacs'
 alias d='docker'
 alias dx='docker exec -it'
-alias dc='docker-compose'
-alias dcb='docker-compose build --no-cache --force-rm'
-alias dcu='docker-compose up -d'
-alias dcub='docker-compose up -d --build'
-alias dcd='docker-compose down'
+alias dc='docker compose'
+alias dcb='docker compose build --no-cache --force-rm'
+alias dcu='docker compose up -d'
+alias dcub='docker compose up -d --build'
+alias dcd='docker compose down'
 alias g='git'
 # gitpush alias: ref. https://qiita.com/ut0n/items/2074623c0b8c1c9ff8e6
 gitpush() {
