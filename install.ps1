@@ -42,7 +42,12 @@ if ($Full) {
     & "$DotfilesDir\install\win\fnm.ps1"
     & "$DotfilesDir\install\win\uv.ps1"
 
-    # Step 6: Install AutoHotkey (Japanese layout enforcer)
+    # Step 6: Install Google Japanese Input
+    Write-Host ""
+    Write-Host "--- Installing Google Japanese Input ---"
+    & "$DotfilesDir\install\win\google-japanese-input.ps1"
+
+    # Step 7: Install AutoHotkey (Japanese layout enforcer)
     Write-Host ""
     Write-Host "--- Setting up AutoHotkey ---"
     & "$DotfilesDir\install\win\autohotkey.ps1"
