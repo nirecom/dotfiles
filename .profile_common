@@ -164,6 +164,16 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
+# --- BEGIN temporary: main branch upstream tracking fix ---
+if git -C ~/dotfiles rev-parse --verify main >/dev/null 2>&1; then
+    _upstream=$(git -C ~/dotfiles config --get branch.main.remote 2>/dev/null || true)
+    if [ -z "$_upstream" ]; then
+        git -C ~/dotfiles branch --set-upstream-to=origin/main main
+    fi
+    unset _upstream
+fi
+# --- END temporary: main branch upstream tracking fix ---
+
 # --- BEGIN temporary: claude-code → claude-global migration ---
 if [ -d ~/dotfiles/claude-global ] && [ ! -L ~/dotfiles/claude-code ]; then
     # Remove empty directory left by git (git doesn't clean up empty dirs after rename)
