@@ -164,7 +164,7 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
-# One-time migration: claude-code → claude-global (compat symlink + relink)
+# --- BEGIN temporary: claude-code → claude-global migration ---
 if [ -d ~/dotfiles/claude-global ] && [ ! -L ~/dotfiles/claude-code ]; then
     # Remove empty directory left by git (git doesn't clean up empty dirs after rename)
     if [ -d ~/dotfiles/claude-code ]; then
@@ -180,6 +180,7 @@ if [ -L ~/.claude/settings.json ]; then
     fi
     unset _target
 fi
+# --- END temporary: claude-code → claude-global migration ---
 
 # Source code highlighting
 case "$OSDIST" in

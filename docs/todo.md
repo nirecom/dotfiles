@@ -86,8 +86,8 @@ ls ~/dotfiles/claude-global/
 
 | ファイル | 削除対象 | 削除タイミング |
 |:---|:---|:---|
-| `.profile_common` | "One-time migration: claude-code → claude-global" ブロック | 全 Linux/macOS PC で移行完了後 |
-| `install/win/profile.ps1` | "One-time migration: claude-code → claude-global" ブロック | 全 Windows PC で移行完了後 |
+| `.profile_common` | `BEGIN temporary: claude-code → claude-global` ブロック | 全 Linux/macOS PC で移行完了後 |
+| `install/win/profile.ps1` | `BEGIN temporary: claude-code → claude-global` ブロック | 全 Windows PC で移行完了後 |
 | `install/linux/home-obsolete.sh` | claude-code symlink 削除コード | 上記一時コード削除と同時 |
 | `install/win/home-obsolete.ps1` | claude-code symlink 削除コード | 上記一時コード削除と同時 |
 | `.gitignore` | `claude-code` エントリ | 上記一時コード削除と同時 |
