@@ -84,7 +84,7 @@
 | `.emacs.d/` | Emacs configuration (init-loader pattern) | |
 | `.config/starship.toml` | Starship prompt (Linux/macOS) | |
 | `.config/starship-powershell.toml` | Starship prompt (Windows PowerShell) | |
-| [win/config/autohotkey/force-japanese-layout.ahk](https://github.com/nirecom/dotfiles/blob/main/win/config/autohotkey/force-japanese-layout.ahk) | AutoHotkey v2: force Japanese keyboard layout | Windows only |
+| [config/win/autohotkey/force-japanese-layout.ahk](https://github.com/nirecom/dotfiles/blob/main/config/win/autohotkey/force-japanese-layout.ahk) | AutoHotkey v2: force Japanese keyboard layout | Windows only |
 
 ### Claude Code Configuration
 
