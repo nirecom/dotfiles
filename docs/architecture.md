@@ -90,9 +90,9 @@
 
 | File | Responsibility | Notes |
 |:---|:---|:---|
-| [claude-global/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-global/CLAUDE.md) | Global Claude Code instructions (pointer to `rules/` and `commands/`) | Symlinked to `~/.claude/CLAUDE.md` |
+| [claude-global/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-global/CLAUDE.md) | Global Claude Code instructions (pointer to `rules/` and `skills/`) | Symlinked to `~/.claude/CLAUDE.md` |
 | [claude-global/rules/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/rules) | Behavioral rules (coding, git, shell, workflow, privacy, docs-lifecycle) | Symlinked to `~/.claude/rules/` |
-| [claude-global/commands/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/commands) | Skills (`/update-docs`, `/start-task`, `/complete-task`, `/update-instruction`) | Symlinked to `~/.claude/commands/` |
+| [claude-global/skills/*/SKILL.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/skills) | Skills (`/update-docs`, `/start-task`, `/complete-task`, `/update-instruction`) | Symlinked to `~/.claude/skills/` |
 | [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 
@@ -204,7 +204,7 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 **Symlink structure**:
 - `claude-global/CLAUDE.md` → `~/.claude/CLAUDE.md`
 - `claude-global/settings.json` → `~/.claude/settings.json`
-- `claude-global/commands/` → `~/.claude/commands/`
+- `claude-global/skills/` → `~/.claude/skills/`
 - `claude-global/rules/` → `~/.claude/rules/`
 
 ### settings.json Design
