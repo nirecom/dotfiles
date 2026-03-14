@@ -29,6 +29,14 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDi
     }
 }
 
+# Repair broken symlinks (Windows atomic save replaces symlinks with regular files)
+$symlinkFiles = @("$HOME\.bash_profile", "$HOME\.editorconfig", "$HOME\.claude\CLAUDE.md", "$HOME\.claude\settings.json")
+$broken = $symlinkFiles | Where-Object { (Test-Path $_) -and -not ((Get-Item $_ -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) }
+if ($broken) {
+    Write-Host "Repairing $($broken.Count) broken symlink(s)..." -ForegroundColor Yellow
+    & "$DotfilesDir\install\win\dotfileslink.ps1"
+}
+
 # --- BEGIN temporary: main branch upstream tracking fix ---
 if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
     $upstream = git -C $DotfilesDir config --get branch.main.remote 2>$null

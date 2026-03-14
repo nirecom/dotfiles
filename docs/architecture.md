@@ -91,7 +91,7 @@
 | File | Responsibility | Notes |
 |:---|:---|:---|
 | [claude-global/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-global/CLAUDE.md) | Global Claude Code instructions (pointer to `rules/` and `skills/`) | Symlinked to `~/.claude/CLAUDE.md` |
-| [claude-global/rules/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/rules) | Behavioral rules (coding, git, shell, workflow, privacy, docs-lifecycle) | Symlinked to `~/.claude/rules/` |
+| [claude-global/rules/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/rules) | Behavioral rules (coding, git, shell, workflow, privacy, docs-lifecycle, test) | Symlinked to `~/.claude/rules/` |
 | [claude-global/skills/*/SKILL.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/skills) | Skills (`/update-docs`, `/start-task`, `/complete-task`, `/update-instruction`) | Symlinked to `~/.claude/skills/` |
 | [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
@@ -103,6 +103,7 @@
 | [tests/profile-migration-symlink.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-migration-symlink.Tests.ps1) | Pester tests for claude-code → claude-global migration | Covers permission check, symlink creation, edge cases |
 | [tests/profile-ssh-keys.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-ssh-keys.Tests.ps1) | Pester tests for SSH key discovery | Covers glob-based key loading |
 | [tests/test-claude-rules.sh](https://github.com/nirecom/dotfiles/blob/main/tests/test-claude-rules.sh) | claude-global rules reorganization verification | File structure, content, symlink checks |
+| [tests/main-symlink-repair.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/main-symlink-repair.Tests.ps1) | Pester tests for file symlink backup and broken symlink detection | Normal/error/edge cases for atomic save repair |
 
 ### Git Configuration
 
@@ -145,6 +146,7 @@ PowerShell startup
   → Microsoft.PowerShell_profile.ps1 (symlink → install/win/profile.ps1)
     → ssh-agent start + load all keys ($HOME\.ssh\id_*)
     → git fetch + merge --ff-only (auto-pull dotfiles, 3s timeout)
+    → Repair broken file symlinks (atomic save detection, ~20ms)
     → claude-code → claude-global migration symlink (one-time, permission check + try/catch)
     → claude settings symlink migration (if still pointing to claude-code)
     → ~/.local/bin PATH addition
