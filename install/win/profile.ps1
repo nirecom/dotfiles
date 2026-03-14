@@ -39,6 +39,13 @@ if ($broken) {
 
 # --- BEGIN temporary: main branch upstream tracking fix ---
 if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
+    # Rename local master → main if remote main exists but local is still master
+    $hasMaster = git -C $DotfilesDir rev-parse --verify master 2>$null
+    $hasMain = git -C $DotfilesDir rev-parse --verify main 2>$null
+    if ($hasMaster -and -not $hasMain) {
+        git -C $DotfilesDir branch -m master main
+    }
+    # Ensure main tracks origin/main
     $upstream = git -C $DotfilesDir config --get branch.main.remote 2>$null
     if (-not $upstream) {
         git -C $DotfilesDir branch --set-upstream-to=origin/main main 2>$null
