@@ -15,4 +15,4 @@ docs/private-info-scanning.md:aa:bb:cc:dd:ee:ff
 docs/private-info-scanning.md:/Users/
 docs/private-info-scanning.md:Co-Authored-By
 claude-global/rules/coding.md:Co-Authored-By
-tests/test-claude-rules.sh:Co-Authored-By
+tests/feature-claude-rules.sh:Co-Authored-By
