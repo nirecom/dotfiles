@@ -45,13 +45,15 @@ if [ -d ~/.claude/.git ]; then
 else
     ln -sf ~/dotfiles/claude-global/CLAUDE.md ~/.claude/
     ln -sf ~/dotfiles/claude-global/settings.json ~/.claude/
-    # --- BEGIN temporary: claude-code → claude-global migration ---
-    if [ -d ~/.claude/commands ] && [ ! -L ~/.claude/commands ]; then
-        echo "WARNING: ~/.claude/commands exists as directory (not symlink). Remove it and re-run."
-    else
-        ln -snf ~/dotfiles/claude-global/commands ~/.claude/commands
-    fi
-    # --- END temporary: claude-code → claude-global migration ---
+    # Back up regular directories before symlinking (Claude Code may auto-create them)
+    for dir in commands rules; do
+        if [ -d ~/.claude/$dir ] && [ ! -L ~/.claude/$dir ]; then
+            echo "Backing up ~/.claude/$dir -> ~/.claude/$dir.bak"
+            rm -rf ~/.claude/$dir.bak
+            mv ~/.claude/$dir ~/.claude/$dir.bak
+        fi
+    done
+    ln -snf ~/dotfiles/claude-global/commands ~/.claude/commands
     ln -snf ~/dotfiles/claude-global/rules ~/.claude/rules
 fi
 

@@ -36,7 +36,7 @@ if (-not $ahkInstalled) {
 }
 
 # --- Step 3: Create startup shortcut ---
-$ahkScript = Join-Path $DotfilesDir "win\config\autohotkey\force-japanese-layout.ahk"
+$ahkScript = Join-Path $DotfilesDir "config\win\autohotkey\force-japanese-layout.ahk"
 if (-not (Test-Path $ahkScript)) {
     Write-Warning "AHK script not found: $ahkScript"
     return
@@ -46,7 +46,18 @@ $startupDir = [Environment]::GetFolderPath('Startup')
 $shortcutPath = Join-Path $startupDir "force-japanese-layout.lnk"
 
 if (Test-Path $shortcutPath) {
-    Write-Host "Startup shortcut already exists: $shortcutPath" -ForegroundColor DarkGray
+    # --- BEGIN temporary: win/config/autohotkey → config/win/autohotkey migration ---
+    $shell = New-Object -ComObject WScript.Shell
+    $existing = $shell.CreateShortcut($shortcutPath)
+    if ($existing.TargetPath -like "*win\config\autohotkey*") {
+        $existing.TargetPath = $ahkScript
+        $existing.WorkingDirectory = Split-Path $ahkScript -Parent
+        $existing.Save()
+        Write-Host "Migrated shortcut target to new path: $shortcutPath" -ForegroundColor Green
+    } else {
+        Write-Host "Startup shortcut already exists: $shortcutPath" -ForegroundColor DarkGray
+    }
+    # --- END temporary: win/config/autohotkey → config/win/autohotkey migration ---
     return
 }
 
