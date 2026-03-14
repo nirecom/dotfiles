@@ -92,16 +92,11 @@ foreach ($link in $links) {
             Write-Host "  now: $source" -ForegroundColor DarkGray
             Remove-Item $dest -Force
         } else {
-            if ($link.IsDir) {
-                # Regular directory exists where symlink expected — back up and replace
-                $backup = "$dest.bak"
-                Write-Host "Backing up: $dest -> $backup" -ForegroundColor Yellow
-                if (Test-Path $backup) { Remove-Item -Recurse -Force $backup }
-                Rename-Item $dest $backup
-            } else {
-                Write-Warning "Exists (not a symlink): $dest (skipping)"
-                continue
-            }
+            # Regular file/directory exists where symlink expected — back up and replace
+            $backup = "$dest.bak"
+            Write-Host "Backing up: $dest -> $backup" -ForegroundColor Yellow
+            if (Test-Path $backup) { Remove-Item -Recurse -Force $backup }
+            Rename-Item $dest $backup
         }
     }
 
