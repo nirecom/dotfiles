@@ -16,3 +16,6 @@ docs/private-info-scanning.md:/Users/
 docs/private-info-scanning.md:Co-Authored-By
 claude-global/rules/coding.md:Co-Authored-By
 tests/feature-claude-rules.sh:Co-Authored-By
+
+# NVIDIA package version numbers (false positive as IPv4)
+10.3.9.90

@@ -53,6 +53,11 @@ else
             mv ~/.claude/$dir ~/.claude/$dir.bak
         fi
     done
+    # Clean up obsolete commands symlink (renamed to skills)
+    if [ -L ~/.claude/commands ]; then
+        echo "Removing obsolete symlink: ~/.claude/commands"
+        rm -f ~/.claude/commands
+    fi
     ln -snf ~/dotfiles/claude-global/skills ~/.claude/skills
     ln -snf ~/dotfiles/claude-global/rules ~/.claude/rules
 fi
