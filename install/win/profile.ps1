@@ -29,6 +29,15 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDi
     }
 }
 
+# --- BEGIN temporary: main branch upstream tracking fix ---
+if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
+    $upstream = git -C $DotfilesDir config --get branch.main.remote 2>$null
+    if (-not $upstream) {
+        git -C $DotfilesDir branch --set-upstream-to=origin/main main 2>$null
+    }
+}
+# --- END temporary: main branch upstream tracking fix ---
+
 # --- BEGIN temporary: claude-code → claude-global migration ---
 $oldClaude = Join-Path $DotfilesDir "claude-code"
 $newClaude = Join-Path $DotfilesDir "claude-global"
