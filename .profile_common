@@ -182,6 +182,14 @@ if [ -L ~/.claude/settings.json ]; then
 fi
 # --- END temporary: claude-code → claude-global migration ---
 
+# --- BEGIN temporary: commands → skills migration ---
+if [ -L ~/.claude/commands ] && [ ! -e ~/.claude/skills ]; then
+    echo "Migrating Claude Code symlinks (commands → skills)..."
+    rm -f ~/.claude/commands
+    ~/dotfiles/install/linux/dotfileslink.sh
+fi
+# --- END temporary: commands → skills migration ---
+
 # Source code highlighting
 case "$OSDIST" in
     "macos" )

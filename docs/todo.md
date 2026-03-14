@@ -31,8 +31,8 @@ readlink ~/.claude/settings.json
 readlink ~/.claude/CLAUDE.md
 # 期待: パスに claude-global を含む
 
-# 4. ~/.claude/commands が claude-global を指しているか
-readlink ~/.claude/commands
+# 4. ~/.claude/skills が claude-global を指しているか
+readlink ~/.claude/skills
 # 期待: パスに claude-global を含む
 
 # 5. git hooksPath が claude-global を指しているか
@@ -63,8 +63,8 @@ ls ~/dotfiles/claude-global/
 (Get-Item ~/.claude/CLAUDE.md -Force).Target
 # 期待: パスに claude-global を含む
 
-# 4. ~/.claude/commands が claude-global を指しているか
-(Get-Item ~/.claude/commands -Force).Target
+# 4. ~/.claude/skills が claude-global を指しているか
+(Get-Item ~/.claude/skills -Force).Target
 # 期待: パスに claude-global を含む
 
 # 5. git hooksPath が claude-global を指しているか
@@ -91,3 +91,5 @@ ls ~/dotfiles/claude-global/
 | `install/linux/home-obsolete.sh` | claude-code symlink 削除コード | 上記一時コード削除と同時 |
 | `install/win/home-obsolete.ps1` | claude-code symlink 削除コード | 上記一時コード削除と同時 |
 | `.gitignore` | `claude-code` エントリ | 上記一時コード削除と同時 |
+| `.profile_common` | `BEGIN temporary: commands → skills` ブロック | 全 Linux/macOS PC で移行完了後 |
+| `install/win/profile.ps1` | `BEGIN temporary: commands → skills` ブロック | 全 Windows PC で移行完了後 |
