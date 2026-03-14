@@ -165,6 +165,12 @@ if type git > /dev/null 2>&1; then # if git is installed
 fi
 
 # --- BEGIN temporary: main branch upstream tracking fix ---
+# Rename local master → main if remote main exists but local is still master
+if git -C ~/dotfiles rev-parse --verify master >/dev/null 2>&1 \
+   && ! git -C ~/dotfiles rev-parse --verify main >/dev/null 2>&1; then
+    git -C ~/dotfiles branch -m master main
+fi
+# Ensure main tracks origin/main
 if git -C ~/dotfiles rev-parse --verify main >/dev/null 2>&1; then
     _upstream=$(git -C ~/dotfiles config --get branch.main.remote 2>/dev/null || true)
     if [ -z "$_upstream" ]; then
