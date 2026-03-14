@@ -18,7 +18,7 @@
 - [x] `.profile_common` に migration コード追加（`BEGIN temporary: commands → skills`）
 - [x] `install/win/profile.ps1` に migration コード追加（`BEGIN temporary: commands → skills`）
 - [x] `dotfileslink` (Win + Linux) に旧 commands symlink 削除を追加
-- [ ] macOS で動作確認
+- [x] macOS で動作確認
 - [ ] Linux (WSL2) で動作確認
 - [ ] Windows 別 PC で動作確認
 
