@@ -66,10 +66,6 @@ ln -sf ~/dotfiles/.emacs.d/inits ~/.emacs.d/
 mkdir -p ~/tmp
 mkdir -p ~/.emacs_backup
 
-#if [ -d ~/.atom/ ]; then
-#    ln -sf ~/dotfiles/.atom/config.cson ~/.atom/
-#    ln -sf ~/dotfiles/.atom/keymap.cson ~/.atom/
-#fi
 
 if [ -e ~/.ssh/ssh-add-all ]; then
     chmod +x ~/.ssh/ssh-add-all
