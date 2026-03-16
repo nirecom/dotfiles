@@ -42,28 +42,36 @@ if (-not (Test-Path $ahkScript)) {
     return
 }
 
+$ahkExe = "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"
+if (-not (Test-Path $ahkExe)) {
+    Write-Warning "AutoHotkey executable not found: $ahkExe"
+    return
+}
+
 $startupDir = [Environment]::GetFolderPath('Startup')
 $shortcutPath = Join-Path $startupDir "force-japanese-layout.lnk"
 
 if (Test-Path $shortcutPath) {
-    # --- BEGIN temporary: win/config/autohotkey → config/win/autohotkey migration ---
     $shell = New-Object -ComObject WScript.Shell
     $existing = $shell.CreateShortcut($shortcutPath)
-    if ($existing.TargetPath -like "*win\config\autohotkey*") {
-        $existing.TargetPath = $ahkScript
+    if ($existing.TargetPath -eq $ahkExe -and $existing.Arguments -eq "`"$ahkScript`"") {
+        Write-Host "Startup shortcut already up to date: $shortcutPath" -ForegroundColor DarkGray
+    } elseif ($existing.TargetPath -like "*.ahk") {
+        $existing.TargetPath = $ahkExe
+        $existing.Arguments = "`"$ahkScript`""
         $existing.WorkingDirectory = Split-Path $ahkScript -Parent
         $existing.Save()
-        Write-Host "Migrated shortcut target to new path: $shortcutPath" -ForegroundColor Green
+        Write-Host "Migrated shortcut to exe format: $shortcutPath" -ForegroundColor Green
     } else {
-        Write-Host "Startup shortcut already exists: $shortcutPath" -ForegroundColor DarkGray
+        Write-Host "Startup shortcut has unexpected target: $($existing.TargetPath)" -ForegroundColor Yellow
     }
-    # --- END temporary: win/config/autohotkey → config/win/autohotkey migration ---
     return
 }
 
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = $ahkScript
+$shortcut.TargetPath = $ahkExe
+$shortcut.Arguments = "`"$ahkScript`""
 $shortcut.WorkingDirectory = Split-Path $ahkScript -Parent
 $shortcut.Save()
 Write-Host "Created startup shortcut: $shortcutPath" -ForegroundColor Green
