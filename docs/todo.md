@@ -181,7 +181,7 @@ ls ~/.claude/skills/
 
 ### 背景
 - `feature/permission-hook` ブランチで着手したが、「Ask before edits」モードが動作しなくなる問題が発生し廃棄
-- settings.json の hook 形式は flat format のまま維持（`606fcb5` で nested 化を試みたが settings.json が読めなくなるため廃棄）
+- settings.json の hook 形式は nested format が正しい（flat format だと settings.json 全体がスキップされる）
 - deny ルールが Bash コマンドに対して効かない既知バグあり（GitHub #25621, #18846, #6699）
 
 ### タスク
