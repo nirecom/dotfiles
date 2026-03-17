@@ -174,3 +174,26 @@ ls ~/.claude/skills/
 マイグレーションコードが `.profile_common` / `profile.ps1` に入った後は、
 `dotfileslink` を手動実行しなくても、シェル起動時に自動で symlink が更新される。
 上記手順の 3 を省略して 4〜7 を確認すればよい。
+
+---
+
+## PermissionRequest hook & settings.json 改善
+
+### 背景
+- `feature/permission-hook` ブランチで着手したが、「Ask before edits」モードが動作しなくなる問題が発生し廃棄
+- settings.json の hook 形式を nested format に修正済み（`606fcb5` + main 直接コミット）
+- deny ルールが Bash コマンドに対して効かない既知バグあり（GitHub #25621, #18846, #6699）
+
+### タスク
+- [ ] PermissionRequest hook を settings.json に追加（`permission-allow.js` は `606fcb5` で作成済み）
+- [ ] `.context-private/allowed-commands.txt` のサンプル作成・動作確認
+- [ ] テストファイル `tests/feature-permission-hook.sh` の allowlist エントリ追加（pre-commit 通過のため）
+- [ ] 全テスト実行・通過確認
+- [ ] 「Ask before edits」モードの動作確認（VSCode 拡張で Edit 時に確認ダイアログが出ること）
+- [ ] deny ルールの Bash 未適用バグへの対応方針決定（hook で代替 or 待ち）
+- [ ] docs 更新提案（architecture.md, history.md）
+
+### 注意事項
+- PermissionRequest hook は `-p`（非対話）モードでは発火しない
+- settings.json の hook は必ず nested format を使うこと（§7 参照）
+- 各ステップで動作確認してから次へ進むこと

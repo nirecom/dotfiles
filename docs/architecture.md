@@ -227,6 +227,24 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 | Credentials | SSH keys, AWS, Docker, kube | `~/.ssh/**`, `~/.aws/**`, `~/.kube/**`, etc. |
 | Direct dotfile editing | Home directory dotfiles | `~/.bashrc`, `~/.zshrc`, etc. denied in Edit |
 
+**Hook format**: Official nested format (`hooks: [{ type, command, timeout }]`). Timeout in seconds.
+
+> **Important**: Hook definitions MUST use the nested format. The simplified format
+> (`{ matcher, command, timeout }` without a `hooks` array) was documented in early
+> Claude Code releases but is now **invalid**. If any hook entry uses the old format,
+> the entire `settings.json` is silently skipped — all permissions, hooks, and other
+> settings stop working. Use `/permissions` to verify: if hooks show
+> `Expected array, but received undefined`, the file contains old-format entries.
+>
+> Correct (nested):
+> ```json
+> { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "...", "timeout": 5 }] }
+> ```
+> Wrong (simplified — causes entire settings.json to be ignored):
+> ```json
+> { "matcher": "Edit|Write", "type": "command", "command": "...", "timeout": 5 }
+> ```
+
 ---
 
 ## 8. Git Global Configuration
