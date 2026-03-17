@@ -165,11 +165,19 @@ if type git > /dev/null 2>&1; then # if git is installed
 fi
 
 # --- BEGIN temporary: main branch upstream tracking fix ---
-# Rename local master → main if remote main exists but local is still master
-if git -C ~/dotfiles rev-parse --verify master >/dev/null 2>&1 \
-   && ! git -C ~/dotfiles rev-parse --verify main >/dev/null 2>&1; then
-    git -C ~/dotfiles branch -m master main
+# If current branch is master, switch to main
+_cur_branch=$(git -C ~/dotfiles branch --show-current 2>/dev/null || true)
+if [ "$_cur_branch" = "master" ]; then
+    if git -C ~/dotfiles rev-parse --verify main >/dev/null 2>&1; then
+        # main already exists (e.g. from fetch) — switch to it and delete master
+        git -C ~/dotfiles checkout main
+        git -C ~/dotfiles branch -D master
+    else
+        # main does not exist — rename master to main
+        git -C ~/dotfiles branch -m master main
+    fi
 fi
+unset _cur_branch
 # Ensure main tracks origin/main
 if git -C ~/dotfiles rev-parse --verify main >/dev/null 2>&1; then
     _upstream=$(git -C ~/dotfiles config --get branch.main.remote 2>/dev/null || true)
