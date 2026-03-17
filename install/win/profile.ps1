@@ -39,11 +39,18 @@ if ($broken) {
 
 # --- BEGIN temporary: main branch upstream tracking fix ---
 if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
-    # Rename local master → main if remote main exists but local is still master
-    $hasMaster = git -C $DotfilesDir rev-parse --verify master 2>$null
-    $hasMain = git -C $DotfilesDir rev-parse --verify main 2>$null
-    if ($hasMaster -and -not $hasMain) {
-        git -C $DotfilesDir branch -m master main
+    # If current branch is master, switch to main
+    $curBranch = git -C $DotfilesDir branch --show-current 2>$null
+    if ($curBranch -eq "master") {
+        $hasMain = git -C $DotfilesDir rev-parse --verify main 2>$null
+        if ($hasMain) {
+            # main already exists (e.g. from fetch) — switch to it and delete master
+            git -C $DotfilesDir checkout main 2>$null
+            git -C $DotfilesDir branch -D master 2>$null
+        } else {
+            # main does not exist — rename master to main
+            git -C $DotfilesDir branch -m master main 2>$null
+        }
     }
     # Ensure main tracks origin/main
     $upstream = git -C $DotfilesDir config --get branch.main.remote 2>$null
