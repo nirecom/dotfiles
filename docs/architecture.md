@@ -227,10 +227,10 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 | Credentials | SSH keys, AWS, Docker, kube | `~/.ssh/**`, `~/.aws/**`, `~/.kube/**`, etc. |
 | Direct dotfile editing | Home directory dotfiles | `~/.bashrc`, `~/.zshrc`, etc. denied in Edit |
 
-**Hook format**: Flat format — `matcher`, `command`, `timeout` at the same level. Timeout in milliseconds.
+**Hook format**: Nested format — `matcher` + `hooks` array. Timeout in seconds.
 
 ```json
-{ "matcher": "Edit|Write", "command": "node .../hook.js", "timeout": 5000 }
+{ "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "node .../hook.js", "timeout": 5 }] }
 ```
 
 ---
