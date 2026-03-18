@@ -52,12 +52,17 @@ if ($Full) {
     Write-Host "--- Setting up AutoHotkey ---"
     & "$DotfilesDir\install\win\autohotkey.ps1"
 
-    # Step 8: Install Rize
+    # Step 8: Install PowerToys
+    Write-Host ""
+    Write-Host "--- Installing PowerToys ---"
+    & "$DotfilesDir\install\win\powertoys.ps1"
+
+    # Step 9: Install Rize
     Write-Host ""
     Write-Host "--- Installing Rize ---"
     & "$DotfilesDir\install\win\rize.ps1"
 
-    # Step 9: Install Claude Usage Widget
+    # Step 10: Install Claude Usage Widget
     Write-Host ""
     Write-Host "--- Installing Claude Usage Widget ---"
     & "$DotfilesDir\install\win\claude-usage-widget.ps1"

@@ -64,6 +64,9 @@
 | [install/linux/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/dotfileslink.sh) | Create symlinks on Linux/macOS | |
 | [install/win/dotfileslink.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/dotfileslink.ps1) | Create symlinks on Windows | Requires Developer Mode or admin |
 | [install/win/autohotkey.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/autohotkey.ps1) | Install AutoHotkey v2 and Japanese layout enforcer | English UI + Japanese preferred only |
+| [install/win/powertoys.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/powertoys.ps1) | Install PowerToys and deploy Keyboard Manager settings | |
+| [install/win/rize.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/rize.ps1) | Install Rize time tracker | |
+| [install/win/claude-usage-widget.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/claude-usage-widget.ps1) | Install Claude Usage Widget | |
 | [install/win/home-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/home-obsolete.ps1) | Remove obsolete files and shortcuts | |
 | [install/win/sounds.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/sounds.ps1) | Mute notification sounds | |
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget | |
@@ -85,6 +88,7 @@
 | `.config/starship.toml` | Starship prompt (Linux/macOS) | |
 | `.config/starship-powershell.toml` | Starship prompt (Windows PowerShell) | |
 | [config/win/autohotkey/force-japanese-layout.ahk](https://github.com/nirecom/dotfiles/blob/main/config/win/autohotkey/force-japanese-layout.ahk) | AutoHotkey v2: force Japanese keyboard layout | Windows only |
+| [config/win/powertoys/keyboard-manager/default.json](https://github.com/nirecom/dotfiles/blob/main/config/win/powertoys/keyboard-manager/default.json) | PowerToys Keyboard Manager: Emacs-style key remapping | Windows only |
 
 ### Claude Code Configuration
 
@@ -192,7 +196,7 @@ Variables set by `bin/detectos.sh`:
 
 `install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `home-obsolete.sh` → (`--full`: `home-init.sh` + package scripts)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `home-obsolete.ps1` → `sounds.ps1` → (`-Full`: `claude-code.ps1` → `starship.ps1` → `fnm.ps1` → `uv.ps1` → `autohotkey.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `home-obsolete.ps1` → `sounds.ps1` → (`-Full`: `claude-code.ps1` → `starship.ps1` → `fnm.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1`)
 
 See [README.md](../README.md) for full platform-specific installation instructions.
 
