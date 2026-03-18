@@ -164,30 +164,6 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
-# --- BEGIN temporary: main branch upstream tracking fix ---
-# If current branch is master, switch to main
-_cur_branch=$(git -C ~/dotfiles branch --show-current 2>/dev/null || true)
-if [ "$_cur_branch" = "master" ]; then
-    if git -C ~/dotfiles rev-parse --verify main >/dev/null 2>&1; then
-        # main already exists (e.g. from fetch) — switch to it and delete master
-        git -C ~/dotfiles checkout main
-        git -C ~/dotfiles branch -D master
-    else
-        # main does not exist — rename master to main
-        git -C ~/dotfiles branch -m master main
-    fi
-fi
-unset _cur_branch
-# Ensure main tracks origin/main
-if git -C ~/dotfiles rev-parse --verify main >/dev/null 2>&1; then
-    _upstream=$(git -C ~/dotfiles config --get branch.main.remote 2>/dev/null || true)
-    if [ -z "$_upstream" ]; then
-        git -C ~/dotfiles branch --set-upstream-to=origin/main main
-    fi
-    unset _upstream
-fi
-# --- END temporary: main branch upstream tracking fix ---
-
 # --- BEGIN temporary: claude-code → claude-global migration ---
 if [ -d ~/dotfiles/claude-global ] && [ ! -L ~/dotfiles/claude-code ]; then
     # Remove empty directory left by git (git doesn't clean up empty dirs after rename)
