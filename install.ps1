@@ -51,6 +51,11 @@ if ($Full) {
     Write-Host ""
     Write-Host "--- Setting up AutoHotkey ---"
     & "$DotfilesDir\install\win\autohotkey.ps1"
+
+    # Step 8: Install Rize
+    Write-Host ""
+    Write-Host "--- Installing Rize ---"
+    & "$DotfilesDir\install\win\rize.ps1"
 }
 
 Write-Host ""
