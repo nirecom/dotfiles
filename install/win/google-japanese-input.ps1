@@ -9,12 +9,16 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     Write-Warning "winget not found. Install Google Japanese Input manually."
     return
 }
-winget list --id Google.JapaneseInput 2>$null | Out-Null
+winget list --id Google.JapaneseIME 2>$null | Out-Null
 $installed = $LASTEXITCODE -eq 0
 if (-not $installed) {
-    Write-Host "Installing Google Japanese Input via winget..."
-    winget install --id Google.JapaneseInput --accept-source-agreements --accept-package-agreements
-    Write-Host "Google Japanese Input installed." -ForegroundColor Green
+    Write-Host "Installing Google Japanese Input (Google.JapaneseIME) via winget..."
+    winget install --id Google.JapaneseIME --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Google Japanese Input installed." -ForegroundColor Green
+    } else {
+        Write-Warning "Google Japanese Input installation failed (exit code: $LASTEXITCODE)."
+    }
 } else {
     Write-Host "Google Japanese Input is already installed." -ForegroundColor DarkGray
 }
