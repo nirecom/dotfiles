@@ -236,6 +236,8 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "node .../hook.js", "timeout": 5 }] }
 ```
 
+**Permission glob matching**: settings.json の permissions (allow/deny/ask) はコマンド文字列全体に対する glob マッチ。`&&` でサブコマンド分割はされない。`Bash(git commit *)` は `cd /path && git commit -m msg` にマッチしない（`cd` で始まるため）。deny ルールは先頭 `*` 付き（例: `*git commit --amend*`）で複合コマンドも検知可能。対話的承認（"Yes, don't ask again"）のみサブコマンド分割＋個別ルール保存が行われる（別メカニズム）。
+
 **既知の制約**:
 - PreToolUse hook が Edit|Write に設定されていると「Ask before edits」ダイアログがバイパスされる（hook 成功 = 許可と解釈される）。Edit|Write の private info スキャンは pre-commit hook に委ねること。
 - Hook 形式は nested format 必須。Flat format（matcher/command/timeout が同階層）だと settings.json 全体がスキップされる。
