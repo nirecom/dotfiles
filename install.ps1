@@ -56,6 +56,11 @@ if ($Full) {
     Write-Host ""
     Write-Host "--- Installing Rize ---"
     & "$DotfilesDir\install\win\rize.ps1"
+
+    # Step 9: Install Claude Usage Widget
+    Write-Host ""
+    Write-Host "--- Installing Claude Usage Widget ---"
+    & "$DotfilesDir\install\win\claude-usage-widget.ps1"
 }
 
 Write-Host ""

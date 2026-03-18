@@ -49,6 +49,11 @@ if [ "$1" = "--full" ]; then
     echo ""
     echo "--- Installing Rize ---"
     ~/dotfiles/install/linux/rize.sh
+
+    # Step 6: Install Claude Usage Widget
+    echo ""
+    echo "--- Installing Claude Usage Widget ---"
+    ~/dotfiles/install/linux/claude-usage-widget.sh
 fi
 
 echo ""
