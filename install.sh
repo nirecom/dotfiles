@@ -44,6 +44,11 @@ if [ "$1" = "--full" ]; then
     echo ""
     echo "--- Installing packages ---"
     ~/dotfiles/install/linux/home-init.sh
+
+    # Step 5: Install Rize (macOS only)
+    echo ""
+    echo "--- Installing Rize ---"
+    ~/dotfiles/install/linux/rize.sh
 fi
 
 echo ""
