@@ -37,29 +37,6 @@ if ($broken) {
     & "$DotfilesDir\install\win\dotfileslink.ps1"
 }
 
-# --- BEGIN temporary: main branch upstream tracking fix ---
-if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
-    # If current branch is master, switch to main
-    $curBranch = git -C $DotfilesDir branch --show-current 2>$null
-    if ($curBranch -eq "master") {
-        $hasMain = git -C $DotfilesDir rev-parse --verify main 2>$null
-        if ($hasMain) {
-            # main already exists (e.g. from fetch) — switch to it and delete master
-            git -C $DotfilesDir checkout main 2>$null
-            git -C $DotfilesDir branch -D master 2>$null
-        } else {
-            # main does not exist — rename master to main
-            git -C $DotfilesDir branch -m master main 2>$null
-        }
-    }
-    # Ensure main tracks origin/main
-    $upstream = git -C $DotfilesDir config --get branch.main.remote 2>$null
-    if (-not $upstream) {
-        git -C $DotfilesDir branch --set-upstream-to=origin/main main 2>$null
-    }
-}
-# --- END temporary: main branch upstream tracking fix ---
-
 # --- BEGIN temporary: claude-code → claude-global migration ---
 $oldClaude = Join-Path $DotfilesDir "claude-code"
 $newClaude = Join-Path $DotfilesDir "claude-global"
