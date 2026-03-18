@@ -15,7 +15,27 @@ docs/private-info-scanning.md:aa:bb:cc:dd:ee:ff
 docs/private-info-scanning.md:/Users/
 docs/private-info-scanning.md:Co-Authored-By
 claude-global/rules/coding.md:Co-Authored-By
-tests/feature-claude-rules.sh:Co-Authored-By
+
+# Scanner test data (not real private info)
+tests/feature-permission-hook2.sh:192.168
+tests/feature-permission-hook2.sh:10.0.0
+tests/feature-permission-hook2.sh:172.16
+tests/feature-permission-hook2.sh:172.31
+tests/feature-permission-hook2.sh:172.20
+tests/feature-permission-hook2.sh:@example.com
+tests/feature-permission-hook2.sh:aa:bb:cc:dd:ee:ff
+tests/feature-permission-hook2.sh:/Users/
+tests/feature-permission-hook2.sh:/home/
+tests/feature-permission-hook2.sh:C:\\Users\\
+tests/feature-permission-hook2.sh:/c/
+tests/feature-permission-hook2.sh:/d/
+tests/feature-permission-hook2.sh:/mnt/
 
 # NVIDIA package version numbers (false positive as IPv4)
 10.3.9.90
+
+# Safe MSYS system paths (not private)
+/c/Windows
+/c/Program Files
+/c/ProgramData
+/c/tools
