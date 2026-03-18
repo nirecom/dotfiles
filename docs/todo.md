@@ -183,15 +183,21 @@ ls ~/.claude/skills/
 - `feature/permission-hook` ブランチで着手したが、「Ask before edits」モードが動作しなくなる問題が発生し廃棄
 - settings.json の hook 形式は nested format が正しい（flat format だと settings.json 全体がスキップされる）
 - deny ルールが Bash コマンドに対して効かない既知バグあり（GitHub #25621, #18846, #6699）
+- `Edit|Write` PreToolUse hook は Bash の Ask 挙動に影響しない（2026-03-18 再テスト済み）。以前の「Ask バイパス」報告は再起動不足による誤認の可能性。Edit|Write の private info スキャンは pre-commit hook でカバー（役割分離の観点）
+- VSCode「Ask before edits」モードは Edit/Write のみ Ask 対象。main/feature 両ブランチで git commit に Ask が出ないことを確認済み（2026-03-18）。「Ask」モードは VSCode に存在しない
+- PermissionRequest hook は settings.json の変更がホットリロードされるタイミングが不安定。変更後は必ず Claude Code を再起動すること
 
 ### タスク
-- [ ] PermissionRequest hook を settings.json に追加（`permission-allow.js` は `606fcb5` で作成済み）
-- [ ] `.context-private/allowed-commands.txt` のサンプル作成・動作確認
-- [ ] テストファイル `tests/feature-permission-hook.sh` の allowlist エントリ追加（pre-commit 通過のため）
-- [ ] 全テスト実行・通過確認
-- [ ] 「Ask before edits」モードの動作確認（VSCode 拡張で Edit 時に確認ダイアログが出ること）
-- [ ] deny ルールの Bash 未適用バグへの対応方針決定（hook で代替 or 待ち）
-- [ ] docs 更新提案（architecture.md, history.md）
+- [x] settings.json を nested format に修正（`41f092c`）
+- [x] PreToolUse hook を Bash のみに限定（Edit|Write は ask バイパス問題のため削除）
+- [x] MSYS/WSL パス検出を check-private-info.sh に追加
+- [x] テストスイート作成・全 44 テスト通過（`tests/feature-permission-hook2.sh`）
+- [x] `git commit -m *` を allow リストから削除（ワークフロールールで commit message を確認する運用）
+- [x] `permissions.ask` で Bash コマンドの Ask 制御が可能であることを発見（2026-03-18）
+  - `Bash(git commit *)` / `Bash(git -C * commit *)` を `permissions.ask` に設定 → 「Ask before edits」モードで Ask ダイアログが出ることを確認
+  - 「Edit automatically」モードでは `permissions.ask` は無視される（全自動許可）
+  - PermissionRequest hook は不要 — `permissions.ask` で同等の制御が実現可能
+- [ ] docs 更新（architecture.md, history.md）
 
 ### 注意事項
 - PermissionRequest hook は `-p`（非対話）モードでは発火しない

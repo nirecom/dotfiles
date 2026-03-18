@@ -102,7 +102,6 @@
 |:---|:---|:---|
 | [tests/profile-migration-symlink.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-migration-symlink.Tests.ps1) | Pester tests for claude-code → claude-global migration | Covers permission check, symlink creation, edge cases |
 | [tests/profile-ssh-keys.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-ssh-keys.Tests.ps1) | Pester tests for SSH key discovery | Covers glob-based key loading |
-| [tests/test-claude-rules.sh](https://github.com/nirecom/dotfiles/blob/main/tests/test-claude-rules.sh) | claude-global rules reorganization verification | File structure, content, symlink checks |
 | [tests/main-symlink-repair.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/main-symlink-repair.Tests.ps1) | Pester tests for file symlink backup and broken symlink detection | Normal/error/edge cases for atomic save repair |
 
 ### Git Configuration
@@ -232,6 +231,12 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 ```json
 { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "node .../hook.js", "timeout": 5 }] }
 ```
+
+**既知の制約**:
+- PreToolUse hook が Edit|Write に設定されていると「Ask before edits」ダイアログがバイパスされる（hook 成功 = 許可と解釈される）。Edit|Write の private info スキャンは pre-commit hook に委ねること。
+- Hook 形式は nested format 必須。Flat format（matcher/command/timeout が同階層）だと settings.json 全体がスキップされる。
+- VSCode 拡張の「Ask before edits」モードは Edit/Write のみ対象。Bash コマンドには ask ダイアログが出ない。「Ask permissions」（全ツール ask）モードは VSCode に存在しない。
+- settings.json の hooks 変更はホットリロードのタイミングが不安定。変更後は Claude Code の再起動が必要。
 
 ---
 
