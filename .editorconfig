@@ -1,5 +1,4 @@
 root = true
-# test commit on main branch
 
 [*]
 indent_style = space
