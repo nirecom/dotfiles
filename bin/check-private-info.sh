@@ -126,6 +126,24 @@ scan_line() {
         fi
     fi
 
+    # MSYS absolute paths: /<drive>/<name> (e.g. /c/..., /d/...)
+    if [[ "$line" =~ (^|[^[:alnum:]_/])/[a-z]/[[:alnum:]_.-] ]]; then
+        local mpath="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$line"; then
+            echo "$file:$lineno: [msys-path] $mpath"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    # WSL absolute paths: /mnt/<drive>/<name>
+    if [[ "$line" =~ (^|[^[:alnum:]_/])/mnt/[a-z]/[[:alnum:]_.-] ]]; then
+        local wpath="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$line"; then
+            echo "$file:$lineno: [wsl-path] $wpath"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
     # Blocklist patterns
     for pattern in "${BLOCK_PATTERNS[@]+"${BLOCK_PATTERNS[@]}"}"; do
         if [[ "$line" =~ $pattern ]]; then
