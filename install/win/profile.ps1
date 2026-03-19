@@ -24,8 +24,8 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDi
     if (-not $fetchProcess.WaitForExit(3000)) {
         $fetchProcess.Kill()
         Write-Warning "git fetch timed out after 3s — skipped"
-    } else {
-        git -C $DotfilesDir merge --ff-only FETCH_HEAD 2>&1 | Out-Null
+    } elseif ($fetchProcess.ExitCode -eq 0) {
+        git -C $DotfilesDir merge --ff-only FETCH_HEAD
     }
 }
 
