@@ -30,17 +30,18 @@ Describe "claude-usage-widget install script (Windows)" {
         }
 
         It "checks if already installed before downloading" {
-            $ScriptContent | Should -Match 'if \(Test-Path \$ExePath\)'
+            $ScriptContent | Should -Match 'if \(\$ExePath\)'
         }
 
         It "uses silent installer flag /S" {
             $ScriptContent | Should -Match '"/S"'
         }
 
-        It "configures autostart via registry Run key" {
-            $ScriptContent | Should -Match "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
-            $ScriptContent | Should -Match "electron\.app\.Claude-Usage-Widget"
+        It "waits for installer child process to complete" {
+            $ScriptContent | Should -Match 'Start-Sleep'
+            $ScriptContent | Should -Match 'Test-Path'
         }
+
     }
 
     Context "Error cases" {
@@ -63,13 +64,12 @@ Describe "claude-usage-widget install script (Windows)" {
             $ScriptContent | Should -Match "already installed"
         }
 
-        It "skips autostart when registry key already exists (idempotent)" {
-            $ScriptContent | Should -Match "Autostart already configured"
-        }
 
-        It "uses Program Files for install directory" {
+        It "checks both per-user and per-machine install paths" {
+            $ScriptContent | Should -Match '\$env:LOCALAPPDATA'
             $ScriptContent | Should -Match '\$env:ProgramFiles'
         }
+
 
         It "cleans up temp file after download" {
             $ScriptContent | Should -Match "Remove-Item \`$tmpFile"
