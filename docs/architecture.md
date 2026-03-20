@@ -194,7 +194,7 @@ Variables set by `bin/detectos.sh`:
 
 ### Execution order
 
-`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `home-obsolete.sh` → (`--full`: `home-init.sh` + package scripts)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `install-obsolete.sh` → (`--full`: `install-base.sh` + package scripts)
 
 `install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `home-obsolete.ps1` → `sounds.ps1` → (`-Full`: `claude-code.ps1` → `starship.ps1` → `fnm.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1`)
 
