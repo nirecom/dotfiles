@@ -97,10 +97,12 @@
 |:---|:---|:---|
 | [claude-global/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-global/CLAUDE.md) | Global Claude Code instructions (pointer to `rules/` and `skills/`) | Symlinked to `~/.claude/CLAUDE.md` |
 | [claude-global/rules/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/rules) | Behavioral rules (coding, git, shell, workflow, privacy, docs-lifecycle, test) | Symlinked to `~/.claude/rules/` |
-| [claude-global/skills/*/SKILL.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/skills) | Skills (`/update-docs`, `/start-task`, `/complete-task`, `/update-instruction`) | Symlinked to `~/.claude/skills/` |
+| [claude-global/skills/*/SKILL.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/skills) | Skills (`/update-docs`, `/review-tests`, `/start-task`, `/complete-task`, `/update-instruction`) | Symlinked to `~/.claude/skills/` |
 | [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 | [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
+| [claude-global/hooks/check-docs-updated.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-docs-updated.js) | PreToolUse hook for docs update enforcement | Blocks commit without docs/ changes |
+| [claude-global/hooks/check-test-updated.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-test-updated.js) | PreToolUse hook for test coverage enforcement | Two-stage gate: tests existence + review marker |
 
 ### Tests
 
@@ -242,6 +244,11 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 **Hooks**:
 - `check-private-info.js` (matcher: `Bash`) — scans Bash commands for private info patterns
 - `block-dotenv.js` (matcher: `Bash|Read|Grep|Glob`) — blocks `.env` file access. Sanitizes git commit messages to avoid false positives
+- `check-docs-updated.js` (matcher: `Bash`) — blocks `git commit` when source code is staged but `docs/` has no changes. Block message directs to `/update-docs`
+- `check-test-updated.js` (matcher: `Bash`) — two-stage gate on `git commit`:
+  1. Blocks if source code is staged but `tests/` has no changes
+  2. Blocks if `tests/` changes are staged but no review marker exists (`.git/.test-reviewed`)
+  Review marker is created by `/review-tests` skill and contains the 7-char HEAD hash. New commits automatically invalidate old markers (hash mismatch). Exempt dirs: `docs/`, `.claude/`, `claude-global/`, `claude-code/`
 
 **Permission glob matching**: settings.json の permissions (allow/deny/ask) はコマンド文字列全体に対する glob マッチ。`&&` でサブコマンド分割はされない。`Bash(git commit *)` は `cd /path && git commit -m msg` にマッチしない（`cd` で始まるため）。deny ルールは先頭 `*` 付き（例: `*git commit --amend*`）で複合コマンドも検知可能。対話的承認（"Yes, don't ask again"）のみサブコマンド分割＋個別ルール保存が行われる（別メカニズム）。
 
