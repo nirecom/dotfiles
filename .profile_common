@@ -166,24 +166,6 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
-# --- BEGIN temporary: claude-code → claude-global migration ---
-if [ -d ~/dotfiles/claude-global ] && [ ! -L ~/dotfiles/claude-code ]; then
-    # Remove empty directory left by git (git doesn't clean up empty dirs after rename)
-    if [ -d ~/dotfiles/claude-code ]; then
-        rmdir ~/dotfiles/claude-code 2>/dev/null || true
-    fi
-    ln -s claude-global ~/dotfiles/claude-code
-fi
-if [ -L ~/.claude/settings.json ]; then
-    _target=$(readlink ~/.claude/settings.json 2>/dev/null || true)
-    if echo "$_target" | grep -q "claude-code"; then
-        echo "Migrating Claude Code symlinks (claude-code → claude-global)..."
-        ~/dotfiles/install/linux/dotfileslink.sh
-    fi
-    unset _target
-fi
-# --- END temporary: claude-code → claude-global migration ---
-
 # --- BEGIN temporary: commands → skills migration ---
 if [ -L ~/.claude/commands ] && [ ! -e ~/.claude/skills ]; then
     echo "Migrating Claude Code symlinks (commands → skills)..."
