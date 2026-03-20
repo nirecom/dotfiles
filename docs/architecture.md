@@ -108,7 +108,6 @@
 
 | File | Responsibility | Notes |
 |:---|:---|:---|
-| [tests/profile-migration-symlink.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-migration-symlink.Tests.ps1) | Pester tests for claude-code → claude-global migration | Covers permission check, symlink creation, edge cases |
 | [tests/profile-ssh-keys.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-ssh-keys.Tests.ps1) | Pester tests for SSH key discovery | Covers glob-based key loading |
 | [tests/main-symlink-repair.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/main-symlink-repair.Tests.ps1) | Pester tests for file symlink backup and broken symlink detection | Normal/error/edge cases for atomic save repair |
 | [tests/main-block-dotenv.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-block-dotenv.sh) | block-dotenv.js hook tests | 59 test cases: Bash/Read/Grep/Glob blocking, false-positive prevention |
@@ -155,8 +154,6 @@ PowerShell startup
     → ssh-agent start + load all keys ($HOME\.ssh\id_*)
     → git fetch + merge --ff-only (auto-pull dotfiles, 3s timeout)
     → Repair broken file symlinks (atomic save detection, ~20ms)
-    → claude-code → claude-global migration symlink (one-time, permission check + try/catch)
-    → claude settings symlink migration (if still pointing to claude-code)
     → ~/.local/bin PATH addition
     → Starship prompt init
     → fnm init (try/catch for SAC App Control)
@@ -248,7 +245,7 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - `check-test-updated.js` (matcher: `Bash`) — two-stage gate on `git commit`:
   1. Blocks if source code is staged but `tests/` has no changes
   2. Blocks if `tests/` changes are staged but no review marker exists (`.git/.test-reviewed`)
-  Review marker is created by `/review-tests` skill and contains the 7-char HEAD hash. New commits automatically invalidate old markers (hash mismatch). Exempt dirs: `docs/`, `.claude/`, `claude-global/`, `claude-code/`
+  Review marker is created by `/review-tests` skill and contains the 7-char HEAD hash. New commits automatically invalidate old markers (hash mismatch). Exempt dirs: `docs/`, `.claude/`, `claude-global/`
 
 **Permission glob matching**: settings.json の permissions (allow/deny/ask) はコマンド文字列全体に対する glob マッチ。`&&` でサブコマンド分割はされない。`Bash(git commit *)` は `cd /path && git commit -m msg` にマッチしない（`cd` で始まるため）。deny ルールは先頭 `*` 付き（例: `*git commit --amend*`）で複合コマンドも検知可能。対話的承認（"Yes, don't ask again"）のみサブコマンド分割＋個別ルール保存が行われる（別メカニズム）。
 

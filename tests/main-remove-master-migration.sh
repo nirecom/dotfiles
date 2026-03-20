@@ -27,12 +27,12 @@ else
 fi
 
 echo ""
-echo "--- Normal: other migration blocks preserved ---"
+echo "--- Normal: claude-code block removed, other blocks preserved ---"
 
 if grep -q "BEGIN temporary: claude-code" "$DOTFILES_DIR/.profile_common"; then
-    pass ".profile_common: claude-code→claude-global block preserved"
+    fail ".profile_common: claude-code→claude-global block still exists (should be removed)"
 else
-    fail ".profile_common: claude-code→claude-global block is missing"
+    pass ".profile_common: claude-code→claude-global block removed"
 fi
 
 if grep -q "BEGIN temporary: commands" "$DOTFILES_DIR/.profile_common"; then
@@ -42,9 +42,9 @@ else
 fi
 
 if grep -q "BEGIN temporary: claude-code" "$DOTFILES_DIR/install/win/profile.ps1"; then
-    pass "profile.ps1: claude-code→claude-global block preserved"
+    fail "profile.ps1: claude-code→claude-global block still exists (should be removed)"
 else
-    fail "profile.ps1: claude-code→claude-global block is missing"
+    pass "profile.ps1: claude-code→claude-global block removed"
 fi
 
 if grep -q "BEGIN temporary: commands" "$DOTFILES_DIR/install/win/profile.ps1"; then
@@ -60,6 +60,13 @@ if bash -n "$DOTFILES_DIR/.profile_common" 2>/dev/null; then
     pass ".profile_common: bash -n syntax OK"
 else
     fail ".profile_common: bash syntax error"
+fi
+
+PS1_WIN_PATH=$(cygpath -w "$DOTFILES_DIR/install/win/profile.ps1" 2>/dev/null || echo "$DOTFILES_DIR/install/win/profile.ps1")
+if powershell.exe -NoProfile -Command "try { [System.Management.Automation.PSParser]::Tokenize((Get-Content '$PS1_WIN_PATH' -Raw), [ref]\$null) | Out-Null; exit 0 } catch { exit 1 }" 2>/dev/null; then
+    pass "profile.ps1: PowerShell syntax OK"
+else
+    fail "profile.ps1: PowerShell syntax error"
 fi
 
 # --- Error cases ---
@@ -95,6 +102,20 @@ else
     pass "profile.ps1: no leftover variables from deleted block"
 fi
 
+echo ""
+echo "--- Error: no unmatched BEGIN/END markers ---"
+
+# Count BEGIN and END temporary markers — they must be paired
+for file in ".profile_common" "install/win/profile.ps1"; do
+    begins=$(grep -c "BEGIN temporary:" "$DOTFILES_DIR/$file" || true)
+    ends=$(grep -c "END temporary:" "$DOTFILES_DIR/$file" || true)
+    if [ "$begins" -ne "$ends" ]; then
+        fail "$file: unmatched markers (BEGIN=$begins, END=$ends)"
+    else
+        pass "$file: BEGIN/END markers are paired ($begins each)"
+    fi
+done
+
 # --- Edge cases ---
 echo ""
 echo "--- Edge: no triple blank lines (over-deletion) ---"
@@ -115,21 +136,45 @@ fi
 echo ""
 echo "--- Edge: adjacent code intact ---"
 
-# .profile_common: the line before the deleted block should still be "fi" (end of git pull block)
-# and the line after should be the claude-code migration block
-if grep -q "BEGIN temporary: claude-code" "$DOTFILES_DIR/.profile_common"; then
-    pass ".profile_common: code after deleted block is intact"
+# .profile_common: after both master→main and claude-code blocks removed,
+# the commands→skills migration block should still be intact
+if grep -q "BEGIN temporary: commands" "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: code after deleted blocks is intact"
 else
-    fail ".profile_common: code after deleted block may be damaged"
+    fail ".profile_common: code after deleted blocks may be damaged"
 fi
 
-# profile.ps1: the line before should be "}" (end of broken symlink repair)
-# and the line after should be the claude-code migration block
-if grep -q "BEGIN temporary: claude-code" "$DOTFILES_DIR/install/win/profile.ps1"; then
-    pass "profile.ps1: code after deleted block is intact"
+# profile.ps1: after both master→main and claude-code blocks removed,
+# the commands→skills migration block should still be intact
+if grep -q "BEGIN temporary: commands" "$DOTFILES_DIR/install/win/profile.ps1"; then
+    pass "profile.ps1: code after deleted blocks is intact"
 else
-    fail "profile.ps1: code after deleted block may be damaged"
+    fail "profile.ps1: code after deleted blocks may be damaged"
 fi
+
+echo ""
+echo "--- Edge: files not empty (no catastrophic deletion) ---"
+
+for file in ".profile_common" "install/win/profile.ps1"; do
+    lines=$(wc -l < "$DOTFILES_DIR/$file")
+    if [ "$lines" -lt 10 ]; then
+        fail "$file: suspiciously small ($lines lines)"
+    else
+        pass "$file: has substantial content ($lines lines)"
+    fi
+done
+
+echo ""
+echo "--- Edge: no duplicate migration blocks ---"
+
+for file in ".profile_common" "install/win/profile.ps1"; do
+    count=$(grep -c "BEGIN temporary: commands" "$DOTFILES_DIR/$file" || true)
+    if [ "$count" -gt 1 ]; then
+        fail "$file: duplicate commands→skills block (count=$count)"
+    else
+        pass "$file: commands→skills block appears exactly once"
+    fi
+done
 
 # --- Summary ---
 echo ""

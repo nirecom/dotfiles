@@ -37,36 +37,6 @@ if ($broken) {
     & "$DotfilesDir\install\win\dotfileslink.ps1"
 }
 
-# --- BEGIN temporary: claude-code → claude-global migration ---
-$oldClaude = Join-Path $DotfilesDir "claude-code"
-$newClaude = Join-Path $DotfilesDir "claude-global"
-if ((Test-Path $newClaude) -and -not ((Test-Path $oldClaude) -and (Get-Item $oldClaude -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
-    # Remove empty directory left by git (git doesn't clean up empty dirs after rename)
-    if ((Test-Path $oldClaude) -and (Test-Path $oldClaude -PathType Container)) {
-        Remove-Item $oldClaude -Recurse -Force -ErrorAction SilentlyContinue
-    }
-    # Check symlink capability (Developer Mode or Administrator)
-    $regKey = Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock -ErrorAction SilentlyContinue
-    $devMode = if ($regKey -and ($regKey.PSObject.Properties.Name -contains "AllowDevelopmentWithoutDevLicense")) { $regKey.AllowDevelopmentWithoutDevLicense } else { $false }
-    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if ($devMode -or $isAdmin) {
-        try {
-            New-Item -ItemType SymbolicLink -Path $oldClaude -Target $newClaude -ErrorAction Stop | Out-Null
-        } catch {
-            # PS5 requires admin even with Developer Mode; silently skip
-        }
-    }
-}
-$claudeSettings = "$HOME\.claude\settings.json"
-if ((Test-Path $claudeSettings) -and ((Get-Item $claudeSettings -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
-    $target = (Get-Item $claudeSettings -Force).Target
-    if ($target -like "*claude-code*") {
-        Write-Host "Migrating Claude Code symlinks (claude-code -> claude-global)..."
-        & "$DotfilesDir\install\win\dotfileslink.ps1"
-    }
-}
-# --- END temporary: claude-code → claude-global migration ---
-
 # --- BEGIN temporary: commands → skills migration ---
 $oldSkills = "$HOME\.claude\commands"
 $newSkills = "$HOME\.claude\skills"
