@@ -8,7 +8,7 @@
 
 ### Phase 3: 後始末 (home-obsolete)
 - [ ] `install/linux/install-obsolete.sh` に claude-code symlink 削除を追加
-- [ ] `install/win/home-obsolete.ps1` に claude-code symlink 削除を追加
+- [ ] `install/win/install-obsolete.ps1` に claude-code symlink 削除を追加
 
 ### 検証
 - [x] Windows で migration 動作確認
@@ -97,7 +97,7 @@ ls ~/dotfiles/claude-global/
 | `.profile_common` | `BEGIN temporary: claude-code → claude-global` ブロック | 全 Linux/macOS PC で移行完了後 |
 | `install/win/profile.ps1` | `BEGIN temporary: claude-code → claude-global` ブロック | 全 Windows PC で移行完了後 |
 | `install/linux/install-obsolete.sh` | claude-code symlink 削除コード | 上記一時コード削除と同時 |
-| `install/win/home-obsolete.ps1` | claude-code symlink 削除コード | 上記一時コード削除と同時 |
+| `install/win/install-obsolete.ps1` | claude-code symlink 削除コード | 上記一時コード削除と同時 |
 | `.gitignore` | `claude-code` エントリ | 上記一時コード削除と同時 |
 | `.profile_common` | `BEGIN temporary: commands → skills` ブロック | 全 Linux/macOS PC で移行完了後 |
 | `install/win/profile.ps1` | `BEGIN temporary: commands → skills` ブロック | 全 Windows PC で移行完了後 |
