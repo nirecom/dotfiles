@@ -1,9 +1,12 @@
 #!/bin/bash
 echo "Installing vim ..."
 # pathogen
-mkdir -p ~/.vim/autoload
-mkdir -p ~/.vim/bundle
-curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+mkdir -p ~/.vim/autoload ~/.vim/bundle
+if [ ! -f ~/.vim/autoload/pathogen.vim ]; then
+    curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+else
+    echo "pathogen.vim is already installed."
+fi
 cd ~/.vim/bundle
 # plugins
 [ ! -d ./vim-sensible ] && git clone git@github.com:tpope/vim-sensible.git

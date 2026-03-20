@@ -2,6 +2,11 @@
 # Install tmux
 source ~/dotfiles/bin/detectos.sh
 
+if type tmux >/dev/null 2>&1; then
+    echo "tmux is already installed: $(tmux -V)"
+    exit 0
+fi
+
 echo "Installing tmux..."
 case "$OSDIST" in
     "ubuntu" )

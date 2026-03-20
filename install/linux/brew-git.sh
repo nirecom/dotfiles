@@ -7,8 +7,12 @@ if [ "$OSDIST" != "macos" ]; then
     exit 1
 fi
 
-echo "Installing Rosetta..."
-softwareupdate --install-rosetta --agree-to-license
+if ! /usr/bin/pgrep -q oahd 2>/dev/null; then
+    echo "Installing Rosetta..."
+    softwareupdate --install-rosetta --agree-to-license
+else
+    echo "Rosetta is already installed."
+fi
 
 # Install Brew on macos
 if ! type brew >/dev/null 2>&1; then
@@ -31,4 +35,8 @@ fi
 # https://github.com/Homebrew/discussions/discussions/439
 #brew reinstall gettext pcre2
 
-brew install git
+if ! brew list git &>/dev/null; then
+    brew install git
+else
+    echo "git is already installed: $(git --version)"
+fi
