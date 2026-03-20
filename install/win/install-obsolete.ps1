@@ -1,4 +1,4 @@
-# home-obsolete.ps1 - Remove obsolete files and shortcuts (Windows)
+# install-obsolete.ps1 - Remove obsolete files and shortcuts (Windows)
 # Usage: Called by install.ps1 (always, not only -Full)
 
 Set-StrictMode -Version Latest

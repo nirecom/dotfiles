@@ -60,14 +60,14 @@
 | File | Responsibility | Notes |
 |:---|:---|:---|
 | [install.sh](https://github.com/nirecom/dotfiles/blob/main/install.sh) | Unified entry point (Linux/macOS) | `--full` includes packages |
-| [install.ps1](https://github.com/nirecom/dotfiles/blob/main/install.ps1) | Unified entry point (Windows) | `-Full` includes setup |
+| [install.ps1](https://github.com/nirecom/dotfiles/blob/main/install.ps1) | Unified entry point (Windows) | `-Base`/`-Develop`/`-Full` |
 | [install/linux/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/dotfileslink.sh) | Create symlinks on Linux/macOS | |
 | [install/win/dotfileslink.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/dotfileslink.ps1) | Create symlinks on Windows | Requires Developer Mode or admin |
 | [install/win/autohotkey.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/autohotkey.ps1) | Install AutoHotkey v2 and Japanese layout enforcer | English UI + Japanese preferred only |
 | [install/win/powertoys.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/powertoys.ps1) | Install PowerToys and deploy Keyboard Manager settings | |
 | [install/win/rize.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/rize.ps1) | Install Rize time tracker | |
 | [install/win/claude-usage-widget.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/claude-usage-widget.ps1) | Install Claude Usage Widget | |
-| [install/win/home-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/home-obsolete.ps1) | Remove obsolete files and shortcuts | |
+| [install/win/install-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/install-obsolete.ps1) | Remove obsolete files and shortcuts | |
 | [install/win/sounds.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/sounds.ps1) | Mute notification sounds | |
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget | |
 | [install/win/profile.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/profile.ps1) | PowerShell profile (SSH agent, auto-pull, migration) | Symlinked to PS5 and PS7 profile paths |
@@ -196,7 +196,7 @@ Variables set by `bin/detectos.sh`:
 
 `install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `install-obsolete.sh` → (`--full`: `install-base.sh` + package scripts)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `home-obsolete.ps1` → `sounds.ps1` → (`-Full`: `claude-code.ps1` → `starship.ps1` → `fnm.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1`) → (`-Develop`/`-Full`: `fnm.ps1`)
 
 See [README.md](../README.md) for full platform-specific installation instructions.
 
