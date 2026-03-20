@@ -4,7 +4,7 @@ source ~/dotfiles/bin/detectos.sh
 
 case "$OSDIST" in
     "macos" )
-        if brew list --cask google-japanese-ime >/dev/null 2>&1; then
+        if [ -d "/Library/Input Methods/GoogleJapaneseInput.app" ]; then
             echo "Google Japanese Input is already installed."
             exit 0
         fi
