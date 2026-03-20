@@ -64,6 +64,7 @@ if ($Develop -or $Full) {
     Write-Host ""
     Write-Host "--- Installing development tools ---"
     & "$DotfilesDir\install\win\fnm.ps1"
+    & "$DotfilesDir\install\win\vs-cpp.ps1"
 }
 
 Write-Host ""

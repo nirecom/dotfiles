@@ -73,6 +73,9 @@ Describe "install.ps1 -Develop conditional block" {
     It "includes fnm.ps1 in Develop/Full block" {
         $script:Content | Should -Match '\$Develop\s+-or\s+\$Full\)[\s\S]*?fnm\.ps1'
     }
+    It "includes vs-cpp.ps1 in Develop/Full block" {
+        $script:Content | Should -Match '\$Develop\s+-or\s+\$Full\)[\s\S]*?vs-cpp\.ps1'
+    }
     It "does NOT include starship.ps1 in Develop/Full block" {
         $devBlock = [regex]::Match($script:Content, 'if\s*\(\$Develop\s+-or\s+\$Full\)\s*\{([\s\S]*?)\n\}').Groups[1].Value
         $devBlock | Should -Not -Match 'starship\.ps1'
