@@ -1,8 +1,10 @@
 #!/bin/bash
 # Unified installer for dotfiles (Linux/macOS)
 # Usage:
-#   ./install.sh          # Symlinks only
-#   ./install.sh --full   # Symlinks + package installation
+#   ./install.sh            # Symlinks only
+#   ./install.sh --base     # Symlinks + base packages
+#   ./install.sh --develop  # Symlinks + dev tools
+#   ./install.sh --full     # Symlinks + base + dev tools
 
 set -e
 
@@ -37,13 +39,13 @@ echo "--- Installing Claude Code ---"
 # Step 3: Clean up obsolete files
 echo ""
 echo "--- Cleaning up obsolete files ---"
-~/dotfiles/install/linux/home-obsolete.sh
+~/dotfiles/install/linux/install-obsolete.sh
 
-if [ "$1" = "--full" ]; then
-    # Step 4: Install packages
+if [ "$1" = "--base" ] || [ "$1" = "--full" ]; then
+    # Step 4: Install base packages
     echo ""
-    echo "--- Installing packages ---"
-    ~/dotfiles/install/linux/home-init.sh
+    echo "--- Installing base packages ---"
+    ~/dotfiles/install/linux/install-base.sh
 
     # Step 5: Install Rize (macOS only)
     echo ""
@@ -54,6 +56,13 @@ if [ "$1" = "--full" ]; then
     echo ""
     echo "--- Installing Claude Usage Widget ---"
     ~/dotfiles/install/linux/claude-usage-widget.sh
+fi
+
+if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
+    # Step 7: Install development tools
+    echo ""
+    echo "--- Installing development tools ---"
+    ~/dotfiles/install/linux/install-develop.sh
 fi
 
 echo ""

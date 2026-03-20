@@ -13,13 +13,13 @@ Personal development environment provisioning repository. Automates OS configura
 ./os-init.sh        # Updates packages, creates user, configures sudoers/SSH
 
 # 2. Home directory setup (run as nire user)
-./home-init.sh      # Orchestrates: brew-git → awscli → dotfiles → fnm → zsh → vim → tmux
+./install-base.sh      # Orchestrates: brew-git → awscli → dotfiles → fnm → zsh → vim → tmux
 
 # 3. Optional development tools
-./home-develop.sh   # Installs fnm, optionally kotlin/ruby/flutter
+./install-develop.sh   # Installs fnm, optionally kotlin/ruby/flutter
 
 # 4. Cleanup deprecated configs
-./home-obsolete.sh
+./install-obsolete.sh
 ```
 
 Any script can also be run independently.
@@ -31,7 +31,7 @@ Any script can also be run independently.
 - `ISWSL` (1 if WSL2)
 - `ISM1` (1 if ARM64 Mac)
 
-**Dependency chain**: `os-init.sh` (system) → `home-init.sh` (user env) → `home-develop.sh` (dev tools)
+**Dependency chain**: `os-init.sh` (system) → `install-base.sh` (user env) → `install-develop.sh` (dev tools)
 
 **External integrations**:
 - Dotfiles linked from `nirecom/dotfiles` repository
@@ -45,7 +45,7 @@ Any script can also be run independently.
 - Shebang: `#!/bin/bash`
 - Source OS detection at top: `source ~/dotfiles/bin/detectos.sh`
 - Uppercase variable names (USERNAME, OSDIST, BUCKET)
-- Script names: lowercase with hyphens (e.g., `home-init.sh`, `fnm.sh`)
+- Script names: lowercase with hyphens (e.g., `install-base.sh`, `fnm.sh`)
 - Some scripts use `set -e` for fail-fast
 - OS-specific logic handled via case statements on `$OSDIST`
 - Scripts check if a tool is already installed before re-installing
