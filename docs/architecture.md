@@ -100,6 +100,7 @@
 | [claude-global/skills/*/SKILL.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/skills) | Skills (`/update-docs`, `/start-task`, `/complete-task`, `/update-instruction`) | Symlinked to `~/.claude/skills/` |
 | [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
+| [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
 
 ### Tests
 
@@ -108,6 +109,7 @@
 | [tests/profile-migration-symlink.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-migration-symlink.Tests.ps1) | Pester tests for claude-code → claude-global migration | Covers permission check, symlink creation, edge cases |
 | [tests/profile-ssh-keys.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/profile-ssh-keys.Tests.ps1) | Pester tests for SSH key discovery | Covers glob-based key loading |
 | [tests/main-symlink-repair.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/main-symlink-repair.Tests.ps1) | Pester tests for file symlink backup and broken symlink detection | Normal/error/edge cases for atomic save repair |
+| [tests/main-block-dotenv.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-block-dotenv.sh) | block-dotenv.js hook tests | 59 test cases: Bash/Read/Grep/Glob blocking, false-positive prevention |
 
 ### Git Configuration
 
@@ -237,6 +239,10 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "node .../hook.js", "timeout": 5 }] }
 ```
 
+**Hooks**:
+- `check-private-info.js` (matcher: `Bash`) — scans Bash commands for private info patterns
+- `block-dotenv.js` (matcher: `Bash|Read|Grep|Glob`) — blocks `.env` file access. Sanitizes git commit messages to avoid false positives
+
 **Permission glob matching**: settings.json の permissions (allow/deny/ask) はコマンド文字列全体に対する glob マッチ。`&&` でサブコマンド分割はされない。`Bash(git commit *)` は `cd /path && git commit -m msg` にマッチしない（`cd` で始まるため）。deny ルールは先頭 `*` 付き（例: `*git commit --amend*`）で複合コマンドも検知可能。対話的承認（"Yes, don't ask again"）のみサブコマンド分割＋個別ルール保存が行われる（別メカニズム）。
 
 **既知の制約**:
@@ -270,6 +276,7 @@ Located in `.config/git/` (XDG-compliant, not `~/.gitconfig`).
 | Windows symlinks require Developer Mode or admin | `dotfileslink.ps1` checks prerequisites and skips on failure |
 | `.profile_common` grows too large | OS-specific logic is consolidated in `case` blocks; new tools follow the same pattern |
 | `claude-global/settings.json` deny rule gaps | Review allow/deny rules when adding new tools |
+| `.env` leak via Claude Code | `block-dotenv.js` PreToolUse hook + deny rules (defense in depth). Static analysis limit: variable/subshell indirection not detectable |
 | `git auto-pull` merge conflict | Fast-forward only; on conflict, displays error and continues |
 | QNAP default shell resets to `/bin/sh` on reboot | `.profile_qnap` → `exec bash -l` handles this on every login |
 
