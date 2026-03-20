@@ -2,21 +2,36 @@
 # Source Highlighting for less command
 source ~/dotfiles/bin/detectos.sh
 
-echo "Installing less source-highlight ..."
+if type source-highlight >/dev/null 2>&1; then
+    echo "source-highlight is already installed."
+else
+    echo "Installing source-highlight ..."
+    case "$OSDIST" in
+        "macos" )
+            brew install source-highlight
+            ;;
+        "ubuntu" )
+            sudo apt install -y source-highlight
+            ;;
+        "amazon" )
+            sudo yum install -y source-highlight
+            ;;
+        * )
+            echo "Not supported OS. Abort."
+            exit 1
+    esac
+fi
+
 case "$OSDIST" in
     "macos" )
-        brew install source-highlight
-#        export SHAREDIR="/usr/local/share/source-highlight"
         export SHAREDIR="/opt/homebrew/share/source-highlight"
         export LESSOPEN="| /opt/homebrew/bin/src-hilite-lesspipe.sh %s"
         ;;
     "ubuntu" )
-        sudo apt install -y source-highlight
         export SHAREDIR="/usr/share/source-highlight"
         export LESSOPEN="| $SHAREDIR/src-hilite-lesspipe.sh %s"
         ;;
     "amazon" )
-        sudo yum install -y source-highlight
         export SHAREDIR="/usr/share/source-highlight"
         export LESSOPEN="| $SHAREDIR/src-hilite-lesspipe.sh %s"
         ;;
