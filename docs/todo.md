@@ -197,7 +197,7 @@ ls ~/.claude/skills/
   - `Bash(git commit *)` / `Bash(git -C * commit *)` を `permissions.ask` に設定 → 「Ask before edits」モードで Ask ダイアログが出ることを確認
   - 「Edit automatically」モードでは `permissions.ask` は無視される（全自動許可）
   - PermissionRequest hook は不要 — `permissions.ask` で同等の制御が実現可能
-- [ ] docs 更新（architecture.md, history.md）
+- [x] docs 更新（architecture.md, history.md）
 
 ### 注意事項
 - PermissionRequest hook は `-p`（非対話）モードでは発火しない
