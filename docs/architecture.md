@@ -70,6 +70,7 @@
 | [install/win/install-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/install-obsolete.ps1) | Remove obsolete files and shortcuts | |
 | [install/win/sounds.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/sounds.ps1) | Mute notification sounds | |
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget | |
+| [install/win/vs-cpp.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/vs-cpp.ps1) | Install VS 2022 Community with C++ Desktop workload | llama.cpp ソースビルド用 (MSVC compiler + CMake bundled). Auto-elevates via UAC |
 | [install/win/profile.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/profile.ps1) | PowerShell profile (SSH agent, auto-pull, migration) | Symlinked to PS5 and PS7 profile paths |
 | [install/win/uv.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/uv.ps1) | Install uv (Python package manager) | |
 | [install/linux/uv.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/uv.sh) | Install uv (Python package manager) | |
@@ -196,7 +197,7 @@ Variables set by `bin/detectos.sh`:
 
 `install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `install-obsolete.sh` → (`--full`: `install-base.sh` + package scripts)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1`) → (`-Develop`/`-Full`: `fnm.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1`) → (`-Develop`/`-Full`: `fnm.ps1` → `vs-cpp.ps1`)
 
 See [README.md](../README.md) for full platform-specific installation instructions.
 
