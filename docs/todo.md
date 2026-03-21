@@ -15,17 +15,6 @@ cd ~/dotfiles && git fetch origin && git reset --hard origin/main
 
 ---
 
-## PreToolUse フックが `git -C` の private repo をスキップしない（バグ）
-
-Bash ツールで `git -C <path> commit` を実行した場合、`<path>` から repo を特定して
-private repo 判定を行うロジックがない。Edit/Write は `filePath` で判定できるが、
-Bash は `filePath` が空のため常にスキャンされる。
-
-影響するフック:
-- `check-private-info.js` — コミットメッセージが常にスキャンされる（L93: `filePath &&` で判定スキップ）
-- `check-docs-updated.js` — private repo でもドキュメント更新を要求される
-- `check-test-updated.js` — private repo でもテスト更新を要求される
-
 ---
 
 ## commands → skills 移行
