@@ -178,6 +178,10 @@ Changes: PreToolUse hook (`block-dotenv.js`) blocks Bash/Read/Grep/Glob access t
 Background: All PCs migrated; remove temporary code to prevent claude-code/claude-global name confusion
 Changes: Deleted `BEGIN temporary: claude-code → claude-global` blocks from `.profile_common` and `profile.ps1`. Removed `.gitignore` (only held `claude-code` entry). Removed `claude-code/` from `check-test-updated.js` EXEMPT_DIRS. Deleted migration Pester test. `install-obsolete.sh/ps1` retained as safety net
 
+### Markdown exempt from code detection in hooks ((pending))
+Background: ai-specs（docs-only repo）で `git commit` が PreToolUse フック（check-test-updated.js, check-docs-updated.js）にブロックされる。`projects/` 配下の `.md` ファイルが "source code" として分類されるため
+Changes: EXEMPT_FILES に `/\.md$/i` 追加（両フック）。check-docs-updated.js の `hasDocChanges` で `.md` をドキュメント変更として認識。テスト追加: git -C variant, uppercase .MD, idempotency, stale review marker
+
 ### Edit 確認フロー統一 ((pending))
 Background: VSCode で Edit 確認が1〜3回と不安定。確認の発生源は3つ: (1) CLAUDE.md/メモリの「diff を見せろ」指示によるチャット内 diff 提示、(2) VSCode Ask モードの内蔵 diff ダイアログ、(3) パーミッション確認ダイアログ。
 Root cause: CLAUDE.md とメモリに同じ指示や矛盾する指示があると、LLM は確率的にしか従わないため挙動が不安定になる。「常に diff を見せろ」と「VSCode 時は不要」が共存すると、見せたり見せなかったりする。
