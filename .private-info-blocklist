@@ -1,6 +1,0 @@
-# Additional patterns to detect (beyond built-in checks)
-# Format: one regex pattern per line
-# Example: myhost\.local
-
-# Block Co-Authored-By in commit messages and files
-Co-Authored-By

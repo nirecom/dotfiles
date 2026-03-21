@@ -4,15 +4,16 @@ Automated scanning to prevent private information from being committed to public
 
 ## How It Works
 
-Two checkpoints scan for private information:
+Checkpoints scan for private information:
 
 | Checkpoint | When | Mechanism |
 |:---|:---|:---|
-| Git commit | Every `git commit` | Pre-commit hook (`claude-global/hooks/pre-commit`) |
+| Git commit (files) | Every `git commit` | Pre-commit hook (`claude-global/hooks/pre-commit`) |
+| Git commit (message) | Every `git commit` | Commit-msg hook (`claude-global/hooks/commit-msg`) |
 | Claude Code edit | Every Edit/Write tool call | PreToolUse hook (`claude-global/hooks/check-private-info.js`) |
 | Claude Code commit | Every `git commit` via Bash tool | PreToolUse hook (`claude-global/hooks/check-private-info.js`) |
 
-Both call `bin/check-private-info.sh` as the scanner (single source of truth for patterns).
+All call `bin/check-private-info.sh` as the scanner (single source of truth for patterns).
 
 **Private repos are skipped**: repos listed in `.context-private/private-repos.txt` are not scanned. Unregistered repos are scanned by default (safe default).
 
@@ -24,7 +25,7 @@ Both call `bin/check-private-info.sh` as the scanner (single source of truth for
 | Email addresses | `user@domain.tld` | `user@example.com` |
 | MAC addresses | `XX:XX:XX:XX:XX:XX` / `XX-XX-XX-XX-XX-XX` | `aa:bb:cc:dd:ee:ff` |
 | Absolute local paths | `/Users/<name>`, `/home/<name>`, `C:\Users\<name>` | `/Users/john/docs` |
-| Blocklist patterns | User-defined in `.private-info-blocklist` | Hostnames, domain names |
+| Blocklist patterns | User-defined in `dotfiles-private/.private-info-blocklist` | Hostnames, domain names |
 
 ## Setup
 
@@ -55,7 +56,8 @@ docs/networking.md:192.168
 
 ## Blocklist (Additional Detection Patterns)
 
-Add patterns to `.private-info-blocklist`, one regex per line:
+The blocklist lives in the sibling private repo (`dotfiles-private/.private-info-blocklist`)
+to avoid exposing blocked patterns in a public repo. One regex per line:
 
 ```
 # Hostname patterns
@@ -120,8 +122,9 @@ Ensure `settings.json` has the hooks section (check `~/.claude/settings.json`).
 |:---|:---|
 | `bin/check-private-info.sh` | Scanner script (detection patterns) |
 | `bin/update-private-repos.sh` | Private repo whitelist generator |
-| `claude-global/hooks/pre-commit` | Git pre-commit hook |
+| `claude-global/hooks/pre-commit` | Git pre-commit hook (staged files) |
+| `claude-global/hooks/commit-msg` | Git commit-msg hook (commit message) |
 | `claude-global/hooks/check-private-info.js` | Claude Code PreToolUse hook |
 | `.private-info-allowlist` | Exception patterns |
-| `.private-info-blocklist` | Additional detection patterns |
+| `../dotfiles-private/.private-info-blocklist` | Additional detection patterns (private repo) |
 | `.context-private/private-repos.txt` | Private repo whitelist (gitignored) |
