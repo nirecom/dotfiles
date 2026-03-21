@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Convert history.md table format to section format.
 
+Handles any column structure generically:
+- First non-special column = section title
+- Column named "Commit" or "Key Commits" = parenthetical after title
+- Column named "#" = numbered prefix (### #N: Title)
+- All other columns = "ColumnName: value" body lines
+
 Usage:
     python bin/convert-history-table.py > docs/history.md.new
     diff docs/history.md docs/history.md.new
@@ -11,48 +17,117 @@ import re
 import sys
 from pathlib import Path
 
+COMMIT_COLUMNS = {"Commit", "Key Commits", "Commits"}
+NUMBER_COLUMN = "#"
 
-def parse_table_rows(lines):
-    """Parse markdown table lines into list of dicts."""
-    rows = []
+
+def is_table_separator(line):
+    """Check if a line is a markdown table separator (|---|---|)."""
+    return bool(re.match(r"^\s*\|[\s:|-]+\|\s*$", line))
+
+
+def is_table_row(line):
+    """Check if a line is a markdown table row."""
+    stripped = line.strip()
+    return stripped.startswith("|") and stripped.endswith("|")
+
+
+def parse_table(lines):
+    """Parse markdown table lines into (headers, rows)."""
     headers = None
+    rows = []
     for line in lines:
-        line = line.strip()
-        if not line.startswith("|"):
+        stripped = line.strip()
+        if not is_table_row(stripped):
             continue
-        cells = [c.strip() for c in line.split("|")[1:-1]]
+        cells = [c.strip() for c in stripped.split("|")[1:-1]]
         if headers is None:
             headers = cells
             continue
-        if all(re.match(r"^:?-+:?$", c) for c in cells):
+        if is_table_separator(stripped):
             continue
         rows.append(dict(zip(headers, cells)))
-    return rows
+    return headers or [], rows
 
 
-def format_change_section(row):
-    phase = row.get("Phase", "").strip()
-    request = row.get("User Request", "").strip()
-    impl = row.get("Implementation", "").strip()
-    commits = row.get("Key Commits", "").strip()
-    return (
-        f"### {phase} ({commits})\n"
-        f"Background: {request}\n"
-        f"Changes: {impl}"
-    )
+def classify_columns(headers):
+    """Classify columns into title, number, commit, and body columns."""
+    commit_col = None
+    number_col = None
+    title_col = None
+    body_cols = []
+
+    for h in headers:
+        if h in COMMIT_COLUMNS:
+            commit_col = h
+        elif h == NUMBER_COLUMN:
+            number_col = h
+        elif title_col is None:
+            title_col = h
+        else:
+            body_cols.append(h)
+
+    return title_col, number_col, commit_col, body_cols
 
 
-def format_incident_section(row):
-    num = row.get("#", "").strip()
-    incident = row.get("Incident", "").strip()
-    cause = row.get("Cause", "").strip()
-    fix = row.get("Fix", "").strip()
-    commit = row.get("Commit", "").strip()
-    return (
-        f"### #{num}: {incident} ({commit})\n"
-        f"Cause: {cause}\n"
-        f"Fix: {fix}"
-    )
+def format_section(row, title_col, number_col, commit_col, body_cols):
+    """Format a single table row as a markdown section."""
+    title = row.get(title_col, "").strip() if title_col else ""
+    commits = row.get(commit_col, "").strip() if commit_col else ""
+    number = row.get(number_col, "").strip() if number_col else ""
+
+    # Build heading
+    if number:
+        heading = f"### #{number}: {title}"
+    else:
+        heading = f"### {title}"
+
+    if commits:
+        heading += f" ({commits})"
+
+    # Build body
+    body_lines = []
+    for col in body_cols:
+        val = row.get(col, "").strip()
+        if val:
+            body_lines.append(f"{col}: {val}")
+
+    if body_lines:
+        return heading + "\n" + "\n".join(body_lines)
+    return heading
+
+
+def convert_content(content):
+    """Convert markdown content, replacing tables with section format."""
+    lines = content.split("\n")
+    output = []
+    i = 0
+
+    while i < len(lines):
+        line = lines[i]
+
+        # Check if this line starts a table
+        if is_table_row(line):
+            # Collect all contiguous table lines
+            table_lines = []
+            while i < len(lines) and (is_table_row(lines[i]) or is_table_separator(lines[i])):
+                table_lines.append(lines[i])
+                i += 1
+
+            headers, rows = parse_table(table_lines)
+            if rows:
+                title_col, number_col, commit_col, body_cols = classify_columns(headers)
+                sections = []
+                for row in rows:
+                    sections.append(format_section(row, title_col, number_col, commit_col, body_cols))
+                output.append("\n\n".join(sections))
+            # else: empty table, just skip it
+            continue
+
+        output.append(line)
+        i += 1
+
+    return "\n".join(output)
 
 
 def main():
@@ -61,41 +136,11 @@ def main():
         print(f"Error: {history_path} not found", file=sys.stderr)
         sys.exit(1)
 
-    content = history_path.read_text(encoding="utf-8")
-    sections = re.split(r"(^## .+$)", content, flags=re.MULTILINE)
-
-    output_parts = []
-    i = 0
-    while i < len(sections):
-        part = sections[i]
-
-        if part.strip() == "## Change History":
-            output_parts.append("## Change History\n")
-            i += 1
-            if i < len(sections):
-                table_lines = [l for l in sections[i].strip().split("\n") if l.strip() != "---"]
-                for row in parse_table_rows(table_lines):
-                    output_parts.append(format_change_section(row))
-                    output_parts.append("")
-
-        elif part.strip() == "## Incident History":
-            output_parts.append("---\n")
-            output_parts.append("## Incident History\n")
-            i += 1
-            if i < len(sections):
-                table_lines = sections[i].strip().split("\n")
-                for row in parse_table_rows(table_lines):
-                    output_parts.append(format_incident_section(row))
-                    output_parts.append("")
-
-        elif part.startswith("# "):
-            output_parts.append(part.strip())
-            output_parts.append("")
-
-        i += 1
+    content = history_path.read_text(encoding="utf-8").replace("\r\n", "\n")
+    result = convert_content(content)
 
     sys.stdout = open(sys.stdout.fileno(), "w", encoding="utf-8", closefd=False)
-    print("\n".join(output_parts).rstrip() + "\n")
+    sys.stdout.write(result)
 
 
 if __name__ == "__main__":
