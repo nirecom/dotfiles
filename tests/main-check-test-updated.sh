@@ -1,9 +1,9 @@
 #!/bin/bash
-# Test suite for check-docs-updated.js PreToolUse hook
+# Test suite for check-test-updated.js PreToolUse hook
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-HOOK="$DOTFILES_DIR/claude-global/hooks/check-docs-updated.js"
+HOOK="$DOTFILES_DIR/claude-global/hooks/check-test-updated.js"
 ERRORS=0
 
 fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
@@ -52,14 +52,20 @@ trap 'rm -rf "$TMPDIR_BASE"' EXIT
 
 setup_repo() {
     local repo="$TMPDIR_BASE/repo-$RANDOM"
-    mkdir -p "$repo/docs" "$repo/src"
+    mkdir -p "$repo/docs" "$repo/src" "$repo/tests"
     git -C "$repo" init -q
     git -C "$repo" config user.email "test@example.com"
     git -C "$repo" config user.name "Test"
     echo "init" > "$repo/README.md"
-    echo "# history" > "$repo/docs/history.md"
+    echo "test" > "$repo/tests/test.sh"
     git -C "$repo" add -A
     git -C "$repo" commit -q -m "initial"
+    # Create review marker so stage-2 (review check) doesn't interfere
+    local gitdir
+    gitdir=$(git -C "$repo" rev-parse --git-dir)
+    local head
+    head=$(git -C "$repo" rev-parse --short HEAD)
+    echo "$head" > "$repo/$gitdir/.test-reviewed"
     echo "$repo"
 }
 
@@ -87,19 +93,23 @@ expect_approve_repo() {
 COMMIT_JSON='{"tool_name":"Bash","tool_input":{"command":"git commit -m \"update\""}}'
 
 echo ""
-echo "=== Integration: code change without docs (should block) ==="
+echo "=== Integration: code change without tests (should block) ==="
 REPO=$(setup_repo)
 echo "new code" > "$REPO/src/app.js"
 git -C "$REPO" add src/app.js
-expect_block_repo "src change, no docs staged" "$REPO" "$COMMIT_JSON"
+expect_block_repo "src change, no tests staged" "$REPO" "$COMMIT_JSON"
 
 echo ""
-echo "=== Integration: code change with docs (should approve) ==="
+echo "=== Integration: code change with tests (should approve) ==="
 REPO=$(setup_repo)
 echo "new code" > "$REPO/src/app.js"
-echo "updated" >> "$REPO/docs/history.md"
-git -C "$REPO" add src/app.js docs/history.md
-expect_approve_repo "src + docs staged" "$REPO" "$COMMIT_JSON"
+echo "updated" >> "$REPO/tests/test.sh"
+git -C "$REPO" add src/app.js tests/test.sh
+# Need fresh review marker for new HEAD
+local_head=$(git -C "$REPO" rev-parse --short HEAD)
+local_gitdir=$(git -C "$REPO" rev-parse --git-dir)
+echo "$local_head" > "$REPO/$local_gitdir/.test-reviewed"
+expect_approve_repo "src + tests staged" "$REPO" "$COMMIT_JSON"
 
 echo ""
 echo "=== Integration: docs-only change (should approve) ==="
@@ -109,19 +119,11 @@ git -C "$REPO" add docs/history.md
 expect_approve_repo "docs-only change" "$REPO" "$COMMIT_JSON"
 
 echo ""
-echo "=== Integration: tests-only change (should approve) ==="
-REPO=$(setup_repo)
-mkdir -p "$REPO/tests"
-echo "test" > "$REPO/tests/test.sh"
-git -C "$REPO" add tests/test.sh
-expect_approve_repo "tests-only change" "$REPO" "$COMMIT_JSON"
-
-echo ""
 echo "=== Integration: config-only change (should approve) ==="
 REPO=$(setup_repo)
 echo "setting" > "$REPO/.gitignore"
 git -C "$REPO" add .gitignore
-expect_approve_repo "config-only (no src)" "$REPO" "$COMMIT_JSON"
+expect_approve_repo "config-only (exempt file)" "$REPO" "$COMMIT_JSON"
 
 echo ""
 echo "=== Integration: nothing staged (should approve) ==="
@@ -129,33 +131,7 @@ REPO=$(setup_repo)
 expect_approve_repo "nothing staged" "$REPO" "$COMMIT_JSON"
 
 echo ""
-echo "=== Integration: git -C path commit (should detect) ==="
-REPO=$(setup_repo)
-echo "new code" > "$REPO/src/app.js"
-git -C "$REPO" add src/app.js
-expect_block_repo "git -C commit" "$REPO" "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git -C $REPO commit -m \\\"update\\\"\"}}"
-
-echo ""
-echo "=== Integration: multiple code files with docs (should approve) ==="
-REPO=$(setup_repo)
-echo "code1" > "$REPO/src/a.js"
-echo "code2" > "$REPO/src/b.js"
-echo "updated" >> "$REPO/docs/history.md"
-git -C "$REPO" add src/a.js src/b.js docs/history.md
-expect_approve_repo "multiple src + docs" "$REPO" "$COMMIT_JSON"
-
-echo ""
-echo "=== Integration: mixed exempt and code without docs (should block) ==="
-REPO=$(setup_repo)
-echo "test" > "$REPO/.gitignore"
-mkdir -p "$REPO/tests"
-echo "test" > "$REPO/tests/test.sh"
-echo "code" > "$REPO/src/app.js"
-git -C "$REPO" add .gitignore tests/test.sh src/app.js
-expect_block_repo "exempt + code, no docs" "$REPO" "$COMMIT_JSON"
-
-echo ""
-echo "=== Integration: .md outside docs only (should approve — counts as doc change) ==="
+echo "=== Integration: .md file outside docs (should approve — not code) ==="
 REPO=$(setup_repo)
 mkdir -p "$REPO/projects/engineering"
 echo "spec" > "$REPO/projects/engineering/architecture.md"
@@ -163,7 +139,7 @@ git -C "$REPO" add projects/engineering/architecture.md
 expect_approve_repo "md outside docs — single file" "$REPO" "$COMMIT_JSON"
 
 echo ""
-echo "=== Integration: multiple .md outside docs (should approve) ==="
+echo "=== Integration: multiple .md files across dirs (should approve) ==="
 REPO=$(setup_repo)
 mkdir -p "$REPO/projects/engineering/langchain" "$REPO/notes"
 echo "ops" > "$REPO/projects/engineering/langchain/ops.md"
@@ -173,13 +149,26 @@ git -C "$REPO" add projects/ notes/
 expect_approve_repo "md outside docs — multiple dirs" "$REPO" "$COMMIT_JSON"
 
 echo ""
-echo "=== Integration: code + .md outside docs (should approve — md satisfies doc req) ==="
+echo "=== Integration: .md + real code without tests (should block) ==="
 REPO=$(setup_repo)
 mkdir -p "$REPO/projects"
 echo "spec" > "$REPO/projects/spec.md"
 echo "code" > "$REPO/src/app.js"
 git -C "$REPO" add projects/spec.md src/app.js
-expect_approve_repo "code + md outside docs" "$REPO" "$COMMIT_JSON"
+expect_block_repo "md + code, no tests" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== Integration: .md + real code + tests (should approve) ==="
+REPO=$(setup_repo)
+mkdir -p "$REPO/projects"
+echo "spec" > "$REPO/projects/spec.md"
+echo "code" > "$REPO/src/app.js"
+echo "updated" >> "$REPO/tests/test.sh"
+git -C "$REPO" add projects/spec.md src/app.js tests/test.sh
+local_head=$(git -C "$REPO" rev-parse --short HEAD)
+local_gitdir=$(git -C "$REPO" rev-parse --git-dir)
+echo "$local_head" > "$REPO/$local_gitdir/.test-reviewed"
+expect_approve_repo "md + code + tests" "$REPO" "$COMMIT_JSON"
 
 echo ""
 echo "=== Integration: deeply nested .md (should approve) ==="
@@ -190,20 +179,19 @@ git -C "$REPO" add projects/
 expect_approve_repo "deeply nested md" "$REPO" "$COMMIT_JSON"
 
 echo ""
-echo "=== Integration: uppercase .MD extension (should approve — counts as doc) ==="
+echo "=== Integration: git -C path commit (should detect and block) ==="
+REPO=$(setup_repo)
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+expect_block_repo "git -C commit" "$REPO" "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git -C $REPO commit -m \\\"update\\\"\"}}"
+
+echo ""
+echo "=== Integration: uppercase .MD extension (should approve — not code) ==="
 REPO=$(setup_repo)
 mkdir -p "$REPO/projects"
 echo "spec" > "$REPO/projects/DESIGN.MD"
 git -C "$REPO" add projects/DESIGN.MD
 expect_approve_repo "uppercase .MD extension" "$REPO" "$COMMIT_JSON"
-
-echo ""
-echo "=== Integration: code + only .md outside docs (should approve — md satisfies doc req) ==="
-REPO=$(setup_repo)
-echo "code" > "$REPO/src/app.js"
-echo "spec" > "$REPO/CHANGELOG.md"
-git -C "$REPO" add src/app.js CHANGELOG.md
-expect_approve_repo "code + root .md (no docs/ change)" "$REPO" "$COMMIT_JSON"
 
 echo ""
 echo "=== Integration: idempotency — repeated hook calls produce same result ==="
@@ -223,6 +211,17 @@ result1=$(run_hook_in_repo "$REPO" "$COMMIT_JSON")
 result2=$(run_hook_in_repo "$REPO" "$COMMIT_JSON")
 if [ "$result1" = "$result2" ]; then pass "idempotent approve"
 else fail "idempotent approve — results differ: $result1 vs $result2"; fi
+
+echo ""
+echo "=== Integration: stale review marker (should block) ==="
+REPO=$(setup_repo)
+echo "new code" > "$REPO/src/app.js"
+echo "updated" >> "$REPO/tests/test.sh"
+git -C "$REPO" add src/app.js tests/test.sh
+# Write a stale marker (wrong hash)
+local_gitdir=$(git -C "$REPO" rev-parse --git-dir)
+echo "0000000" > "$REPO/$local_gitdir/.test-reviewed"
+expect_block_repo "stale review marker" "$REPO" "$COMMIT_JSON"
 
 echo ""
 echo "=== Results ==="
