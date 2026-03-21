@@ -54,7 +54,7 @@ setup_repo() {
     local repo="$TMPDIR_BASE/repo-$RANDOM"
     mkdir -p "$repo/docs" "$repo/src"
     git -C "$repo" init -q
-    git -C "$repo" config user.email "test@test.com"
+    git -C "$repo" config user.email "test@example.com"
     git -C "$repo" config user.name "Test"
     echo "init" > "$repo/README.md"
     echo "# history" > "$repo/docs/history.md"
@@ -153,6 +153,76 @@ echo "test" > "$REPO/tests/test.sh"
 echo "code" > "$REPO/src/app.js"
 git -C "$REPO" add .gitignore tests/test.sh src/app.js
 expect_block_repo "exempt + code, no docs" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== Integration: .md outside docs only (should approve — counts as doc change) ==="
+REPO=$(setup_repo)
+mkdir -p "$REPO/projects/engineering"
+echo "spec" > "$REPO/projects/engineering/architecture.md"
+git -C "$REPO" add projects/engineering/architecture.md
+expect_approve_repo "md outside docs — single file" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== Integration: multiple .md outside docs (should approve) ==="
+REPO=$(setup_repo)
+mkdir -p "$REPO/projects/engineering/langchain" "$REPO/notes"
+echo "ops" > "$REPO/projects/engineering/langchain/ops.md"
+echo "todo" > "$REPO/projects/engineering/todo.md"
+echo "note" > "$REPO/notes/meeting.md"
+git -C "$REPO" add projects/ notes/
+expect_approve_repo "md outside docs — multiple dirs" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== Integration: code + .md outside docs (should approve — md satisfies doc req) ==="
+REPO=$(setup_repo)
+mkdir -p "$REPO/projects"
+echo "spec" > "$REPO/projects/spec.md"
+echo "code" > "$REPO/src/app.js"
+git -C "$REPO" add projects/spec.md src/app.js
+expect_approve_repo "code + md outside docs" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== Integration: deeply nested .md (should approve) ==="
+REPO=$(setup_repo)
+mkdir -p "$REPO/projects/engineering/langchain/architecture"
+echo "detail" > "$REPO/projects/engineering/langchain/architecture/overview.md"
+git -C "$REPO" add projects/
+expect_approve_repo "deeply nested md" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== Integration: uppercase .MD extension (should approve — counts as doc) ==="
+REPO=$(setup_repo)
+mkdir -p "$REPO/projects"
+echo "spec" > "$REPO/projects/DESIGN.MD"
+git -C "$REPO" add projects/DESIGN.MD
+expect_approve_repo "uppercase .MD extension" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== Integration: code + only .md outside docs (should approve — md satisfies doc req) ==="
+REPO=$(setup_repo)
+echo "code" > "$REPO/src/app.js"
+echo "spec" > "$REPO/CHANGELOG.md"
+git -C "$REPO" add src/app.js CHANGELOG.md
+expect_approve_repo "code + root .md (no docs/ change)" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== Integration: idempotency — repeated hook calls produce same result ==="
+REPO=$(setup_repo)
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+result1=$(run_hook_in_repo "$REPO" "$COMMIT_JSON")
+result2=$(run_hook_in_repo "$REPO" "$COMMIT_JSON")
+if [ "$result1" = "$result2" ]; then pass "idempotent block"
+else fail "idempotent block — results differ: $result1 vs $result2"; fi
+
+REPO=$(setup_repo)
+mkdir -p "$REPO/projects"
+echo "doc" > "$REPO/projects/notes.md"
+git -C "$REPO" add projects/notes.md
+result1=$(run_hook_in_repo "$REPO" "$COMMIT_JSON")
+result2=$(run_hook_in_repo "$REPO" "$COMMIT_JSON")
+if [ "$result1" = "$result2" ]; then pass "idempotent approve"
+else fail "idempotent approve — results differ: $result1 vs $result2"; fi
 
 echo ""
 echo "=== Results ==="
