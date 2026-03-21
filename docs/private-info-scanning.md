@@ -15,7 +15,7 @@ Checkpoints scan for private information:
 
 All call `bin/check-private-info.sh` as the scanner (single source of truth for patterns).
 
-**Private repos are skipped**: repos listed in `.context-private/private-repos.txt` are not scanned. Unregistered repos are scanned by default (safe default).
+**Private repos are skipped**: detected dynamically via `gh api` (GitHub CLI). If the repo's `private` flag is `true`, scanning is skipped. If `gh` is unavailable or the API call fails, scanning proceeds (fail-open, safe default).
 
 ## Detection Patterns
 
@@ -31,15 +31,10 @@ All call `bin/check-private-info.sh` as the scanner (single source of truth for 
 
 Automatically enabled after running `install.sh` / `install.ps1`. The global git config (`.config/git/config`) sets `core.hooksPath` to `~/dotfiles/claude-global/hooks`, activating the pre-commit hook for all repos.
 
-### Initial Private Repo Whitelist
+### Prerequisites
 
-Run once to generate the whitelist (re-run when you create new private repos):
-
-```bash
-./bin/update-private-repos.sh
-```
-
-This creates `.context-private/private-repos.txt` containing all your private GitHub repos.
+- `gh` CLI installed and authenticated (`gh auth login`)
+- Private repo detection works automatically — no setup needed
 
 ## Allowlist (Exception Patterns)
 
@@ -89,14 +84,6 @@ Scan all tracked files in a repo:
 git ls-files | while read f; do [ -f "$f" ] && bin/check-private-info.sh "$f"; done
 ```
 
-## Updating the Private Repo Whitelist
-
-Re-run when you create new private repos on GitHub:
-
-```bash
-bin/update-private-repos.sh
-```
-
 ## Troubleshooting
 
 ### Commit blocked by false positive
@@ -121,10 +108,9 @@ Ensure `settings.json` has the hooks section (check `~/.claude/settings.json`).
 | File | Purpose |
 |:---|:---|
 | `bin/check-private-info.sh` | Scanner script (detection patterns) |
-| `bin/update-private-repos.sh` | Private repo whitelist generator |
 | `claude-global/hooks/pre-commit` | Git pre-commit hook (staged files) |
 | `claude-global/hooks/commit-msg` | Git commit-msg hook (commit message) |
 | `claude-global/hooks/check-private-info.js` | Claude Code PreToolUse hook |
+| `claude-global/hooks/lib/is-private-repo.js` | Shared module: dynamic private repo detection via `gh api` |
 | `.private-info-allowlist` | Exception patterns |
 | `../dotfiles-private/.private-info-blocklist` | Additional detection patterns (private repo) |
-| `.context-private/private-repos.txt` | Private repo whitelist (gitignored) |
