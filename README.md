@@ -16,8 +16,10 @@ Personal dotfiles and install scripts for cross-platform development environment
 ```bash
 git clone git@github.com:nirecom/dotfiles.git ~/dotfiles
 cd ~/dotfiles
-./install.sh          # Symlinks only
-./install.sh --full   # Symlinks + package installation
+./install.sh            # Symlinks only
+./install.sh --base     # Symlinks + base packages
+./install.sh --develop  # Symlinks + dev tools
+./install.sh --full     # Symlinks + base + dev tools
 ```
 
 ### Windows (PowerShell)
@@ -25,8 +27,10 @@ cd ~/dotfiles
 ```powershell
 git clone https://github.com/nirecom/dotfiles.git $HOME\dotfiles
 cd $HOME\dotfiles
-.\install.ps1          # Symlinks only
-.\install.ps1 -Full    # Symlinks + additional setup
+.\install.ps1            # Symlinks only
+.\install.ps1 -Base      # Symlinks + base packages
+.\install.ps1 -Develop   # Symlinks + dev tools
+.\install.ps1 -Full      # Symlinks + base + dev tools
 ```
 
 Requires Developer Mode (Settings > System > For developers) or Administrator privileges. On PowerShell 5, the execution policy is automatically set to `RemoteSigned` via the registry.
