@@ -193,6 +193,14 @@ Alternatives considered:
 Decision: (c) を採用。CLI 使用時のみチャットで diff を提示する条件付きルールを残した。
 Changes: `workflow.md` File Edits ルールを CLI 条件付きに変更、メモリから diff 指示削除、feedback メモリ追加、`docs-convention.md` の history.md フォーマットをテーブル→セクション形式に変更
 
+### Private repo detection: static list → dynamic gh API (ab6820b)
+Background: `private-repos.txt` にローカルで全リポジトリ一覧を保持すると、会社 scan で全体リストが見えるリスクがある。また PreToolUse フックが `git -C <path> commit` 実行時に private repo 判定できないバグがあった（`filePath` が空のため常にスキャン）
+Changes: `gh api repos/{owner}/{repo} --jq .private` で動的に判定する方式に変更。共通モジュール `claude-global/hooks/lib/is-private-repo.js` を新設し、3つの PreToolUse フック（check-private-info/check-docs-updated/check-test-updated）と 2つの git フック（pre-commit/commit-msg）すべてで使用。`gh` 未インストール・API エラー時は fail-open。`bin/update-private-repos.sh` と `.context-private/private-repos.txt` を削除
+
+### commands → skills migration cleanup (ab6820b)
+Background: 全 PC で commands → skills 移行が完了
+Changes: `.profile_common` と `install/win/profile.ps1` から `BEGIN temporary: commands → skills` ブロックを削除。`install-obsolete.sh/ps1` の claude-code symlink 削除コードは後始末用に残置
+
 ---
 
 ## Incident History

@@ -37,16 +37,6 @@ if ($broken) {
     & "$DotfilesDir\install\win\dotfileslink.ps1"
 }
 
-# --- BEGIN temporary: commands → skills migration ---
-$oldSkills = "$HOME\.claude\commands"
-$newSkills = "$HOME\.claude\skills"
-if ((Test-Path $oldSkills) -and -not (Test-Path $newSkills)) {
-    Write-Host "Migrating Claude Code symlinks (commands -> skills)..."
-    Remove-Item $oldSkills -Force -ErrorAction SilentlyContinue
-    & "$DotfilesDir\install\win\dotfileslink.ps1"
-}
-# --- END temporary: commands → skills migration ---
-
 # Add ~/.local/bin to PATH (used by Claude Code and other user-installed tools)
 $localBin = Join-Path $HOME ".local\bin"
 if ((Test-Path $localBin) -and ($env:PATH -notlike "*$localBin*")) {

@@ -166,14 +166,6 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
-# --- BEGIN temporary: commands → skills migration ---
-if [ -L ~/.claude/commands ] && [ ! -e ~/.claude/skills ]; then
-    echo "Migrating Claude Code symlinks (commands → skills)..."
-    rm -f ~/.claude/commands
-    ~/dotfiles/install/linux/dotfileslink.sh
-fi
-# --- END temporary: commands → skills migration ---
-
 # Source code highlighting
 case "$OSDIST" in
     "macos" )
