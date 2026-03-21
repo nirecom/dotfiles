@@ -28,7 +28,9 @@ expect_block() {
     local desc="$1" json="$2"
     local result
     result=$(run_hook "$json")
-    if echo "$result" | grep -q '"block"'; then pass "$desc"
+    if echo "$result" | grep -q '"block"'; then
+        if echo "$result" | grep -q '/update-docs'; then pass "$desc"
+        else fail "$desc — block missing /update-docs guidance, got: $result"; fi
     else fail "$desc — expected block, got: $result"; fi
 }
 
@@ -73,7 +75,9 @@ expect_block_repo() {
     local desc="$1" repo="$2" json="$3"
     local result
     result=$(run_hook_in_repo "$repo" "$json")
-    if echo "$result" | grep -q '"block"'; then pass "$desc"
+    if echo "$result" | grep -q '"block"'; then
+        if echo "$result" | grep -q '/update-docs'; then pass "$desc"
+        else fail "$desc — block missing /update-docs guidance, got: $result"; fi
     else fail "$desc — expected block, got: $result"; fi
 }
 
