@@ -47,6 +47,12 @@ Describe "install.ps1 always-run scripts" {
         $firstIfLine = ($lines | Select-String '^\s*if\s*\(').LineNumber | Select-Object -First 1
         $soundsLine | Should -BeLessThan $firstIfLine
     }
+    It "runs fnm.ps1 unconditionally (Node.js required for Claude Code hooks)" {
+        $lines = (Get-Content $script:InstallScript)
+        $fnmLine = ($lines | Select-String 'fnm\.ps1').LineNumber | Select-Object -First 1
+        $firstIfLine = ($lines | Select-String '^\s*if\s*\(').LineNumber | Select-Object -First 1
+        $fnmLine | Should -BeLessThan $firstIfLine
+    }
 }
 
 Describe "install.ps1 -Base conditional block" {
@@ -70,8 +76,9 @@ Describe "install.ps1 -Base conditional block" {
 }
 
 Describe "install.ps1 -Develop conditional block" {
-    It "includes fnm.ps1 in Develop/Full block" {
-        $script:Content | Should -Match '\$Develop\s+-or\s+\$Full\)[\s\S]*?fnm\.ps1'
+    It "does NOT include fnm.ps1 in Develop/Full block (moved to always-run)" {
+        $devBlock = [regex]::Match($script:Content, 'if\s*\(\$Develop\s+-or\s+\$Full\)\s*\{([\s\S]*?)\n\}').Groups[1].Value
+        $devBlock | Should -Not -Match 'fnm\.ps1'
     }
     It "includes vs-cpp.ps1 in Develop/Full block" {
         $script:Content | Should -Match '\$Develop\s+-or\s+\$Full\)[\s\S]*?vs-cpp\.ps1'
