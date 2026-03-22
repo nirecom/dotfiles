@@ -23,10 +23,13 @@ Write-Host ""
 Write-Host "--- Creating symlinks ---"
 & "$DotfilesDir\install\win\dotfileslink.ps1"
 
-# Step 2: Install Claude Code
+# Step 2: Install Claude Code and Node.js (required for hooks)
 Write-Host ""
 Write-Host "--- Installing Claude Code ---"
 & "$DotfilesDir\install\win\claude-code.ps1"
+Write-Host ""
+Write-Host "--- Installing fnm (Node.js) ---"
+& "$DotfilesDir\install\win\fnm.ps1"
 
 # Step 3: Clean up obsolete files
 Write-Host ""
@@ -63,7 +66,6 @@ if ($Develop -or $Full) {
     # Step 8: Install development tools
     Write-Host ""
     Write-Host "--- Installing development tools ---"
-    & "$DotfilesDir\install\win\fnm.ps1"
     & "$DotfilesDir\install\win\vs-cpp.ps1"
 }
 
