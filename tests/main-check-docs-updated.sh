@@ -252,6 +252,9 @@ setup_repo_pair() {
     echo "init" > "$aispecs/README.md"
     echo "# arch" > "$aispecs/projects/engineering/llm-infra-check/architecture.md"
     git -C "$aispecs" add -A
+    # Backdate initial commit so it doesn't count as "recent"
+    GIT_AUTHOR_DATE="2020-01-01T00:00:00+00:00" \
+    GIT_COMMITTER_DATE="2020-01-01T00:00:00+00:00" \
     git -C "$aispecs" commit -q -m "initial"
 
     echo "$repo $aispecs"
@@ -364,6 +367,54 @@ git -C "$REPO" add "src/my app.js"
 echo "updated" >> "$AISPECS/projects/engineering/llm-infra-check/architecture.md"
 git -C "$AISPECS" add projects/engineering/llm-infra-check/architecture.md
 expect_approve_repo "filename with spaces + external docs" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== ai-specs fallback: external docs already committed recently (should approve) ==="
+read -r REPO AISPECS <<< "$(setup_repo_pair)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+echo "updated" >> "$AISPECS/projects/engineering/llm-infra-check/architecture.md"
+git -C "$AISPECS" add projects/engineering/llm-infra-check/architecture.md
+git -C "$AISPECS" commit -q -m "update docs"
+expect_approve_repo "external docs already committed" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== ai-specs fallback: external docs committed in wrong dir (should block) ==="
+read -r REPO AISPECS <<< "$(setup_repo_pair)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+mkdir -p "$AISPECS/projects/engineering/other-project"
+echo "unrelated" > "$AISPECS/projects/engineering/other-project/notes.md"
+git -C "$AISPECS" add projects/engineering/other-project/notes.md
+git -C "$AISPECS" commit -q -m "update other docs"
+expect_block_repo "external docs committed in wrong dir" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== ai-specs fallback: external docs committed long ago (should block) ==="
+read -r REPO AISPECS <<< "$(setup_repo_pair)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+echo "old update" >> "$AISPECS/projects/engineering/llm-infra-check/architecture.md"
+git -C "$AISPECS" add projects/engineering/llm-infra-check/architecture.md
+# Backdate the commit to 20 minutes ago
+GIT_AUTHOR_DATE="$(date -d '20 minutes ago' --iso-8601=seconds)" \
+GIT_COMMITTER_DATE="$(date -d '20 minutes ago' --iso-8601=seconds)" \
+git -C "$AISPECS" commit -q -m "old docs update"
+expect_block_repo "external docs committed long ago" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== ai-specs fallback: multiple dirs, one has recent commit (should approve) ==="
+read -r REPO AISPECS <<< "$(setup_repo_pair)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+mkdir -p "$AISPECS/archive/llm-infra-check"
+echo "old" > "$AISPECS/archive/llm-infra-check/readme.md"
+git -C "$AISPECS" add archive/
+git -C "$AISPECS" commit -q -m "add archive"
+echo "updated" >> "$AISPECS/projects/engineering/llm-infra-check/architecture.md"
+git -C "$AISPECS" add projects/engineering/llm-infra-check/architecture.md
+git -C "$AISPECS" commit -q -m "update docs"
+expect_approve_repo "multiple dirs, one has recent commit" "$REPO" "$COMMIT_JSON"
 
 echo ""
 echo "=== ai-specs fallback: local docs take priority over ai-specs (should approve) ==="
