@@ -72,6 +72,21 @@ else
     fail "starship.sh missing idempotency check"
 fi
 
+# source-highlight.sh: must not exec $SHELL (blocks subsequent install steps)
+if grep -q 'exec.*SHELL' "$SCRIPT_DIR/source-highlight.sh"; then
+    fail "source-highlight.sh contains exec \$SHELL (blocks install.sh flow)"
+else
+    pass "source-highlight.sh does not exec \$SHELL"
+fi
+
+# install.sh: base block must not have macOS special case (orthogonality with install.ps1)
+INSTALL_SH=~/dotfiles/install.sh
+if grep -q 'OSDIST.*macos' "$INSTALL_SH"; then
+    fail "install.sh has macOS special case in base block (breaks orthogonality)"
+else
+    pass "install.sh has no macOS special case (orthogonal with install.ps1)"
+fi
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

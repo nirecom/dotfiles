@@ -22,5 +22,5 @@ fi
 ~/dotfiles/install/linux/google-japanese-input.sh
 ~/dotfiles/install/linux/vim.sh
 ~/dotfiles/install/linux/tmux.sh
-# source-highlight.sh must come to the end, since it reloads shell
+# source-highlight.sh customizes the color table
 ~/dotfiles/install/linux/source-highlight.sh

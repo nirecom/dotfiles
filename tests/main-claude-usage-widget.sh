@@ -54,6 +54,9 @@ grep -q "not available" "$SCRIPT" && pass "handles unsupported OS with skip mess
 # Test: macOS cleans up temp dmg on exit (trap)
 grep -q 'trap.*rm.*TMPFILE' "$SCRIPT" && pass "macOS: trap cleans up temp dmg" || fail "missing trap for temp dmg cleanup"
 
+# Test: macOS errors if no .app found in DMG
+grep -q 'no .app found in DMG' "$SCRIPT" && pass "macOS: errors if no .app in DMG" || fail "missing .app not found error handling"
+
 echo ""
 echo "=== Edge cases ==="
 
@@ -71,6 +74,15 @@ grep -q "Autostart entry already exists" "$SCRIPT" && pass "ubuntu: autostart en
 
 # Test: ubuntu creates .local/bin if missing
 grep -q 'mkdir -p.*INSTALL_DIR' "$SCRIPT" && pass "ubuntu: creates install dir if missing" || fail "missing mkdir for install dir"
+
+# Test: macOS dynamically finds .app in DMG (not hardcoded name)
+grep -q 'find.*maxdepth.*\.app' "$SCRIPT" && pass "macOS: dynamically finds .app in DMG" || fail "missing dynamic .app detection"
+
+# Test: macOS uses -print -quit to take first .app match
+grep -q '\-print -quit' "$SCRIPT" && pass "macOS: -print -quit for deterministic .app selection" || fail "missing -print -quit for .app selection"
+
+# Test: ubuntu sets executable permission on AppImage
+grep -q 'chmod +x.*APPIMAGE_PATH' "$SCRIPT" && pass "ubuntu: chmod +x on AppImage" || fail "missing chmod +x on AppImage"
 
 echo ""
 if [ "$ERRORS" -eq 0 ]; then
