@@ -53,4 +53,3 @@ if [ -f $LOCALDIR/esc.style ]; then
         "amazon" ) sudo chown root:root $SHAREDIR/esc.style ;;
     esac
 fi
-exec $SHELL -l

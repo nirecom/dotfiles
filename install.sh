@@ -67,3 +67,4 @@ fi
 
 echo ""
 echo "=== Done ==="
+exec $SHELL -l

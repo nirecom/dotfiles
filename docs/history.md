@@ -274,3 +274,7 @@ Fix: Added Developer Mode / admin pre-check (a64aca9), then wrapped `New-Item` i
 Cause: Claude Code が自動生成した Pester テストにバグ（WSL の UTF-16 出力の encoding mismatch、Pester スコープ問題）があり、バックグラウンド実行したテストが無限待ちに
 Fix: `test.md` にタイムアウト必須ルール追加（`timeout 120` ラッパー）
 
+### #18: install.sh が Rize / Claude Usage Widget ステップに到達しない
+Cause: `source-highlight.sh` の `exec $SHELL -l` が `install-base.sh` のサブプロセスを置き換え、`install.sh` に制御が戻らなかった。加えて `rize.sh` / `claude-usage-widget.sh` に実行権限がなく、DMG マウント時のボリュームパスパースが空白入りボリューム名で破損、`.app` ファイル名がハードコードされ実際の名前と不一致
+Fix: `exec $SHELL -l` を `source-highlight.sh` から削除し `install.sh` 末尾へ移動。実行権限を付与。DMG 内の `.app` を `find` で動的検出。`install.sh` の macOS 特別扱い（`$OSDIST = "macos"` で常に base 実行）を削除し `install.ps1` と直交性を統一（`--base`/`--full` フラグ必須）
+
