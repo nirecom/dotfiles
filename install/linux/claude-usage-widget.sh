@@ -25,8 +25,14 @@ case "$OSDIST" in
         TMPFILE=$(mktemp /tmp/claude-usage-widget-XXXXXX.dmg)
         trap 'rm -f "$TMPFILE"' EXIT
         curl -fSL -o "$TMPFILE" "$DOWNLOAD_URL"
-        MOUNT_DIR=$(hdiutil attach "$TMPFILE" -nobrowse | grep "/Volumes" | awk '{print $NF}')
-        cp -R "$MOUNT_DIR/Claude Usage Widget.app" /Applications/
+        MOUNT_DIR=$(hdiutil attach "$TMPFILE" -nobrowse | grep "/Volumes" | sed 's/.*\/Volumes/\/Volumes/')
+        APP_SRC=$(find "$MOUNT_DIR" -maxdepth 1 -name "*.app" -print -quit)
+        if [ -z "$APP_SRC" ]; then
+            hdiutil detach "$MOUNT_DIR" -quiet
+            echo "Error: no .app found in DMG."
+            exit 1
+        fi
+        cp -R "$APP_SRC" "$APP_PATH"
         hdiutil detach "$MOUNT_DIR" -quiet
         echo "Claude Usage Widget installed."
 

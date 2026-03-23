@@ -77,6 +77,8 @@
 | [install/qnap/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/dotfileslink.sh) | Minimal symlinks for QNAP | Skips Zsh, tmux, Emacs |
 | [install/qnap/autorun.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/autorun.sh) | QNAP boot-time Entware activation + dotfiles auto-recovery | Runs as root. `dotfileslink.sh` auto-deploys to flash |
 | [install/linux/claude-code.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/claude-code.sh) | Claude Code installation | |
+| [install/linux/rize.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/rize.sh) | Install Rize time tracker | macOS only |
+| [install/linux/claude-usage-widget.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/claude-usage-widget.sh) | Install Claude Usage Widget | macOS/Ubuntu (skips WSL) |
 
 ### Editor and Tool Configuration
 
@@ -196,7 +198,7 @@ Variables set by `bin/detectos.sh`:
 
 ### Execution order
 
-`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `install-obsolete.sh` → (`--full`: `install-base.sh` + package scripts)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `rize.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh`)
 
 `install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1`) → (`-Develop`/`-Full`: `vs-cpp.ps1`)
 
