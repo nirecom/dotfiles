@@ -41,8 +41,13 @@ Write-Host ""
 Write-Host "--- Configuring notification sounds ---"
 & "$DotfilesDir\install\win\sounds.ps1"
 
+# Step 5: Disable Snipping Tool notifications
+Write-Host ""
+Write-Host "--- Disabling Snipping Tool notifications ---"
+& "$DotfilesDir\install\win\snipping-tool.ps1"
+
 if ($Base -or $Full) {
-    # Step 5: Install base packages
+    # Step 6: Install base packages
     Write-Host ""
     Write-Host "--- Installing base packages ---"
     & "$DotfilesDir\install\win\starship.ps1"
@@ -51,19 +56,19 @@ if ($Base -or $Full) {
     & "$DotfilesDir\install\win\autohotkey.ps1"
     & "$DotfilesDir\install\win\powertoys.ps1"
 
-    # Step 6: Install Rize
+    # Step 7: Install Rize
     Write-Host ""
     Write-Host "--- Installing Rize ---"
     & "$DotfilesDir\install\win\rize.ps1"
 
-    # Step 7: Install Claude Usage Widget
+    # Step 8: Install Claude Usage Widget
     Write-Host ""
     Write-Host "--- Installing Claude Usage Widget ---"
     & "$DotfilesDir\install\win\claude-usage-widget.ps1"
 }
 
 if ($Develop -or $Full) {
-    # Step 8: Install development tools
+    # Step 9: Install development tools
     Write-Host ""
     Write-Host "--- Installing development tools ---"
     & "$DotfilesDir\install\win\vs-cpp.ps1"
