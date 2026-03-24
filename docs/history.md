@@ -202,6 +202,10 @@ Changes: `gh api repos/{owner}/{repo} --jq .private` で動的に判定する方
 Background: 全 PC で commands → skills 移行が完了
 Changes: `.profile_common` と `install/win/profile.ps1` から `BEGIN temporary: commands → skills` ブロックを削除。`install-obsolete.sh/ps1` の claude-code symlink 削除コードは後始末用に残置
 
+### dotfiles clone 復旧 — git rebase 後 ()
+Background: git rebase 後、各 PC の dotfiles clone が origin/main と diverge した状態を復旧
+Changes: 全 PC で `git fetch origin && git reset --hard origin/main` を実施。完了確認済み
+
 ---
 
 ## Incident History
