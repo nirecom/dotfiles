@@ -428,6 +428,140 @@ echo "updated" >> "$REPO/docs/history.md"
 git -C "$REPO" add src/app.js docs/history.md
 expect_approve_repo "local docs priority" "$REPO" "$COMMIT_JSON"
 
+# --- docs/.ai-specs marker tests ---
+
+# Helper: set up repo pair with .ai-specs marker
+setup_repo_with_marker() {
+    local seq=$(cat "$TMPDIR_BASE/.marker-seq" 2>/dev/null || echo 0)
+    echo $(( seq + 1 )) > "$TMPDIR_BASE/.marker-seq"
+    local base="$TMPDIR_BASE/marker-$seq"
+    local repo_name="${1:-open-webui-stack}"
+    local marker_content="${2:-langchain}"
+    local repo="$base/$repo_name"
+    local aispecs="$base/ai-specs"
+    mkdir -p "$repo/src" "$repo/docs" "$aispecs/projects/engineering/langchain"
+
+    git -C "$repo" init -q
+    git -C "$repo" config user.email "test@example.com"
+    git -C "$repo" config user.name "Test"
+    echo "init" > "$repo/README.md"
+    echo "$marker_content" > "$repo/docs/.ai-specs"
+    git -C "$repo" add -A
+    git -C "$repo" commit -q -m "initial"
+
+    git -C "$aispecs" init -q
+    git -C "$aispecs" config user.email "test@example.com"
+    git -C "$aispecs" config user.name "Test"
+    echo "init" > "$aispecs/README.md"
+    echo "# arch" > "$aispecs/projects/engineering/langchain/architecture.md"
+    git -C "$aispecs" add -A
+    GIT_AUTHOR_DATE="2020-01-01T00:00:00+00:00" \
+    GIT_COMMITTER_DATE="2020-01-01T00:00:00+00:00" \
+    git -C "$aispecs" commit -q -m "initial"
+
+    echo "$repo $aispecs"
+}
+
+echo ""
+echo "=== docs/.ai-specs marker: changes in mapped project (should approve) ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+echo "updated" >> "$AISPECS/projects/engineering/langchain/architecture.md"
+git -C "$AISPECS" add projects/engineering/langchain/architecture.md
+expect_approve_repo "marker: mapped project has staged changes" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: no changes in mapped project (should block) ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+expect_block_repo "marker: no changes in mapped project" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: unstaged changes in mapped project (should approve) ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+echo "unstaged change" >> "$AISPECS/projects/engineering/langchain/architecture.md"
+expect_approve_repo "marker: unstaged changes in mapped project" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: recent commits in mapped project (should approve) ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+echo "updated" >> "$AISPECS/projects/engineering/langchain/architecture.md"
+git -C "$AISPECS" add projects/engineering/langchain/architecture.md
+git -C "$AISPECS" commit -q -m "update docs"
+expect_approve_repo "marker: recent commits in mapped project" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: fallback without marker (should use repo name) ==="
+PAIR_BASE="$TMPDIR_BASE/nomarker-$RANDOM"
+REPO="$PAIR_BASE/open-webui-stack"
+AISPECS="$PAIR_BASE/ai-specs"
+mkdir -p "$REPO/src" "$AISPECS/projects/engineering/langchain"
+git -C "$REPO" init -q
+git -C "$REPO" config user.email "test@example.com"
+git -C "$REPO" config user.name "Test"
+echo "init" > "$REPO/README.md"
+git -C "$REPO" add -A
+git -C "$REPO" commit -q -m "initial"
+git -C "$AISPECS" init -q
+git -C "$AISPECS" config user.email "test@example.com"
+git -C "$AISPECS" config user.name "Test"
+echo "# arch" > "$AISPECS/projects/engineering/langchain/architecture.md"
+git -C "$AISPECS" add -A
+GIT_AUTHOR_DATE="2020-01-01T00:00:00+00:00" GIT_COMMITTER_DATE="2020-01-01T00:00:00+00:00" git -C "$AISPECS" commit -q -m "initial"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+echo "updated" >> "$AISPECS/projects/engineering/langchain/architecture.md"
+git -C "$AISPECS" add projects/engineering/langchain/architecture.md
+expect_block_repo "no marker: repo name mismatch, langchain changes ignored" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: whitespace/newline trimmed ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker open-webui-stack "  langchain  ")"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+echo "updated" >> "$AISPECS/projects/engineering/langchain/architecture.md"
+git -C "$AISPECS" add projects/engineering/langchain/architecture.md
+expect_approve_repo "marker: whitespace trimmed" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: empty file (should fall back to repo name) ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker open-webui-stack "EMPTY")"
+: > "$REPO/docs/.ai-specs"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+expect_block_repo "marker: empty file, falls back to repo name" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: project not found in ai-specs (should block) ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker open-webui-stack "nonexistent-project")"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+expect_block_repo "marker: project not found in ai-specs" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: local docs change takes priority ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker)"
+echo "new code" > "$REPO/src/app.js"
+echo "doc update" > "$REPO/docs/history.md"
+git -C "$REPO" add src/app.js docs/history.md
+expect_approve_repo "marker: local docs take priority" "$REPO" "$COMMIT_JSON"
+
+echo ""
+echo "=== docs/.ai-specs marker: idempotency ==="
+read -r REPO AISPECS <<< "$(setup_repo_with_marker)"
+echo "new code" > "$REPO/src/app.js"
+git -C "$REPO" add src/app.js
+result1=$(run_hook_in_repo "$REPO" "$COMMIT_JSON")
+result2=$(run_hook_in_repo "$REPO" "$COMMIT_JSON")
+if [ "$result1" = "$result2" ]; then pass "marker: idempotent"
+else fail "marker: idempotent — results differ: $result1 vs $result2"; fi
+
 echo ""
 echo "=== Results ==="
 if [ "$ERRORS" -eq 0 ]; then
