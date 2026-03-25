@@ -37,6 +37,19 @@ case "$OSDIST" in
             sudo cp -pr ~/.ssh /home/$USERNAME/
             sudo chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh/
         fi
+        # Set default WSL login user
+        if $ISWSL; then
+            WSL_CONF=/etc/wsl.conf
+            if [ -f "$WSL_CONF" ] && grep -q '^\[user\]' "$WSL_CONF"; then
+                if grep -q '^default[ \t]*=' "$WSL_CONF"; then
+                    sudo sed -i 's/^default[ \t]*=.*/default='"$USERNAME"'/' "$WSL_CONF"
+                else
+                    sudo sed -i '/^\[user\]/a default='"$USERNAME" "$WSL_CONF"
+                fi
+            else
+                printf '\n[user]\ndefault=%s\n' "$USERNAME" | sudo tee -a "$WSL_CONF" > /dev/null
+            fi
+        fi
         ;;
     "amazon" )
         sudo yum -y update
