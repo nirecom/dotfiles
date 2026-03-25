@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #ln -sf ~/dotfiles/.bashrc ~/ # Ubuntu has .bashrc by default
 ln -sf ~/dotfiles/.bash_profile ~/
 #ln -sf ~/dotfiles/.bash_logout ~/
