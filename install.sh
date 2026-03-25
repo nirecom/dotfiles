@@ -1,7 +1,7 @@
 #!/bin/bash
 # Unified installer for dotfiles (Linux/macOS)
 # Usage:
-#   ./install.sh            # Symlinks only
+#   ./install.sh            # Symlinks + Claude Code + fnm
 #   ./install.sh --base     # Symlinks + base packages
 #   ./install.sh --develop  # Symlinks + dev tools
 #   ./install.sh --full     # Symlinks + base + dev tools
@@ -36,30 +36,35 @@ echo ""
 echo "--- Installing Claude Code ---"
 ~/dotfiles/install/linux/claude-code.sh
 
-# Step 3: Clean up obsolete files
+# Step 3: Install fnm (Node.js) - required for Claude Code hooks
+echo ""
+echo "--- Installing fnm (Node.js) ---"
+~/dotfiles/install/linux/fnm.sh
+
+# Step 4: Clean up obsolete files
 echo ""
 echo "--- Cleaning up obsolete files ---"
 ~/dotfiles/install/linux/install-obsolete.sh
 
 if [ "$1" = "--base" ] || [ "$1" = "--full" ]; then
-    # Step 4: Install base packages
+    # Step 5: Install base packages
     echo ""
     echo "--- Installing base packages ---"
     ~/dotfiles/install/linux/install-base.sh
 
-    # Step 5: Install Rize (macOS only)
+    # Step 6: Install Rize (macOS only)
     echo ""
     echo "--- Installing Rize ---"
     ~/dotfiles/install/linux/rize.sh
 
-    # Step 6: Install Claude Usage Widget
+    # Step 7: Install Claude Usage Widget
     echo ""
     echo "--- Installing Claude Usage Widget ---"
     ~/dotfiles/install/linux/claude-usage-widget.sh
 fi
 
 if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
-    # Step 7: Install development tools
+    # Step 8: Install development tools
     echo ""
     echo "--- Installing development tools ---"
     ~/dotfiles/install/linux/install-develop.sh

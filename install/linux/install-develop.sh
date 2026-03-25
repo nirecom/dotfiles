@@ -2,7 +2,6 @@
 # better to install manually
 #xcode-select --install
 
-~/dotfiles/install/linux/fnm.sh
 #~/dotfiles/install/linux/kotlin.sh
 #~/dotfiles/install/linux/rbenv-ruby.sh
 #~/dotfiles/install/linux/emacs.sh
