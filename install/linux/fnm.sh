@@ -4,13 +4,18 @@
 
 set -e
 
+# Ensure unzip is available (required by fnm installer)
+if ! command -v unzip &> /dev/null; then
+  echo "Installing unzip..."
+  sudo apt-get install -y unzip
+fi
+
 if command -v fnm &> /dev/null; then
   echo "fnm is already installed: $(fnm --version)"
 else
   echo "Installing fnm..."
-  # Install scripts does rehash, but zsh does not support it. Avoiding unexpected abort with '|| true'
-  curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell || true
   # --skip-shell: dotfiles/.profile_common handles shell setup
+  curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
 fi
 
 # Load fnm for this session
