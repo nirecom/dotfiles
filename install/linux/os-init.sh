@@ -23,6 +23,8 @@ case "$OSDIST" in
     "ubuntu" )
         sudo apt update && sudo apt -y upgrade
         sudo apt install -y language-pack-ja-base language-pack-ja
+        sudo locale-gen en_US.UTF-8
+        sudo update-locale LANG=en_US.UTF-8
         #sudo apt ibus-mozc
         if ! $ISWSL; then
             sudo timedatectl set-timezone Asia/Tokyo
