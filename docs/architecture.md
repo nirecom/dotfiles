@@ -245,6 +245,8 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - `check-private-info.js` (matcher: `Bash`) — scans Bash commands for private info patterns
 - `block-dotenv.js` (matcher: `Bash|Read|Grep|Glob`) — blocks `.env` file access. Sanitizes git commit messages to avoid false positives
 - `check-docs-updated.js` (matcher: `Bash`) — blocks `git commit` when source code is staged but `docs/` has no changes. Block message directs to `/update-docs`
+  - Search order: (1) `docs/` or any `.md` staged in the same repo, (2) sibling `../ai-specs/` directory matching repo name
+  - Custom mapping: if ai-specs dir name differs from repo name, place `docs/.ai-specs` containing the logical project name
 - `check-test-updated.js` (matcher: `Bash`) — two-stage gate on `git commit`:
   1. Blocks if source code is staged but `tests/` has no changes
   2. Blocks if `tests/` changes are staged but no review marker exists (`.git/.test-reviewed`)
