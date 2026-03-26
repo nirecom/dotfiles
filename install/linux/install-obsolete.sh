@@ -42,3 +42,12 @@ if [ -L ~/dotfiles/claude-code ]; then
     echo "Removing obsolete symlink: ~/dotfiles/claude-code (renamed to claude-global)"
     rm ~/dotfiles/claude-code
 fi
+
+# fnm (replaced by nvm on WSL2/macOS/Linux; Windows keeps fnm)
+if [ -d "$HOME/.local/share/fnm" ]; then
+    echo "Removing fnm directory: ~/.local/share/fnm (replaced by nvm)"
+    rm -rf "$HOME/.local/share/fnm"
+fi
+if [ -f "$HOME/.local/share/fnm/fnm" ] || command -v fnm &>/dev/null; then
+    echo "[WARN] fnm binary still found on PATH after cleanup. Check .bashrc or other shell configs."
+fi
