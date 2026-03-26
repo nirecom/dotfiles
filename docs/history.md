@@ -210,6 +210,10 @@ Changes: deny に `*git branch -D*`, `*git branch -d*`, `*git push origin :*`, `
 Background: git rebase 後、各 PC の dotfiles clone が origin/main と diverge した状態を復旧
 Changes: 全 PC で `git fetch origin && git reset --hard origin/main` を実施。完了確認済み
 
+### Claude Tabs installer ((pending))
+Background: Claude Tabs (Tauri v2) は Windows ネイティブの Claude Code マルチセッション管理アプリ。タブ UI + Activity Feed でエージェント状態をリアルタイム表示
+Changes: `install/win/claude-tabs.ps1` 新設（GitHub API で最新リリース取得、/S サイレントインストール）。`/releases/latest` がアセット未添付の場合に直近10リリースを走査するフォールバック。`.cross-platform-skiplist` 新設（Windows 専用ツールのフック除外リスト）
+
 ### Node.js version manager: platform split (fnm → nvm on Unix) ((pending))
 Background: NemoClaw official installer unconditionally installs nvm. Conflicts with dotfiles' "fnm everywhere" rule — npm install fails when prek refuses to install hooks with core.hooksPath set. fnm has no advantage over nvm on Unix; nvm is the ecosystem standard. Windows needs fnm (nvm has no Windows support)
 Changes: New rule: Windows=fnm, WSL2/macOS/Linux=nvm. Replaced `install/linux/fnm.sh` with `nvm.sh`. Removed fnm from `.profile_common` PATH and init (nvm init already existed at lines 190-206). Added fnm cleanup to `install-obsolete.sh`. Updated `coding.md` rule to platform-specific
