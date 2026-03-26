@@ -254,6 +254,8 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
   1. Blocks if source code is staged but `tests/` has no changes
   2. Blocks if `tests/` changes are staged but no review marker exists (`.git/.test-reviewed`)
   Review marker is created by `/review-tests` skill and contains the 7-char HEAD hash. New commits automatically invalidate old markers (hash mismatch). Exempt dirs: `docs/`, `.claude/`, `claude-global/`
+- `check-cross-platform.js` (matcher: `Bash`) — blocks `git commit` when platform-specific files (install/win/ ↔ install/linux/) are staged without counterpart changes
+  - Skip mechanisms: `.cross-platform-skiplist` (permanent, base tool names) and `.git/.cross-platform-reviewed` (one-time, HEAD hash)
 
 **Permission glob matching**: settings.json の permissions (allow/deny/ask) はコマンド文字列全体に対する glob マッチ。`&&` でサブコマンド分割はされない。`Bash(git commit *)` は `cd /path && git commit -m msg` にマッチしない（`cd` で始まるため）。deny ルールは先頭 `*` 付き（例: `*git commit --amend*`）で複合コマンドも検知可能。対話的承認（"Yes, don't ask again"）のみサブコマンド分割＋個別ルール保存が行われる（別メカニズム）。
 

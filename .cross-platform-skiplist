@@ -1,2 +1,28 @@
 # Windows-only tools (no Linux/macOS counterpart)
+autohotkey
 claude-tabs
+fnm
+powertoys
+profile
+snipping-tool
+sounds
+vs-cpp
+
+# Linux-only tools (no Windows counterpart)
+brew-git
+ecs-cli
+git-completion
+keychain
+kompose
+kotlin
+nodenv-node
+nvm
+os-init
+ostest
+rbenv-ruby
+smartmontools
+softether
+solarized
+sshd
+sudoers
+zsh
