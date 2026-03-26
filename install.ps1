@@ -65,10 +65,15 @@ if ($Base -or $Full) {
     Write-Host ""
     Write-Host "--- Installing Claude Usage Widget ---"
     & "$DotfilesDir\install\win\claude-usage-widget.ps1"
+
+    # Step 9: Install Claude Tabs
+    Write-Host ""
+    Write-Host "--- Installing Claude Tabs ---"
+    & "$DotfilesDir\install\win\claude-tabs.ps1"
 }
 
 if ($Develop -or $Full) {
-    # Step 9: Install development tools
+    # Step 10: Install development tools
     Write-Host ""
     Write-Host "--- Installing development tools ---"
     & "$DotfilesDir\install\win\vs-cpp.ps1"
