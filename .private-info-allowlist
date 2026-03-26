@@ -32,6 +32,7 @@ tests/feature-permission-hook2.sh:/d/
 tests/feature-permission-hook2.sh:/mnt/
 
 # Test dummy email (not real)
+tests/main-check-cross-platform.sh:test@example.com
 tests/main-check-docs-updated.sh:test@example.com
 tests/main-check-test-updated.sh:test@example.com
 tests/main-private-repo-detection.sh:test@example.com
