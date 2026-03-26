@@ -69,7 +69,8 @@
 | [install/win/claude-usage-widget.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/claude-usage-widget.ps1) | Install Claude Usage Widget | |
 | [install/win/install-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/install-obsolete.ps1) | Remove obsolete files and shortcuts | |
 | [install/win/sounds.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/sounds.ps1) | Mute notification sounds | |
-| [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget | |
+| [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget (Windows only) | |
+| [install/linux/nvm.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/nvm.sh) | Install nvm + Node.js LTS (WSL2/macOS/Linux) | |
 | [install/win/vs-cpp.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/vs-cpp.ps1) | Install VS 2022 Community with C++ Desktop workload | llama.cpp ソースビルド用 (MSVC compiler + CMake bundled). Auto-elevates via UAC |
 | [install/win/profile.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/profile.ps1) | PowerShell profile (SSH agent, auto-pull, migration) | Symlinked to PS5 and PS7 profile paths |
 | [install/win/uv.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/uv.ps1) | Install uv (Python package manager) | |
@@ -198,7 +199,7 @@ Variables set by `bin/detectos.sh`:
 
 ### Execution order
 
-`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `rize.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh`)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `rize.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh`)
 
 `install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1`) → (`-Develop`/`-Full`: `vs-cpp.ps1`)
 

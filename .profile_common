@@ -104,7 +104,7 @@ fi
 #    unset _p
 #    unset _path
 #}
-export PATH="$HOME/.local/bin:$PATH:$HOME/.local/share/fnm:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+export PATH="$HOME/.local/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 # Entware (QNAP)
 [ -d /opt/bin ] && export PATH="/opt/bin:/opt/sbin:$PATH"
@@ -120,11 +120,6 @@ if [ "$OSDIST" = "macos" ]; then
     if "$ISM1" && type /opt/homebrew/bin/brew >/dev/null 2>&1; then
             eval $(/opt/homebrew/bin/brew shellenv)
     fi
-fi
-
-# for fnm
-if command -v fnm &> /dev/null; then
-  eval "$(fnm env)"
 fi
 
 # git settings: common part

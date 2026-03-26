@@ -210,6 +210,10 @@ Changes: deny に `*git branch -D*`, `*git branch -d*`, `*git push origin :*`, `
 Background: git rebase 後、各 PC の dotfiles clone が origin/main と diverge した状態を復旧
 Changes: 全 PC で `git fetch origin && git reset --hard origin/main` を実施。完了確認済み
 
+### Node.js version manager: platform split (fnm → nvm on Unix) ((pending))
+Background: NemoClaw official installer unconditionally installs nvm. Conflicts with dotfiles' "fnm everywhere" rule — npm install fails when prek refuses to install hooks with core.hooksPath set. fnm has no advantage over nvm on Unix; nvm is the ecosystem standard. Windows needs fnm (nvm has no Windows support)
+Changes: New rule: Windows=fnm, WSL2/macOS/Linux=nvm. Replaced `install/linux/fnm.sh` with `nvm.sh`. Removed fnm from `.profile_common` PATH and init (nvm init already existed at lines 190-206). Added fnm cleanup to `install-obsolete.sh`. Updated `coding.md` rule to platform-specific
+
 ---
 
 ## Incident History

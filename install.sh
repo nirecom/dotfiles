@@ -1,7 +1,7 @@
 #!/bin/bash
 # Unified installer for dotfiles (Linux/macOS)
 # Usage:
-#   ./install.sh            # Symlinks + Claude Code + fnm
+#   ./install.sh            # Symlinks + Claude Code + nvm
 #   ./install.sh --base     # Symlinks + base packages
 #   ./install.sh --develop  # Symlinks + dev tools
 #   ./install.sh --full     # Symlinks + base + dev tools
@@ -36,10 +36,10 @@ echo ""
 echo "--- Installing Claude Code ---"
 ~/dotfiles/install/linux/claude-code.sh
 
-# Step 3: Install fnm (Node.js) - required for Claude Code hooks
+# Step 3: Install nvm (Node.js) - required for Claude Code hooks
 echo ""
-echo "--- Installing fnm (Node.js) ---"
-~/dotfiles/install/linux/fnm.sh
+echo "--- Installing nvm (Node.js) ---"
+~/dotfiles/install/linux/nvm.sh
 
 # Step 4: Clean up obsolete files
 echo ""
