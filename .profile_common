@@ -131,8 +131,12 @@ GIT_PS1_SHOWSTASHSTATE=true
 
 # Setup ssh-agent
 if type keychain >/dev/null 2>&1; then
-    # keychain manages ssh-agent lifecycle (macOS, Ubuntu, WSL)
-    eval "$(keychain --eval --nogui --quiet --agents ssh id_ed25519 2>/dev/null)"
+    # Auto-detect private keys (id_* excluding .pub)
+    _ssh_keys=$(find ~/.ssh -maxdepth 1 -name 'id_*' ! -name '*.pub' -printf '%f\n' 2>/dev/null)
+    if [ -n "$_ssh_keys" ]; then
+        eval "$(keychain --eval --nogui --quiet --agents ssh $_ssh_keys)"
+    fi
+    unset _ssh_keys
 else
     # Fallback: manual ssh-agent management (mingw, etc.)
     case "$OSDIST" in
