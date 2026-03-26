@@ -36,35 +36,40 @@ echo ""
 echo "--- Installing Claude Code ---"
 ~/dotfiles/install/linux/claude-code.sh
 
-# Step 3: Install nvm (Node.js) - required for Claude Code hooks
+# Step 3: Install keychain (SSH agent manager)
+echo ""
+echo "--- Installing keychain ---"
+~/dotfiles/install/linux/keychain.sh
+
+# Step 4: Install nvm (Node.js) - required for Claude Code hooks
 echo ""
 echo "--- Installing nvm (Node.js) ---"
 ~/dotfiles/install/linux/nvm.sh
 
-# Step 4: Clean up obsolete files
+# Step 5: Clean up obsolete files
 echo ""
 echo "--- Cleaning up obsolete files ---"
 ~/dotfiles/install/linux/install-obsolete.sh
 
 if [ "$1" = "--base" ] || [ "$1" = "--full" ]; then
-    # Step 5: Install base packages
+    # Step 6: Install base packages
     echo ""
     echo "--- Installing base packages ---"
     ~/dotfiles/install/linux/install-base.sh
 
-    # Step 6: Install Rize (macOS only)
+    # Step 7: Install Rize (macOS only)
     echo ""
     echo "--- Installing Rize ---"
     ~/dotfiles/install/linux/rize.sh
 
-    # Step 7: Install Claude Usage Widget
+    # Step 8: Install Claude Usage Widget
     echo ""
     echo "--- Installing Claude Usage Widget ---"
     ~/dotfiles/install/linux/claude-usage-widget.sh
 fi
 
 if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
-    # Step 8: Install development tools
+    # Step 9: Install development tools
     echo ""
     echo "--- Installing development tools ---"
     ~/dotfiles/install/linux/install-develop.sh
