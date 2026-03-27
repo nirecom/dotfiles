@@ -44,7 +44,10 @@ if (-not (Test-Path $ahkScript)) {
 
 $ahkExe = "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"
 if (-not (Test-Path $ahkExe)) {
-    Write-Warning "AutoHotkey executable not found: $ahkExe"
+    $ahkExe = Join-Path $env:LOCALAPPDATA "Programs\AutoHotkey\v2\AutoHotkey64.exe"
+}
+if (-not (Test-Path $ahkExe)) {
+    Write-Warning "AutoHotkey executable not found in per-machine or per-user paths"
     return
 }
 
