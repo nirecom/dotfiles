@@ -1,5 +1,9 @@
 #!/bin/bash
-source $HOME/dotfiles/bin/detectos.sh
+
+# Dotfiles directory (platform-specific, used by Claude Code hooks via $DOTFILES_DIR)
+export DOTFILES_DIR="$HOME/dotfiles"
+
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 # Locale
 export LANG=en_US.UTF-8
@@ -60,7 +64,7 @@ alias pon='predict-on' # zsh
 alias poff='predict-off' # zsh
 alias psmem='ps aux k -pmem | head -n 10'
 alias pscpu='ps aux k -pcpu | head -n 10'
-alias tmux='~/dotfiles/bin/tmux.sh'
+alias tmux='$DOTFILES_DIR/bin/tmux.sh'
 alias viconfig='vim ~/.ssh/config; aws s3 cp ~/.ssh/config s3://nirecom-home/.ssh/'
 
 case "$OSDIST" in
@@ -104,7 +108,7 @@ fi
 #    unset _p
 #    unset _path
 #}
-export PATH="$HOME/.local/bin:$PATH:$HOME/flutter/bin:$HOME/dotfiles/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+export PATH="$HOME/.local/bin:$PATH:$HOME/flutter/bin:$DOTFILES_DIR/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 # Entware (QNAP)
 [ -d /opt/bin ] && export PATH="/opt/bin:/opt/sbin:$PATH"
@@ -158,9 +162,9 @@ if type git > /dev/null 2>&1; then # if git is installed
     PID=`pgrep -fo bash`
     fi
     if [ -n "$PID" ] && [ $$ != "$PID" ]; then # if first bash process
-        echo "git fetch ~/dotfiles ..."
-        if timeout 3 git -C ~/dotfiles fetch 2>/dev/null; then
-            git -C ~/dotfiles merge --ff-only FETCH_HEAD
+        echo "git fetch $DOTFILES_DIR ..."
+        if timeout 3 git -C "$DOTFILES_DIR" fetch 2>/dev/null; then
+            git -C "$DOTFILES_DIR" merge --ff-only FETCH_HEAD
         fi
     fi
 fi
@@ -206,5 +210,5 @@ esac
 
 # tmux
 if ! "$ISWSL" && [ "$OSDIST" = "ubuntu" ]; then
-    ~/dotfiles/bin/tmux.sh
+    "$DOTFILES_DIR/bin/tmux.sh"
 fi

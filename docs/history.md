@@ -241,6 +241,25 @@ Changes: `install/win/session-sync-init.ps1`（初期化）、`bin/session-sync.
 Background: `install/win/` のみ変更して `install/linux/` 側を忘れるケースを防止
 Changes: `check-cross-platform.js` PreToolUse hook 新設。`git commit` 時にプラットフォーム固有ファイルの counterpart 変更を検知。`.cross-platform-skiplist` で永続除外、`.git/.cross-platform-reviewed` で一時除外。220 テストケース
 
+### ~/dotfiles → C:\git\dotfiles path unification ((pending))
+Background: To share Claude Code session history (`~/.claude/projects/`) across Windows PCs, all machines need a uniform dotfiles path. `~/dotfiles` (= `C:\Users\<user>\dotfiles`) includes the username, causing project directory names to differ per PC. `C:\git\dotfiles` makes the project key `c--git-dotfiles` on all PCs.
+Alternatives considered:
+  (a) Auto-migrate via robocopy in install.ps1 — `[IO.Directory]::Move` fails because AutoHotkey holds file locks. robocopy can read-copy locked files, but source cleanup is best-effort. Worse, profile.ps1's git-fetch pulls the new code immediately, breaking all path references before install.ps1 (manual execution) can run
+  (b) Auto-migrate in profile.ps1 at startup — solves the timing issue, but the temporary migration code must be managed (removed after all PCs migrate), adding maintenance cost
+  (c) No migration; dynamically rewrite JSONL session history paths on git pull — JSONL files contain absolute paths in multiple notations (Windows backslash, MSYS forward-slash, tilde) scattered across file_path fields, conversation text, and tool results. Reliable rewriting across all notations is fragile and risks data corruption. Rejected
+  (d) No migration code at all; manually `git clone` to `C:\git\dotfiles` on each PC — simplest approach. Path references updated in code, install.ps1 re-run handles the rest
+Decision: (d). No automated migration. Each PC is migrated by manual clone + install.ps1.
+Cross-platform issue: settings.json hook paths (`node ~/dotfiles/...`) are shared with macOS/Linux. Hardcoding `C:\git\dotfiles` would break macOS. Solved with `$DOTFILES_DIR` environment variable — Windows sets it as a persistent user env var in install.ps1, macOS/Linux exports it in `.profile_common`. Hook commands use `node "$DOTFILES_DIR/..."` which the shell expands.
+Changes:
+  - `install.ps1`: removed migration block, added `DOTFILES_DIR` persistent user env var registration
+  - `profile.ps1`: `$DotfilesDir = "C:\git\dotfiles"` + session `$env:DOTFILES_DIR`
+  - `.profile_common`: added `export DOTFILES_DIR="$HOME/dotfiles"`, replaced all `~/dotfiles` references with `$DOTFILES_DIR`
+  - `settings.json`: changed 5 hook paths to `$DOTFILES_DIR/...`
+  - `autohotkey.ps1`: added Step 3a to detect AHK running from old path and restart from new
+  - `install-obsolete.ps1`: added cleanup for `~/dotfiles`, `~/dotfiles-private`, `~/git`
+  - `migrate-repos.ps1` + tests: deleted (no longer needed)
+  - `main-install-obsolete-migration.Tests.ps1`: new (4 tests)
+
 ---
 
 ## Incident History

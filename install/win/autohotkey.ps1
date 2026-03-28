@@ -51,6 +51,16 @@ if (-not (Test-Path $ahkExe)) {
     return
 }
 
+# --- Step 3a: Restart AHK if running from old dotfiles location ---
+$ahkProc = Get-CimInstance Win32_Process -Filter "Name = 'AutoHotkey64.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -like '*force-japanese-layout.ahk*' -and $_.CommandLine -notlike "*$($ahkScript.Replace('\','\\'))*" }
+if ($ahkProc) {
+    Write-Host "Restarting AHK from new dotfiles location..." -ForegroundColor Yellow
+    $ahkProc | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+    Start-Process -FilePath $ahkExe -ArgumentList "`"$ahkScript`""
+    Write-Host "AHK restarted: $ahkScript" -ForegroundColor Green
+}
+
 $startupDir = [Environment]::GetFolderPath('Startup')
 $shortcutPath = Join-Path $startupDir "force-japanese-layout.lnk"
 

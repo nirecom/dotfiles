@@ -29,3 +29,22 @@ if ((Test-Path $oldClaude) -and ((Get-Item $oldClaude -Force).Attributes -band [
     Write-Host "Removing obsolete symlink: claude-code (renamed to claude-global)"
     Remove-Item $oldClaude -Force
 }
+
+# --- BEGIN temporary: ~/dotfiles,~/git → C:\git migration ---
+# Remove old dotfiles directories after migration to C:\git
+$migrationTargets = @(
+    @{ Old = "$env:USERPROFILE\dotfiles"; New = "C:\git\dotfiles" },
+    @{ Old = "$env:USERPROFILE\dotfiles-private"; New = "C:\git\dotfiles-private" },
+    @{ Old = "$env:USERPROFILE\git"; New = "C:\git" }
+)
+foreach ($t in $migrationTargets) {
+    if ((Test-Path $t.Old) -and (Test-Path $t.New)) {
+        Remove-Item $t.Old -Recurse -Force -ErrorAction SilentlyContinue
+        if (-not (Test-Path $t.Old)) {
+            Write-Host "Removed old migration source: $($t.Old)" -ForegroundColor DarkGray
+        } else {
+            Write-Warning "Could not fully remove: $($t.Old) (files may be in use)"
+        }
+    }
+}
+# --- END temporary: ~/dotfiles,~/git → C:\git migration ---

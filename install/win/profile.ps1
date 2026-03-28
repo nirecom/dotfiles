@@ -17,7 +17,8 @@ if ($loadedKeys -match 'no identities|agent.*not running|error') {
 }
 
 # Auto-pull dotfiles on startup
-$DotfilesDir = "$HOME\dotfiles"
+$DotfilesDir = "C:\git\dotfiles"
+$env:DOTFILES_DIR = $DotfilesDir
 if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
     Write-Host "git fetch $DotfilesDir ..."
     $fetchProcess = Start-Process -FilePath git -ArgumentList "-C $DotfilesDir fetch" -NoNewWindow -PassThru

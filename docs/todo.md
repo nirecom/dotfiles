@@ -2,6 +2,12 @@
 
 ## Current Work
 
+### ~/dotfiles → C:\git\dotfiles path unification — Verifying
+- [ ] Run `git clone https://github.com/nirecom/dotfiles.git C:\git\dotfiles` on this PC
+- [ ] Run `C:\git\dotfiles\install.ps1` and confirm symlinks, AHK restart, DOTFILES_DIR env var
+- [ ] Open new terminal and confirm profile.ps1 uses C:\git\dotfiles
+- [ ] Open new Claude Code session and confirm hooks work via $DOTFILES_DIR
+
 ### Claude Tabs installer — Verifying
 - [ ] `install.ps1 -Base` で Claude Tabs が正常にインストールされることを確認
 - [ ] 再実行で "already installed" が表示されることを確認（冪等性）

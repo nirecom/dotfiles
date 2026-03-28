@@ -18,13 +18,9 @@ $DotfilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Host "=== dotfiles installer (Windows) ===" -ForegroundColor Cyan
 
-# --- BEGIN temporary: ~/dotfiles,~/git → C:\git migration ---
-Set-Location C:\
-Write-Host ""
-Write-Host "--- Migrating repos to C:\git\ ---"
-Start-Process -FilePath powershell.exe -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$DotfilesDir\install\win\migrate-repos.ps1`"" -Wait -NoNewWindow -WorkingDirectory "C:\"
-if (Test-Path "C:\git\dotfiles") { $DotfilesDir = "C:\git\dotfiles" }
-# --- END temporary: ~/dotfiles,~/git → C:\git migration ---
+# Set DOTFILES_DIR as persistent user environment variable (used by Claude Code hooks)
+[Environment]::SetEnvironmentVariable('DOTFILES_DIR', $DotfilesDir, 'User')
+$env:DOTFILES_DIR = $DotfilesDir
 
 # Step 1: Create symlinks
 Write-Host ""
