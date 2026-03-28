@@ -19,6 +19,7 @@ $DotfilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Write-Host "=== dotfiles installer (Windows) ===" -ForegroundColor Cyan
 
 # --- BEGIN temporary: ~/dotfiles,~/git → C:\git migration ---
+Set-Location C:\
 Write-Host ""
 Write-Host "--- Migrating repos to C:\git\ ---"
 Start-Process -FilePath powershell.exe -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$DotfilesDir\install\win\migrate-repos.ps1`"" -Wait -NoNewWindow -WorkingDirectory "C:\"
