@@ -44,7 +44,7 @@ function Move-RepoIfNeeded {
         $pushedLocation = $true
     }
 
-    Move-Item -Path $Source -Destination $target
+    [System.IO.Directory]::Move($Source, $target)
     Write-Host "Moved: $Source -> $target" -ForegroundColor Green
 
     if ($pushedLocation) { Set-Location $target }
