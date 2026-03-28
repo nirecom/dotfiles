@@ -81,6 +81,7 @@
 | [install/linux/claude-code.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/claude-code.sh) | Claude Code installation | |
 | [install/linux/rize.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/rize.sh) | Install Rize time tracker | macOS only |
 | [install/linux/claude-usage-widget.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/claude-usage-widget.sh) | Install Claude Usage Widget | macOS/Ubuntu (skips WSL) |
+| [install/linux/keychain.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/keychain.sh) | Install keychain and configure SSH key auto-detection | |
 
 ### Editor and Tool Configuration
 
