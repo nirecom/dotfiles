@@ -27,8 +27,7 @@
 - [ ] install-base, install-develop — メタスクリプト（構成が異なる）
 - [ ] config/win ↔ config/mac ペアの hook 対応要否
 
-### Session sync git root relocation — 未着手
-`~/.claude/` を git root にしているが、同期対象は `projects/` のみ。
-`~/.claude/projects/` を git root にすれば `.gitignore` の除外ルールが不要になり、
-`~/.claude/` 直下の symlink (CLAUDE.md, settings.json 等) との干渉リスクもなくなる。
-dotfileslink.ps1 の "dotclaude" warning も削除できる。
+### Session sync git root relocation — Verifying
+- [ ] Open new terminal and confirm `install.ps1` runs without "dotclaude" warning
+- [ ] Run `session-sync.ps1 push` and confirm it works from `~/.claude/projects/`
+- [ ] Verify on another PC: `install.ps1` migrates old git root and re-initializes
