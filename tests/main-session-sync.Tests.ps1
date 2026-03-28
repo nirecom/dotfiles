@@ -1,5 +1,6 @@
 # Test: session-sync-init.ps1 and session-sync.ps1
 # Uses temp directories to avoid touching real ~/.claude
+# Git root is at ~/.claude/projects/ (not ~/.claude/)
 
 BeforeAll {
     $DotfilesDir = Split-Path -Parent $PSScriptRoot
@@ -15,7 +16,7 @@ Describe "session-sync-init.ps1" {
         $projDir = Join-Path $script:TestDir "projects\C--LLM-ai-specs"
         New-Item -ItemType Directory -Path $projDir -Force | Out-Null
         Set-Content -Path (Join-Path $projDir "session.jsonl") -Value "test"
-        # Create files that should NOT be synced
+        # Create files outside projects/ that should NOT be in git
         Set-Content -Path (Join-Path $script:TestDir "settings.json") -Value "{}"
         $statsigDir = Join-Path $script:TestDir "statsig"
         New-Item -ItemType Directory -Path $statsigDir -Force | Out-Null
@@ -26,59 +27,65 @@ Describe "session-sync-init.ps1" {
         Remove-Item -Recurse -Force $script:TestDir -ErrorAction SilentlyContinue
     }
 
-    It "creates .gitignore with correct content" {
+    It "initializes git repo inside projects/ not claude root" {
         & $InitScript -ClaudeDir $script:TestDir -NoRemote
-        $gitignorePath = Join-Path $script:TestDir ".gitignore"
-        Test-Path $gitignorePath | Should -BeTrue
-        $content = Get-Content $gitignorePath -Raw
-        $content | Should -Match '(?m)^\*$' -Because ".gitignore should ignore everything by default"
-        $content | Should -Match '!\.gitignore' -Because ".gitignore itself must be tracked"
-        $content | Should -Match '!\.gitattributes' -Because ".gitattributes must be tracked"
-        $content | Should -Match '!projects/' -Because "projects/ must be tracked"
+        $projGit = Join-Path $script:TestDir "projects\.git"
+        Test-Path $projGit | Should -BeTrue -Because "git root should be in projects/"
+        $rootGit = Join-Path $script:TestDir ".git"
+        Test-Path $rootGit | Should -BeFalse -Because "git root should NOT be in claude dir"
     }
 
-    It "creates .gitattributes with eol=lf" {
+    It "creates .gitattributes with eol=lf in projects/" {
         & $InitScript -ClaudeDir $script:TestDir -NoRemote
-        $path = Join-Path $script:TestDir ".gitattributes"
+        $path = Join-Path $script:TestDir "projects\.gitattributes"
         Test-Path $path | Should -BeTrue
         $content = Get-Content $path -Raw
-        $content | Should -Match '\* text eol=lf' -Because "all files should use LF line endings"
-    }
-
-    It "initializes git repo" {
-        & $InitScript -ClaudeDir $script:TestDir -NoRemote
-        Test-Path (Join-Path $script:TestDir ".git") | Should -BeTrue
+        $content | Should -Match '\* text eol=lf'
     }
 
     It "is idempotent - running twice produces same result" {
+        $projDir = Join-Path $script:TestDir "projects"
         & $InitScript -ClaudeDir $script:TestDir -NoRemote
-        $commitCount1 = git -C $script:TestDir rev-list --count HEAD
+        $commitCount1 = git -C $projDir rev-list --count HEAD
         & $InitScript -ClaudeDir $script:TestDir -NoRemote
-        $commitCount2 = git -C $script:TestDir rev-list --count HEAD
+        $commitCount2 = git -C $projDir rev-list --count HEAD
         $commitCount2 | Should -Be $commitCount1 -Because "second init should not create extra commits"
-        # .gitignore should not have duplicated lines
-        $lines = Get-Content (Join-Path $script:TestDir ".gitignore")
-        ($lines | Where-Object { $_ -eq '*' }).Count | Should -Be 1
     }
 
-    It ".gitignore excludes non-projects files from tracking" {
+    It "files outside projects/ are not tracked" {
         & $InitScript -ClaudeDir $script:TestDir -NoRemote
-        $status = git -C $script:TestDir status --porcelain
-        $status | Should -Not -Match 'settings\.json' -Because "settings.json must be excluded"
-        $status | Should -Not -Match 'statsig' -Because "statsig/ must be excluded"
+        $projDir = Join-Path $script:TestDir "projects"
+        $tracked = git -C $projDir ls-files
+        $tracked | Should -Not -Match 'settings\.json' -Because "settings.json is outside git root"
+        $tracked | Should -Not -Match 'statsig' -Because "statsig/ is outside git root"
     }
 
     It "sets remote when -NoRemote is not specified" {
-        # Use a bare repo as fake remote
         $fakeRemote = Join-Path $env:TEMP "session-sync-remote-$(Get-Random)"
         git init --bare $fakeRemote 2>&1 | Out-Null
         try {
             & $InitScript -ClaudeDir $script:TestDir -RemoteUrl $fakeRemote
-            $remote = git -C $script:TestDir remote get-url origin
+            $projDir = Join-Path $script:TestDir "projects"
+            $remote = git -C $projDir remote get-url origin
             $remote | Should -Be $fakeRemote
         } finally {
             Remove-Item -Recurse -Force $fakeRemote -ErrorAction SilentlyContinue
         }
+    }
+
+    It "migrates old git root from claude dir to projects/" {
+        # Simulate old layout: .git at claude root
+        git init $script:TestDir 2>&1 | Out-Null
+        Set-Content -Path (Join-Path $script:TestDir ".gitignore") -Value "*`n!projects/"
+        git -C $script:TestDir add .gitignore
+        git -C $script:TestDir commit -m "old layout" 2>&1 | Out-Null
+
+        & $InitScript -ClaudeDir $script:TestDir -NoRemote
+
+        # Old .git should be gone
+        Test-Path (Join-Path $script:TestDir ".git") | Should -BeFalse
+        # New .git should exist in projects/
+        Test-Path (Join-Path $script:TestDir "projects\.git") | Should -BeTrue
     }
 }
 
@@ -102,14 +109,16 @@ Describe "session-sync.ps1" {
         New-Item -ItemType Directory -Path $projDir -Force | Out-Null
         Set-Content -Path (Join-Path $projDir "session.jsonl") -Value "data"
         & $SyncScript -Action push -ClaudeDir $script:TestDir
-        $log = git -C $script:TestDir log --oneline -1
+        $gitDir = Join-Path $script:TestDir "projects"
+        $log = git -C $gitDir log --oneline -1
         $log | Should -Match $env:COMPUTERNAME -Because "commit message should include machine name"
     }
 
     It "push with no changes doesn't create empty commit" {
-        $commitsBefore = git -C $script:TestDir rev-list --count HEAD
+        $gitDir = Join-Path $script:TestDir "projects"
+        $commitsBefore = git -C $gitDir rev-list --count HEAD
         & $SyncScript -Action push -ClaudeDir $script:TestDir
-        $commitsAfter = git -C $script:TestDir rev-list --count HEAD
+        $commitsAfter = git -C $gitDir rev-list --count HEAD
         $commitsAfter | Should -Be $commitsBefore
     }
 
@@ -133,7 +142,8 @@ Describe "session-sync.ps1" {
         New-Item -ItemType Directory -Path $projDir -Force | Out-Null
         Set-Content -Path (Join-Path $projDir "data.jsonl") -Value "test"
         & $SyncScript -Action push -ClaudeDir $script:TestDir
-        $log = git -C $script:TestDir log --oneline -1
+        $gitDir = Join-Path $script:TestDir "projects"
+        $log = git -C $gitDir log --oneline -1
         $today = Get-Date -Format "yyyy-MM-dd"
         $log | Should -Match $today -Because "commit message should include date"
     }

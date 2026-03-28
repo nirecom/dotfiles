@@ -1,6 +1,6 @@
-# session-sync-init.ps1 - Initialize ~/.claude as a git repo for session sync
+# session-sync-init.ps1 - Initialize ~/.claude/projects as a git repo for session sync
 # Usage: Called by install.ps1, or manually: .\session-sync-init.ps1
-# Syncs only projects/ (session JSONL) to private repo nirecom/claude-sessions
+# Syncs session JSONL in projects/ to private repo nirecom/claude-sessions
 
 param(
     [string]$ClaudeDir = (Join-Path $env:USERPROFILE ".claude"),
@@ -16,26 +16,26 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     return
 }
 
-# Initialize git repo if not already
-if (-not (Test-Path (Join-Path $ClaudeDir ".git"))) {
-    Write-Host "Initializing git repo in $ClaudeDir..."
-    git init $ClaudeDir
-} else {
-    Write-Host "Git repo already exists in $ClaudeDir." -ForegroundColor DarkGray
+$ProjectsDir = Join-Path $ClaudeDir "projects"
+if (-not (Test-Path $ProjectsDir)) {
+    New-Item -ItemType Directory -Path $ProjectsDir -Force | Out-Null
 }
 
-# Create .gitignore (overwrite for idempotency)
-$gitignoreContent = @"
-# Sync only projects/ (session history)
-*
-!.gitignore
-!.gitattributes
-!projects/
-!projects/**/
-!projects/**/*
-"@
+# Migrate old git root from ~/.claude/ to ~/.claude/projects/
+if (Test-Path (Join-Path $ClaudeDir ".git")) {
+    Write-Host "Migrating git root from $ClaudeDir to $ProjectsDir..."
+    Remove-Item (Join-Path $ClaudeDir ".git") -Recurse -Force
+    Remove-Item (Join-Path $ClaudeDir ".gitignore") -Force -ErrorAction SilentlyContinue
+    Remove-Item (Join-Path $ClaudeDir ".gitattributes") -Force -ErrorAction SilentlyContinue
+}
 
-[System.IO.File]::WriteAllText((Join-Path $ClaudeDir ".gitignore"), ($gitignoreContent -replace "`r`n", "`n") + "`n")
+# Initialize git repo if not already
+if (-not (Test-Path (Join-Path $ProjectsDir ".git"))) {
+    Write-Host "Initializing git repo in $ProjectsDir..."
+    git init $ProjectsDir
+} else {
+    Write-Host "Git repo already exists in $ProjectsDir." -ForegroundColor DarkGray
+}
 
 # Create .gitattributes (overwrite for idempotency)
 $gitattributesContent = @"
@@ -43,28 +43,28 @@ $gitattributesContent = @"
 * text eol=lf
 "@
 
-[System.IO.File]::WriteAllText((Join-Path $ClaudeDir ".gitattributes"), ($gitattributesContent -replace "`r`n", "`n") + "`n")
+[System.IO.File]::WriteAllText((Join-Path $ProjectsDir ".gitattributes"), ($gitattributesContent -replace "`r`n", "`n") + "`n")
 
 # Set remote
 if (-not $NoRemote) {
-    $existingRemotes = git -C $ClaudeDir remote 2>$null
+    $existingRemotes = git -C $ProjectsDir remote 2>$null
     if ($existingRemotes -contains "origin") {
-        git -C $ClaudeDir remote set-url origin $RemoteUrl
+        git -C $ProjectsDir remote set-url origin $RemoteUrl
     } else {
-        git -C $ClaudeDir remote add origin $RemoteUrl
+        git -C $ProjectsDir remote add origin $RemoteUrl
     }
     Write-Host "Remote set to $RemoteUrl"
 }
 
 # Initial commit if no commits yet
 $hasCommits = $false
-try { $hasCommits = [int](git -C $ClaudeDir rev-list --count HEAD 2>$null) -gt 0 } catch {}
+try { $hasCommits = [int](git -C $ProjectsDir rev-list --count HEAD 2>$null) -gt 0 } catch {}
 if (-not $hasCommits) {
-    git -C $ClaudeDir add .gitignore .gitattributes
-    git -C $ClaudeDir add projects/
-    git -C $ClaudeDir commit -m "Initial session sync from $env:COMPUTERNAME"
+    git -C $ProjectsDir add .gitattributes
+    git -C $ProjectsDir add .
+    git -C $ProjectsDir commit -m "Initial session sync from $env:COMPUTERNAME"
     if (-not $NoRemote) {
-        git -C $ClaudeDir push -u origin main
+        git -C $ProjectsDir push -u origin main
     }
 }
 
