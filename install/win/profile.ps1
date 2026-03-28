@@ -71,3 +71,12 @@ if (Get-Command fnm -ErrorAction SilentlyContinue) {
         Write-Warning "fnm: blocked by App Control policy — skipped"
     }
 }
+
+# Launch VS Code with session sync (push on close)
+function codes {
+    Start-Job -ScriptBlock {
+        param($syncScript, $codeArgs)
+        code.cmd --wait @codeArgs
+        & $syncScript push
+    } -ArgumentList "$DotfilesDir\bin\session-sync.ps1", $args | Out-Null
+}
