@@ -53,7 +53,7 @@ if (-not (Test-Path $ahkExe)) {
 
 # --- Step 3a: Restart AHK if running from old dotfiles location ---
 $ahkProc = Get-CimInstance Win32_Process -Filter "Name = 'AutoHotkey64.exe'" -ErrorAction SilentlyContinue |
-    Where-Object { $_.CommandLine -like '*force-japanese-layout.ahk*' -and $_.CommandLine -notlike "*$($ahkScript.Replace('\','\\'))*" }
+    Where-Object { $_.CommandLine -like '*force-japanese-layout.ahk*' -and $_.CommandLine -notlike "*$ahkScript*" }
 if ($ahkProc) {
     Write-Host "Restarting AHK from new dotfiles location..." -ForegroundColor Yellow
     $ahkProc | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
@@ -69,6 +69,11 @@ if (Test-Path $shortcutPath) {
     $existing = $shell.CreateShortcut($shortcutPath)
     if ($existing.TargetPath -eq $ahkExe -and $existing.Arguments -eq "`"$ahkScript`"") {
         Write-Host "Startup shortcut already up to date: $shortcutPath" -ForegroundColor DarkGray
+    } elseif ($existing.TargetPath -eq $ahkExe) {
+        $existing.Arguments = "`"$ahkScript`""
+        $existing.WorkingDirectory = Split-Path $ahkScript -Parent
+        $existing.Save()
+        Write-Host "Updated shortcut arguments: $shortcutPath" -ForegroundColor Green
     } elseif ($existing.TargetPath -like "*.ahk") {
         $existing.TargetPath = $ahkExe
         $existing.Arguments = "`"$ahkScript`""
