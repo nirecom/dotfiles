@@ -33,6 +33,7 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDi
 # Pull session sync on startup (from other PCs)
 $SessionDir = "$HOME\.claude\projects"
 if ((Test-Path "$SessionDir\.git") -and (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Host "git fetch session sync ..."
     $fetchProc = Start-Process -FilePath git -ArgumentList "-C $SessionDir fetch" -NoNewWindow -PassThru
     if (-not $fetchProc.WaitForExit(3000)) {
         $fetchProc.Kill()
