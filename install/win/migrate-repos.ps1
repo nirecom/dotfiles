@@ -35,8 +35,19 @@ function Move-RepoIfNeeded {
         New-Item -ItemType Directory -Path $Destination -Force | Out-Null
     }
 
+    # Unlock current directory if we're moving the directory we're running from
+    $resolved = (Resolve-Path $Source).Path
+    $cwd = (Get-Location).Path
+    $pushedLocation = $false
+    if ($cwd -eq $resolved -or $cwd.StartsWith("$resolved\")) {
+        Push-Location $env:TEMP
+        $pushedLocation = $true
+    }
+
     Move-Item -Path $Source -Destination $target
     Write-Host "Moved: $Source -> $target" -ForegroundColor Green
+
+    if ($pushedLocation) { Set-Location $target }
 }
 
 # Move ~/dotfiles and ~/dotfiles-private
