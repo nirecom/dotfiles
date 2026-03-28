@@ -260,6 +260,15 @@ Changes:
   - `migrate-repos.ps1` + tests: deleted (no longer needed)
   - `main-install-obsolete-migration.Tests.ps1`: new (4 tests)
 
+### Session sync git root relocation ((pending))
+Background: `~/.claude/` was used as git root for session sync, but only `projects/` was tracked. This required a complex `.gitignore` (exclude-all + re-include pattern) and caused a misleading warning in `dotfileslink.ps1` about symlink conflict with `.git`. Moving git root to `~/.claude/projects/` eliminates both issues.
+Changes:
+  - `session-sync-init.ps1`: git init target changed from `$ClaudeDir` to `$ClaudeDir/projects`. Added migration logic to remove old `.git`/`.gitignore`/`.gitattributes` from `~/.claude/`. Removed `.gitignore` (no longer needed). `.gitattributes` created in `projects/`
+  - `bin/session-sync.ps1`: all `git -C` paths changed from `$ClaudeDir` to `$ProjectsDir` (= `$ClaudeDir/projects`)
+  - `dotfileslink.ps1`: removed "dotclaude" warning about `.git` in `~/.claude/`
+  - Remote repo `nirecom/claude-sessions` recreated (old layout had `projects/` prefix in tree; new layout stores files at root)
+  - Tests: 12 tests updated for new layout + migration test added
+
 ---
 
 ## Incident History

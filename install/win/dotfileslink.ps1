@@ -56,9 +56,6 @@ if (-not (Test-Path "$HOME\.config")) {
 if (-not (Test-Path "$HOME\.claude")) {
     New-Item -ItemType Directory -Path "$HOME\.claude" -Force | Out-Null
 }
-if (Test-Path "$HOME\.claude\.git") {
-    Write-Warning "~/.claude is a git repo (dotclaude). Remove .git dir to enable symlinks."
-}
 # Clean up obsolete commands symlink (renamed to skills)
 $oldCommands = "$HOME\.claude\commands"
 if ((Test-Path $oldCommands) -and (Get-Item $oldCommands -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) {
