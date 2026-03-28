@@ -222,6 +222,21 @@ Changes: New rule: Windows=fnm, WSL2/macOS/Linux=nvm. Replaced `install/linux/fn
 Background: keychain の SSH 鍵指定がハードコードだった
 Changes: `install.sh` の keychain ステップをデフォルト実行に昇格。`.profile_common` で `~/.ssh/id_*` を glob して自動検出。`install/linux/keychain.sh` を新設
 
+### Claude Code session sync (513e3a4, (pending))
+Background: Claude Code のセッション履歴（`~/.claude/projects/`）は各マシンのローカルにのみ保存され、デバイス間同期機能は公式に提供されていない。複数 Windows PC（自宅 + 会社3台）間で過去の会話を参照したい。
+Alternatives considered:
+  (a) Claude Code Web モード（claude.ai/code）のみ使用 → ローカルファイルシステム・MCP サーバー・NSSM サービス操作が必要な作業（NemoClaw, llama-swap 等）では Local モード必須。Local と Web でセッションが分断される。却下
+  (b) perfectra1n/claude-code-sync（Rust 製外部ツール）→ 必要な機能は 50 行以下で実装可能、dotfiles に自然に統合できるため自作を選択
+  (c) Remote Control（`claude remote-control`）→ 元 PC 起動中のみ、10分で切断。履歴参照には不向き
+  (d) Anthropic 公式 sync 機能待ち（Issue #22648）→ 時期未定
+Design decisions:
+  (1) Path unification: unified under drive root with dedicated directories for LLM infrastructure (existing, immovable) and `C:\git\` (new). Eliminated `~/git/` which contains the username, ensuring identical absolute paths across all machines
+  (2) 行末制御: ChatGPT と cross-review し3方式を比較。`core.autocrlf=false`（変換停止のみ、LF 保証なし）、`* -text`（同上）、`* text eol=lf`（LF を明示的に宣言、repo で伝搬）。`* text eol=lf` を `.gitattributes` で採用。理由: JSONL は全マシンで LF を保証したい + clone/pull で自動伝搬
+  (3) ファイル書き込み: `Set-Content`（PowerShell cmdlet）は Windows 上で CRLF を出力し git add 時に warning。`[System.IO.File]::WriteAllText()` + CRLF→LF 置換で LF 書き込みに変更。ChatGPT と cross-review し互換性確認（.NET 標準 API、PS5/PS7 両対応、UTF-8 BOM なし）
+  (4) 同期対象: `projects/` のみ。`settings.json`, `rules/`, `skills/` 等は dotfiles で管理済み。`statsig/`, `ide/` はマシン固有
+  (5) コンフリクト戦略: JSONL は追記型。push→pull ルーティンで回避。発生時は `git pull --rebase`
+Changes: `install/win/session-sync-init.ps1`（初期化）、`bin/session-sync.ps1`（push/pull/status）、`install.ps1` へ統合、`nirecom/claude-sessions` private repo 作成。Pester テスト 12 ケース
+
 ### Cross-platform check hook (5c7714e)
 Background: `install/win/` のみ変更して `install/linux/` 側を忘れるケースを防止
 Changes: `check-cross-platform.js` PreToolUse hook 新設。`git commit` 時にプラットフォーム固有ファイルの counterpart 変更を検知。`.cross-platform-skiplist` で永続除外、`.git/.cross-platform-reviewed` で一時除外。220 テストケース
