@@ -30,6 +30,17 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDi
     }
 }
 
+# Pull session sync on startup (from other PCs)
+$SessionDir = "$HOME\.claude\projects"
+if ((Test-Path "$SessionDir\.git") -and (Get-Command git -ErrorAction SilentlyContinue)) {
+    $fetchProc = Start-Process -FilePath git -ArgumentList "-C $SessionDir fetch" -NoNewWindow -PassThru
+    if (-not $fetchProc.WaitForExit(3000)) {
+        $fetchProc.Kill()
+    } elseif ($fetchProc.ExitCode -eq 0) {
+        git -C $SessionDir merge --ff-only FETCH_HEAD 2>$null
+    }
+}
+
 # Repair broken symlinks (Windows atomic save replaces symlinks with regular files)
 $symlinkFiles = @("$HOME\.bash_profile", "$HOME\.editorconfig", "$HOME\.claude\CLAUDE.md", "$HOME\.claude\settings.json")
 $broken = $symlinkFiles | Where-Object { (Test-Path $_) -and -not ((Get-Item $_ -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) }
