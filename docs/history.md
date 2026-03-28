@@ -88,7 +88,7 @@ Changes: `dotfileslink.ps1` now compares symlink target against `$DotfilesDir` a
 
 ### AutoHotkey integration (3ca2dcf, 1c905ec)
 Background: Force Japanese keyboard layout via AHK when Windows UI is English + Japanese preferred. Added `config/win/autohotkey/force-japanese-layout.ahk`, `install/win/autohotkey.ps1` (language detection + winget install + startup shortcut), `install/win/install-obsolete.ps1` (auto-cleanup of old OneDrive AHK files and startup shortcuts)
-Changes: AHK script moved from OneDrive to dotfiles repo. Install script detects English UI + Japanese preferred language (strict), installs AHK v2 via winget, creates startup shortcut. Obsolete script auto-detects old AHK shortcuts by TargetPath pattern (excludes dotfiles repo paths for idempotency) and old OneDrive AHK files by glob. `install-obsolete.ps1` runs always (not only `-Full`), matching Linux `install.sh` pattern
+Changes: AHK script moved from OneDrive to dotfiles repo. Install script detects English UI + Japanese preferred language (strict), installs AHK v2 via winget, creates startup shortcut. Obsolete script auto-detects old AHK shortcuts by TargetPath pattern (excludes dotfiles repo paths for idempotency) and old OneDrive AHK files by glob. `install-obsolete.ps1` runs always (not only `-Full`), matching Linux `install.sh` pattern. Per-user install path fallback added (1a15c1f)
 
 ### Starship install guard (c7f02ea, 1766674)
 Background: `install.ps1 -Full` tried to reinstall Starship even when already installed — `Get-Command` missed binaries not yet in PATH
@@ -214,9 +214,17 @@ Changes: 全 PC で `git fetch origin && git reset --hard origin/main` を実施
 Background: Claude Tabs (Tauri v2) は Windows ネイティブの Claude Code マルチセッション管理アプリ。タブ UI + Activity Feed でエージェント状態をリアルタイム表示
 Changes: `install/win/claude-tabs.ps1` 新設（GitHub API で最新リリース取得、/S サイレントインストール）。`/releases/latest` がアセット未添付の場合に直近10リリースを走査するフォールバック。`.cross-platform-skiplist` 新設（Windows 専用ツールのフック除外リスト）
 
-### Node.js version manager: platform split (fnm → nvm on Unix) ((pending))
+### Node.js version manager: platform split (fnm → nvm on Unix) (1b74132, (pending))
 Background: NemoClaw official installer unconditionally installs nvm. Conflicts with dotfiles' "fnm everywhere" rule — npm install fails when prek refuses to install hooks with core.hooksPath set. fnm has no advantage over nvm on Unix; nvm is the ecosystem standard. Windows needs fnm (nvm has no Windows support)
-Changes: New rule: Windows=fnm, WSL2/macOS/Linux=nvm. Replaced `install/linux/fnm.sh` with `nvm.sh`. Removed fnm from `.profile_common` PATH and init (nvm init already existed at lines 190-206). Added fnm cleanup to `install-obsolete.sh`. Updated `coding.md` rule to platform-specific
+Changes: New rule: Windows=fnm, WSL2/macOS/Linux=nvm. Replaced `install/linux/fnm.sh` with `nvm.sh`. Removed fnm from `.profile_common` PATH and init (nvm init already existed at lines 190-206). Added fnm cleanup to `install-obsolete.sh`. Updated `coding.md` rule to platform-specific. Fixed nvm.sh execute permission (1b74132)
+
+### Keychain SSH key auto-detect (6b39058)
+Background: keychain の SSH 鍵指定がハードコードだった
+Changes: `install.sh` の keychain ステップをデフォルト実行に昇格。`.profile_common` で `~/.ssh/id_*` を glob して自動検出。`install/linux/keychain.sh` を新設
+
+### Cross-platform check hook (5c7714e)
+Background: `install/win/` のみ変更して `install/linux/` 側を忘れるケースを防止
+Changes: `check-cross-platform.js` PreToolUse hook 新設。`git commit` 時にプラットフォーム固有ファイルの counterpart 変更を検知。`.cross-platform-skiplist` で永続除外、`.git/.cross-platform-reviewed` で一時除外。220 テストケース
 
 ---
 
