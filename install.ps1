@@ -27,6 +27,11 @@ Write-Host "--- Creating symlinks ---"
 Write-Host ""
 Write-Host "--- Installing Claude Code ---"
 & "$DotfilesDir\install\win\claude-code.ps1"
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    Write-Host ""
+    Write-Host "--- Initializing Claude Code session sync ---"
+    & "$DotfilesDir\install\win\session-sync-init.ps1"
+}
 Write-Host ""
 Write-Host "--- Installing fnm (Node.js) ---"
 & "$DotfilesDir\install\win\fnm.ps1"
