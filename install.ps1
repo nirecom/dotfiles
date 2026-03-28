@@ -18,6 +18,13 @@ $DotfilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Host "=== dotfiles installer (Windows) ===" -ForegroundColor Cyan
 
+# --- BEGIN temporary: ~/dotfiles,~/git → C:\git migration ---
+Write-Host ""
+Write-Host "--- Migrating repos to C:\git\ ---"
+& "$DotfilesDir\install\win\migrate-repos.ps1"
+if (Test-Path "C:\git\dotfiles") { $DotfilesDir = "C:\git\dotfiles" }
+# --- END temporary: ~/dotfiles,~/git → C:\git migration ---
+
 # Step 1: Create symlinks
 Write-Host ""
 Write-Host "--- Creating symlinks ---"
