@@ -26,3 +26,9 @@
 - [ ] vim, tmux, source-highlight — エディタ/ターミナル系
 - [ ] install-base, install-develop — メタスクリプト（構成が異なる）
 - [ ] config/win ↔ config/mac ペアの hook 対応要否
+
+### Session sync git root relocation — 未着手
+`~/.claude/` を git root にしているが、同期対象は `projects/` のみ。
+`~/.claude/projects/` を git root にすれば `.gitignore` の除外ルールが不要になり、
+`~/.claude/` 直下の symlink (CLAUDE.md, settings.json 等) との干渉リスクもなくなる。
+dotfileslink.ps1 の "dotclaude" warning も削除できる。
