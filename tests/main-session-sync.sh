@@ -110,6 +110,11 @@ if [ "$seed_in_log" -ge 1 ]; then
 else
     fail "remote commit not in log"
 fi
+if [ -f "$EXISTING_PROJECTS/seed-session.jsonl" ]; then
+    pass "remote file present in working tree after init"
+else
+    fail "remote file missing from working tree (--hard reset bug)"
+fi
 
 # --- Edge: Old .git in ~/.claude/ gets migrated ---
 echo "[init] Migration of old git root"
