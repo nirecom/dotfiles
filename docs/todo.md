@@ -27,6 +27,13 @@
 - [ ] install-base, install-develop — メタスクリプト（構成が異なる）
 - [ ] config/win ↔ config/mac ペアの hook 対応要否
 
+### dotfiles force push — Other PCs need reset
+History was rewritten to remove private identifiers. All other PCs must run:
+```
+git -C <dotfiles-path> fetch origin
+git -C <dotfiles-path> reset --hard origin/main
+```
+
 ### Session sync cross-platform — Verifying
 - [x] `install.sh` calls `session-sync-init.sh` after Claude Code install (macOS tested)
 - [x] `install-obsolete.sh` removes Homebrew fnm (macOS tested)
