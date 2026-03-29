@@ -31,6 +31,8 @@ switch ($Action) {
             Write-Warning "Claude Code is running. Close all sessions before push to ensure latest data is saved."
         }
 
+        # Copy history.jsonl into sync area
+        Copy-Item (Join-Path $ClaudeDir "history.jsonl") (Join-Path $ProjectsDir ".history.jsonl") -ErrorAction SilentlyContinue
         git -C $ProjectsDir add .
         $status = git -C $ProjectsDir status --porcelain
         if (-not $status) {
@@ -48,6 +50,16 @@ switch ($Action) {
     }
     "pull" {
         git -C $ProjectsDir pull --rebase
+        # Merge remote history with local (dedup, preserve order)
+        $syncHistory = Join-Path $ProjectsDir ".history.jsonl"
+        $localHistory = Join-Path $ClaudeDir "history.jsonl"
+        if (Test-Path $syncHistory) {
+            $remote = @(Get-Content $syncHistory -ErrorAction SilentlyContinue)
+            $local = @(Get-Content $localHistory -ErrorAction SilentlyContinue)
+            $seen = [ordered]@{}
+            foreach ($line in $remote + $local) { if ($line -and -not $seen.Contains($line)) { $seen[$line] = $true } }
+            $seen.Keys | Set-Content $localHistory
+        }
         Write-Host "Pulled session data." -ForegroundColor Green
     }
     "status" {
@@ -58,6 +70,16 @@ switch ($Action) {
         git -C $ProjectsDir fetch origin main 2>&1 | Out-Null
         $ErrorActionPreference = "Stop"
         git -C $ProjectsDir reset --hard origin/main
+        # Merge remote history with local (dedup, preserve order)
+        $syncHistory = Join-Path $ProjectsDir ".history.jsonl"
+        $localHistory = Join-Path $ClaudeDir "history.jsonl"
+        if (Test-Path $syncHistory) {
+            $remote = @(Get-Content $syncHistory -ErrorAction SilentlyContinue)
+            $local = @(Get-Content $localHistory -ErrorAction SilentlyContinue)
+            $seen = [ordered]@{}
+            foreach ($line in $remote + $local) { if ($line -and -not $seen.Contains($line)) { $seen[$line] = $true } }
+            $seen.Keys | Set-Content $localHistory
+        }
         Write-Host "Reset to remote state." -ForegroundColor Green
     }
 }
