@@ -73,6 +73,29 @@ Describe "session-sync-init.ps1" {
         }
     }
 
+    It "pulls existing remote files into working tree on fresh init" {
+        # Seed a bare remote with a file from "another machine"
+        $fakeRemote = Join-Path $env:TEMP "session-sync-remote-seed-$(Get-Random)"
+        $seedDir = Join-Path $env:TEMP "session-sync-seed-$(Get-Random)"
+        git init --bare $fakeRemote 2>&1 | Out-Null
+        git init $seedDir 2>&1 | Out-Null
+        git -C $seedDir checkout -b main 2>&1 | Out-Null
+        Set-Content -Path (Join-Path $seedDir "seed-session.jsonl") -Value '{"seed":"data"}'
+        git -C $seedDir add . 2>&1 | Out-Null
+        git -C $seedDir commit -m "seed from other machine" 2>&1 | Out-Null
+        git -C $seedDir remote add origin $fakeRemote 2>&1 | Out-Null
+        git -C $seedDir push -u origin main 2>&1 | Out-Null
+        try {
+            # Fresh init pointing at seeded remote
+            $freshDir = Join-Path $env:TEMP "session-sync-fresh-$(Get-Random)"
+            & $InitScript -ClaudeDir $freshDir -RemoteUrl $fakeRemote
+            $projDir = Join-Path $freshDir "projects"
+            Test-Path (Join-Path $projDir "seed-session.jsonl") | Should -BeTrue -Because "remote file should be in working tree"
+        } finally {
+            Remove-Item -Recurse -Force $fakeRemote, $seedDir, $freshDir -ErrorAction SilentlyContinue
+        }
+    }
+
     It "migrates old git root from claude dir to projects/" {
         # Simulate old layout: .git at claude root
         git init $script:TestDir 2>&1 | Out-Null
