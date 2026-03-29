@@ -70,6 +70,13 @@ switch ($Action) {
         git -C $ProjectsDir fetch origin main 2>&1 | Out-Null
         $ErrorActionPreference = "Stop"
         git -C $ProjectsDir reset --hard origin/main
+        # Restore mtime from JSONL timestamps (git doesn't preserve mtime)
+        Get-ChildItem -Path $ProjectsDir -Recurse -Filter "*.jsonl" | Where-Object { $_.Name -ne ".history.jsonl" } | ForEach-Object {
+            $last = Get-Content $_.FullName -Tail 1 -ErrorAction SilentlyContinue
+            if ($last -match '"timestamp":"([^"]+)"') {
+                try { $_.LastWriteTime = [datetime]::Parse($Matches[1]).ToLocalTime() } catch {}
+            }
+        }
         # Merge remote history with local (dedup, preserve order)
         $syncHistory = Join-Path $ProjectsDir ".history.jsonl"
         $localHistory = Join-Path $ClaudeDir "history.jsonl"
