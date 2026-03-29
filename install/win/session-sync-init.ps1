@@ -4,7 +4,7 @@
 
 param(
     [string]$ClaudeDir = (Join-Path $env:USERPROFILE ".claude"),
-    [string]$RemoteUrl = "https://github.com/nirecom/claude-sessions.git",
+    [string]$RemoteUrl = "git@github.com:nirecom/claude-sessions.git",
     [switch]$NoRemote
 )
 
@@ -33,6 +33,8 @@ if (Test-Path (Join-Path $ClaudeDir ".git")) {
 if (-not (Test-Path (Join-Path $ProjectsDir ".git"))) {
     Write-Host "Initializing git repo in $ProjectsDir..."
     git init $ProjectsDir
+    # Disable commit hooks (private repo; JSONL contains paths that trigger private-info hooks)
+    git -C $ProjectsDir config core.hooksPath NUL
 } else {
     Write-Host "Git repo already exists in $ProjectsDir." -ForegroundColor DarkGray
 }
