@@ -255,7 +255,7 @@ Syncs Claude Code session history (`~/.claude/projects/`) across multiple machin
 
 **Automatic sync**:
 - **Terminal startup**: `.profile_common` (Linux/macOS) and `profile.ps1` (Windows) run `git fetch + merge --ff-only` on `~/.claude/projects/` with 3-second timeout
-- **`codes` function** (Linux/macOS): Opens VS Code, automatically runs `session-sync.sh push` on exit (output silenced — background process output would require Enter to dismiss)
+- **`codes` function**: Opens VS Code in a new window (`--new-window`), automatically runs session-sync push on exit. Supports multiple concurrent instances. Linux/macOS: `session-sync.sh` (output silenced). Windows: `session-sync.ps1` via hidden pwsh process
 
 **Manual sync**:
 ```
