@@ -18,15 +18,27 @@ Describe "codes function (profile.ps1)" {
             $ProfileContent | Should -Match '-WindowStyle\s+Hidden'
         }
 
-        It "includes code.cmd --wait to await VS Code close" {
-            $ProfileContent | Should -Match 'code\.cmd\s+--wait'
+        It "includes code.cmd --new-window (without --wait)" {
+            $ProfileContent | Should -Match 'code\.cmd\s+--new-window'
+            # --wait should no longer be used (replaced by window polling)
+            $codesBlock = ($ProfileContent -split 'function codes')[1] -split 'function ' | Select-Object -First 1
+            $codesBlock | Should -Not -Match 'code\.cmd[^;]*--wait'
         }
 
-        It "runs session-sync push after code.cmd" {
-            # In the command string, code.cmd --wait must precede session-sync push
+        It "calls wait-vscode-window.ps1 between code.cmd and session-sync push" {
             $codesBlock = ($ProfileContent -split 'function codes')[1] -split 'function ' | Select-Object -First 1
-            $codesBlock | Should -Match 'code\.cmd --wait.*;\s*&\s*''\$syncScript''\s*push' `
-                -Because "session-sync push must follow code.cmd --wait in the command string"
+            $codesBlock | Should -Match 'wait-vscode-window\.ps1' `
+                -Because "window polling script must be called"
+            $codesBlock | Should -Match 'syncScript.*push' `
+                -Because "session-sync push must follow window polling"
+        }
+
+        It "resolves workspace name for title matching" {
+            $codesBlock = ($ProfileContent -split 'function codes')[1] -split 'function ' | Select-Object -First 1
+            $codesBlock | Should -Match '\.code-workspace' `
+                -Because "must handle .code-workspace files"
+            $codesBlock | Should -Match 'Split-Path|GetFileNameWithoutExtension' `
+                -Because "must extract workspace/folder name"
         }
     }
 
