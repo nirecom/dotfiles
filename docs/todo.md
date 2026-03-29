@@ -8,10 +8,6 @@
 - [ ] Open new terminal and confirm profile.ps1 uses C:\git\dotfiles
 - [ ] Open new Claude Code session and confirm hooks work via $DOTFILES_DIR
 
-### Claude Tabs installer — Verifying
-- [ ] `install.ps1 -Base` で Claude Tabs が正常にインストールされることを確認
-- [ ] 再実行で "already installed" が表示されることを確認（冪等性）
-
 ### SSOT 参照ルールの設計 — 検討中
 ポート・URL・ホスト名を推測せず SSOT を確認させる仕組みの設計:
 - [ ] claude-global/rules/ に汎用行動ルール追加（「SSOT を確認してから提示」— ファイル名は含めない）
