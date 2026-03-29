@@ -1,5 +1,5 @@
 # vs-cpp.ps1 - Install Visual Studio 2022 Community with C++ Desktop workload
-# Usage: Called by install.ps1 -Develop
+# Usage: Called by install.ps1 -Toolchain
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
