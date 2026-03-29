@@ -48,6 +48,11 @@ if [ -d "$HOME/.local/share/fnm" ]; then
     echo "Removing fnm directory: ~/.local/share/fnm (replaced by nvm)"
     rm -rf "$HOME/.local/share/fnm"
 fi
-if [ -f "$HOME/.local/share/fnm/fnm" ] || command -v fnm &>/dev/null; then
-    echo "[WARN] fnm binary still found on PATH after cleanup. Check .bashrc or other shell configs."
+# Also remove Homebrew fnm if present (not our original install method, but clean up anyway)
+if type brew >/dev/null 2>&1 && brew list fnm &>/dev/null; then
+    echo "Removing Homebrew fnm package (replaced by nvm)"
+    brew uninstall fnm
+fi
+if command -v fnm &>/dev/null; then
+    echo "[WARN] fnm binary still found on PATH after cleanup. Check shell configs."
 fi

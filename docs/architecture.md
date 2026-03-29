@@ -73,8 +73,10 @@
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget (Windows only) | |
 | [install/linux/nvm.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/nvm.sh) | Install nvm + Node.js LTS (WSL2/macOS/Linux) | |
 | [install/win/vs-cpp.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/vs-cpp.ps1) | Install VS 2022 Community with C++ Desktop workload | llama.cpp ソースビルド用 (MSVC compiler + CMake bundled). Auto-elevates via UAC |
-| [install/win/session-sync-init.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/session-sync-init.ps1) | Initialize `~/.claude/` as git repo for session sync | Called by `install.ps1` |
-| [bin/session-sync.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.ps1) | Session sync daily operation (push/pull/status) | Manual use |
+| [install/win/session-sync-init.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/session-sync-init.ps1) | Initialize `~/.claude/projects/` as git repo for session sync | Called by `install.ps1` |
+| [install/linux/session-sync-init.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/session-sync-init.sh) | Initialize `~/.claude/projects/` as git repo for session sync | Called by `install.sh` |
+| [bin/session-sync.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.ps1) | Session sync daily operation (push/pull/status) | Windows |
+| [bin/session-sync.sh](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.sh) | Session sync daily operation (push/pull/status) | Linux/macOS |
 | [install/win/profile.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/profile.ps1) | PowerShell profile (SSH agent, auto-pull, migration) | Symlinked to PS5 and PS7 profile paths |
 | [install/win/uv.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/uv.ps1) | Install uv (Python package manager) | |
 | [install/linux/uv.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/uv.sh) | Install uv (Python package manager) | |
@@ -205,7 +207,7 @@ Variables set by `bin/detectos.sh`:
 
 ### Execution order
 
-`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `rize.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh`)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `session-sync-init.sh` (if Claude Code installed) → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `rize.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh`)
 
 `install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `session-sync-init.ps1` (if Claude Code installed) → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Full`: `vs-cpp.ps1`)
 
@@ -217,23 +219,25 @@ See [README.md](../README.md) for full platform-specific installation instructio
 
 ### Session Sync
 
-Syncs Claude Code session history (`~/.claude/projects/`) across multiple Windows PCs.
+Syncs Claude Code session history (`~/.claude/projects/`) across multiple machines (Windows, macOS, Linux).
 
 **Problem**: Claude Code indexes projects by absolute path (e.g., `C:\Users\<user>\git\repo` → `~/.claude/projects/-C-Users-<user>-git-repo/`). Paths containing the username differ across machines, making session reference and resume impossible.
 
-**Solution**: Use drive-root unified paths (dedicated directories for LLM infrastructure and `C:\git\`) to eliminate username dependency, and sync history via a private GitHub repo.
+**Solution**: Use drive-root unified paths (dedicated directories for LLM infrastructure and `C:\git\` on Windows) to eliminate username dependency, and sync history via a private GitHub repo.
 
 | Path | Purpose |
 |---|---|
 | (drive-root LLM dir) | LLM infrastructure (existing, immovable — tightly coupled with NSSM services, TLS certs, GGUF model paths) |
-| `C:\git\` | All other git repositories |
+| `C:\git\` | All other git repositories (Windows) |
 
-**Sync method**: Initialize `~/.claude/` as a sparse git repo, syncing only `projects/` to `nirecom/claude-sessions` (private).
+**Sync method**: Initialize `~/.claude/projects/` as a git repo, syncing to `nirecom/claude-sessions` (private).
 
 | File | Repository | Responsibility |
 |---|---|---|
-| [install/win/session-sync-init.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/session-sync-init.ps1) | dotfiles | Initialization (git init, .gitignore, .gitattributes, remote setup, initial commit+push) |
-| [bin/session-sync.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.ps1) | dotfiles | Daily operation (push/pull/status subcommands) |
+| [install/win/session-sync-init.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/session-sync-init.ps1) | dotfiles | Initialization — Windows (git init, .gitattributes, remote setup, initial commit+push) |
+| [install/linux/session-sync-init.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/session-sync-init.sh) | dotfiles | Initialization — Linux/macOS (equivalent to ps1 version) |
+| [bin/session-sync.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.ps1) | dotfiles | Daily operation — Windows (push/pull/status subcommands) |
+| [bin/session-sync.sh](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.sh) | dotfiles | Daily operation — Linux/macOS (push/pull/status subcommands) |
 
 **Sync scope**:
 
@@ -248,10 +252,14 @@ Syncs Claude Code session history (`~/.claude/projects/`) across multiple Window
 
 **Relationship with Web mode**: VS Code's Local/Web toggle provides Web mode (claude.ai/code), but tasks requiring local filesystem, MCP servers, or NSSM service operations must use Local mode. Local sessions are invisible to Web and vice versa. Self-hosted sync is necessary for sharing Local mode session history.
 
-**Operational flow**:
+**Automatic sync**:
+- **Terminal startup**: `.profile_common` (Linux/macOS) and `profile.ps1` (Windows) run `git fetch + merge --ff-only` on `~/.claude/projects/` with 3-second timeout
+- **`codes` function** (Linux/macOS): Opens VS Code, automatically runs `session-sync.sh push` on exit
+
+**Manual sync**:
 ```
-End of work:    Close all Claude Code sessions → session-sync.ps1 push
-Other machine:  session-sync.ps1 pull → Launch Claude Code
+End of work:    Close all Claude Code sessions → session-sync push
+Other machine:  session-sync pull → Launch Claude Code
 ```
 
 The `claude-global/` directory manages global Claude Code settings centrally. The directory is named `claude-global/` (not `.claude/`) to avoid conflicts with project-level `.claude/` directories.

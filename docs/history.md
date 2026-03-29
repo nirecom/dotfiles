@@ -260,7 +260,7 @@ Changes:
   - `migrate-repos.ps1` + tests: deleted (no longer needed)
   - `main-install-obsolete-migration.Tests.ps1`: new (4 tests)
 
-### Session sync git root relocation ((pending))
+### Session sync git root relocation (dbd003a)
 Background: `~/.claude/` was used as git root for session sync, but only `projects/` was tracked. This required a complex `.gitignore` (exclude-all + re-include pattern) and caused a misleading warning in `dotfileslink.ps1` about symlink conflict with `.git`. Moving git root to `~/.claude/projects/` eliminates both issues.
 Changes:
   - `session-sync-init.ps1`: git init target changed from `$ClaudeDir` to `$ClaudeDir/projects`. Added migration logic to remove old `.git`/`.gitignore`/`.gitattributes` from `~/.claude/`. Removed `.gitignore` (no longer needed). `.gitattributes` created in `projects/`
@@ -268,6 +268,28 @@ Changes:
   - `dotfileslink.ps1`: removed "dotclaude" warning about `.git` in `~/.claude/`
   - Remote repo `nirecom/claude-sessions` recreated (old layout had `projects/` prefix in tree; new layout stores files at root)
   - Tests: 12 tests updated for new layout + migration test added
+
+### Notification hook for permission_prompt (f447e11, 7ef7776)
+Background: Claude Code permission_prompt dialogs were easy to miss, leaving sessions idle
+Changes: Added `check-notification.js` PreToolUse hook that sends OS toast notification on `permission_prompt` events. Moved WebSearch/WebFetch from auto-allow to `permissions.ask` (now requires explicit confirmation)
+
+### AutoHotkey per-user path fallback (1a15c1f, 29bfd8a)
+Background: AutoHotkey v2 per-user installs (`%LOCALAPPDATA%\Programs\`) were not found because only `%ProgramFiles%` was searched
+Changes: Added per-user install path fallback to `autohotkey.ps1`. Also fixed shortcut argument update bug and path matching bug
+
+### Session sync: terminal startup fetch + codes function (d3c3a38, 7d7a98e, 4f8e4c3, 20ebb49)
+Background: session-sync push/pull required manual execution. Wanted automatic fetch on terminal startup and automatic push when closing VS Code
+Changes:
+  - `.profile_common`: added `git fetch + merge --ff-only` for `~/.claude/projects/` on terminal startup (3s timeout). Added `codes` function (opens VS Code, runs `session-sync.sh push` on exit)
+  - `install/win/profile.ps1`: equivalent fetch logic added
+  - `bin/session-sync.sh`: new Linux/macOS session sync script (push/pull/status subcommands)
+
+### Session sync: cross-platform support ((pending))
+Background: Session sync was Windows-only but the same session sharing is needed on macOS/Linux
+Changes:
+  - `install/linux/session-sync-init.sh`: new (equivalent to `session-sync-init.ps1` — git init, migration, remote setup, initial commit+push)
+  - `install.sh`: added session-sync-init call after Claude Code install (`type claude` guard)
+  - `install-obsolete.sh`: added Homebrew fnm cleanup (`brew list fnm && brew uninstall fnm`; not originally installed via dotfiles but cleaned up as a precaution)
 
 ---
 
