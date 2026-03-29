@@ -84,10 +84,17 @@ if (Get-Command fnm -ErrorAction SilentlyContinue) {
     }
 }
 
-# Launch VS Code with session sync (push on close)
+# Launch VS Code with session sync (push on window close via title polling)
 function codes {
     $syncScript = "$DotfilesDir\bin\session-sync.ps1"
+    $waitScript = "$DotfilesDir\bin\wait-vscode-window.ps1"
+    $target = if ($args.Count -gt 0) { $args[0] } else { '.' }
     $codeArgs = $args -join ' '
+    if ($target -match '\.code-workspace$') {
+        $name = [IO.Path]::GetFileNameWithoutExtension((Resolve-Path $target).Path)
+    } else {
+        $name = Split-Path -Leaf (Resolve-Path $target).Path
+    }
     Start-Process pwsh -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-Command",
-        "code.cmd --new-window --wait $codeArgs; & '$syncScript' push" -WindowStyle Hidden
+        "code.cmd --new-window $codeArgs; & '$waitScript' '$name'; & '$syncScript' push" -WindowStyle Hidden
 }
