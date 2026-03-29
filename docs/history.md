@@ -10,6 +10,10 @@ Changes: Added `-Toolchain` parameter to `install.ps1` for heavy build toolchain
 Background: `codes` alias uses `Start-Job` to push session sync after VS Code closes, but `Start-Job` is tied to the parent PowerShell session. Closing the terminal before VS Code was confirmed to sometimes kill the job before push ran.
 Changes: Replaced `Start-Job` with `Start-Process pwsh -WindowStyle Hidden` so the push process is independent of the terminal lifecycle.
 
+### Fix codes multi-instance support
+Background: `codes` で2つ目のワークスペースを開くと、VS Code が既存ウィンドウを再利用して1つ目が消える
+Changes: `code --wait` に `--new-window` フラグを追加（.profile_common + profile.ps1）。各呼び出しが独立したウィンドウで開くようになった
+
 ### Initial setup (a112597–7419e8d)
 Background: Manage dotfiles on GitHub
 Changes: Added `.bashrc`, `.vimrc`, `.editorconfig`, `.gitconfig`

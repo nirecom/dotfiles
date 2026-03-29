@@ -89,5 +89,5 @@ function codes {
     $syncScript = "$DotfilesDir\bin\session-sync.ps1"
     $codeArgs = $args -join ' '
     Start-Process pwsh -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-Command",
-        "code.cmd --wait $codeArgs; & '$syncScript' push" -WindowStyle Hidden
+        "code.cmd --new-window --wait $codeArgs; & '$syncScript' push" -WindowStyle Hidden
 }

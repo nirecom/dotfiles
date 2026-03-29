@@ -182,7 +182,7 @@ unset _session_dir
 # Launch VS Code with session sync (push on close)
 codes() {
     (
-        code --wait "$@"
+        code --new-window --wait "$@"
         "$DOTFILES_DIR/bin/session-sync.sh" push >/dev/null 2>&1
     ) &
     disown
