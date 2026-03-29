@@ -2,7 +2,7 @@
 
 ## Change History
 
-### Fix codes function to survive terminal close (TBD)
+### Fix codes function to survive terminal close (781f512)
 Background: `codes` alias uses `Start-Job` to push session sync after VS Code closes, but `Start-Job` is tied to the parent PowerShell session. Closing the terminal before VS Code was confirmed to sometimes kill the job before push ran.
 Changes: Replaced `Start-Job` with `Start-Process pwsh -WindowStyle Hidden` so the push process is independent of the terminal lifecycle.
 
