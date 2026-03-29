@@ -10,7 +10,8 @@ if [ -s "$NVM_DIR/nvm.sh" ]; then
   echo "nvm is already installed: $(. "$NVM_DIR/nvm.sh" && nvm --version)"
 else
   echo "Installing nvm..."
-  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+  # --skip-shell: .profile_common already handles nvm init; prevent auto-modification of .zshrc/.bashrc
+  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash -s -- --skip-shell
 fi
 
 # Load nvm for this session

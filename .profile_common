@@ -169,6 +169,25 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
+# Pull Claude session sync on startup (from other machines)
+_session_dir="$HOME/.claude/projects"
+if [ -d "$_session_dir/.git" ] && type git >/dev/null 2>&1; then
+    echo "git fetch Claude session sync ..."
+    if timeout 3 git -C "$_session_dir" fetch 2>/dev/null; then
+        git -C "$_session_dir" merge --ff-only FETCH_HEAD 2>/dev/null
+    fi
+fi
+unset _session_dir
+
+# Launch VS Code with session sync (push on close)
+codes() {
+    (
+        code --wait "$@"
+        "$DOTFILES_DIR/bin/session-sync.sh" push
+    ) &
+    disown
+}
+
 # Source code highlighting
 case "$OSDIST" in
     "macos" )

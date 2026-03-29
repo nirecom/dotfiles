@@ -27,7 +27,9 @@
 - [ ] install-base, install-develop — メタスクリプト（構成が異なる）
 - [ ] config/win ↔ config/mac ペアの hook 対応要否
 
-### Session sync git root relocation — Verifying
-- [ ] Open new terminal and confirm `install.ps1` runs without "dotclaude" warning
-- [ ] Run `session-sync.ps1 push` and confirm it works from `~/.claude/projects/`
-- [ ] Verify on another PC: `install.ps1` migrates old git root and re-initializes
+### Session sync cross-platform — Verifying
+- [x] `install.sh` calls `session-sync-init.sh` after Claude Code install (macOS tested)
+- [x] `install-obsolete.sh` removes Homebrew fnm (macOS tested)
+- [ ] Verify on WSL2: `install.sh` runs session-sync-init without error
+- [ ] Verify on Windows: `install.ps1` migrates old git root and re-initializes
+- [ ] Run `session-sync.ps1 push` on Windows and confirm it works from `~/.claude/projects/`

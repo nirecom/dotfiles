@@ -35,6 +35,11 @@ echo "--- Creating symlinks ---"
 echo ""
 echo "--- Installing Claude Code ---"
 ~/dotfiles/install/linux/claude-code.sh
+if type claude >/dev/null 2>&1; then
+    echo ""
+    echo "--- Initializing Claude Code session sync ---"
+    ~/dotfiles/install/linux/session-sync-init.sh
+fi
 
 # Step 3: Install keychain (SSH agent manager)
 echo ""
