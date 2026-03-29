@@ -284,12 +284,22 @@ Changes:
   - `install/win/profile.ps1`: equivalent fetch logic added
   - `bin/session-sync.sh`: new Linux/macOS session sync script (push/pull/status subcommands)
 
-### Session sync: cross-platform support ((pending))
+### Session sync: cross-platform support (d50203c, (pending))
 Background: Session sync was Windows-only but the same session sharing is needed on macOS/Linux
 Changes:
   - `install/linux/session-sync-init.sh`: new (equivalent to `session-sync-init.ps1` — git init, migration, remote setup, initial commit+push)
   - `install.sh`: added session-sync-init call after Claude Code install (`type claude` guard)
   - `install-obsolete.sh`: added Homebrew fnm cleanup (`brew list fnm && brew uninstall fnm`; not originally installed via dotfiles but cleaned up as a precaution)
+
+### Session sync: init/push reliability fix ((pending))
+Background: `session-sync-init.sh` の初回コミットフローが「リモートに既に履歴がある」ケースを想定しておらず、2台目以降のマシンで init → push が失敗する。また push 時にリモートが先行している場合も失敗する
+Design decisions:
+  (1) `reset --hard` vs `reset`（mixed）: `reset --hard` はリモートと同名のローカル JSONL を上書きする危険がある（同一パスの2台で発生）。`reset`（mixed）なら HEAD のみ移動しローカルファイルを保護。ファイル展開は通常の pull で行う
+  (2) `codes()` のバックグラウンド push 出力: プロンプト後に出力が割り込み、Enter が必要になる問題。SIGWINCH によるプロンプト再描画を試みたが効果なし。出力を `/dev/null` に抑制
+Changes:
+  - `session-sync-init.sh`/`.ps1`: 初回コミット前に `fetch origin main` + `reset origin/main` でリモート履歴を取り込む。差分がない場合の `commit` 失敗を `|| true` で許容
+  - `bin/session-sync.sh`/`.ps1`: push 前に `pull --rebase origin main` を追加
+  - `.profile_common`: `codes()` の push 出力を `>/dev/null 2>&1` で抑制
 
 ---
 
