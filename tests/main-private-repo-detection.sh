@@ -118,6 +118,48 @@ if [ "$result" = "null" ]; then pass "empty URL"
 else fail "empty URL — got: $result"; fi
 
 echo ""
+echo "=== Unit: extractHost ==="
+
+run_extract_host() {
+    node -e "
+const { extractHost } = require('$LIB');
+console.log(extractHost('$1') || 'null');
+"
+}
+
+result=$(run_extract_host "git@github.com:owner/repo.git")
+if [ "$result" = "github.com" ]; then pass "SSH github.com"
+else fail "SSH github.com — got: $result"; fi
+
+result=$(run_extract_host "https://github.com/owner/repo.git")
+if [ "$result" = "github.com" ]; then pass "HTTPS github.com"
+else fail "HTTPS github.com — got: $result"; fi
+
+result=$(run_extract_host "git@gitlab.example.com:owner/repo.git")
+if [ "$result" = "gitlab.example.com" ]; then pass "SSH GitLab"
+else fail "SSH GitLab — got: $result"; fi
+
+result=$(run_extract_host "https://gitlab.example.com/owner/repo.git")
+if [ "$result" = "gitlab.example.com" ]; then pass "HTTPS GitLab"
+else fail "HTTPS GitLab — got: $result"; fi
+
+result=$(run_extract_host "ssh://git@gitlab.example.com:2222/owner/repo.git")
+if [ "$result" = "gitlab.example.com" ]; then pass "SSH with custom port"
+else fail "SSH with custom port — got: $result"; fi
+
+result=$(run_extract_host "git@github.company.com:owner/repo.git")
+if [ "$result" = "github.company.com" ]; then pass "github subdomain (not github.com)"
+else fail "github subdomain — got: $result"; fi
+
+result=$(run_extract_host "git@bitbucket.org:owner/repo.git")
+if [ "$result" = "bitbucket.org" ]; then pass "Bitbucket"
+else fail "Bitbucket — got: $result"; fi
+
+result=$(run_extract_host "")
+if [ "$result" = "null" ]; then pass "empty URL"
+else fail "empty URL — got: $result"; fi
+
+echo ""
 echo "=== Unit: extractRepoDirFromCommand ==="
 
 run_extract_dir() {
@@ -207,6 +249,57 @@ console.log(isPrivateRepo(null));
 if [ "$result" = "false" ]; then pass "null repoDir → fail-open"
 else fail "null repoDir → fail-open — got: $result"; fi
 
+echo ""
+echo "=== Unit: non-GitHub remotes → treat as private ==="
+
+# Non-GitHub remote → treat as private (true) regardless of gh response
+setup_mock_gh_public
+REPO_GITLAB="$TMPDIR_BASE/repo-gitlab-$RANDOM"
+mkdir -p "$REPO_GITLAB"
+git -C "$REPO_GITLAB" init -q
+git -C "$REPO_GITLAB" config user.email "test@example.com"
+git -C "$REPO_GITLAB" config user.name "Test"
+git -C "$REPO_GITLAB" remote add origin "git@gitlab.example.com:team/project.git"
+if command -v cygpath >/dev/null 2>&1; then REPO_GITLAB="$(cygpath -m "$REPO_GITLAB")"; fi
+result=$(PATH="$MOCK_BIN:$PATH" node -e "
+const { isPrivateRepo } = require('$LIB');
+console.log(isPrivateRepo('$REPO_GITLAB'));
+")
+if [ "$result" = "true" ]; then pass "GitLab repo → treat as private"
+else fail "GitLab repo → treat as private — got: $result"; fi
+
+# Non-GitHub with custom port SSH URL
+setup_mock_gh_public
+REPO_CUSTOM="$TMPDIR_BASE/repo-custom-$RANDOM"
+mkdir -p "$REPO_CUSTOM"
+git -C "$REPO_CUSTOM" init -q
+git -C "$REPO_CUSTOM" config user.email "test@example.com"
+git -C "$REPO_CUSTOM" config user.name "Test"
+git -C "$REPO_CUSTOM" remote add origin "ssh://git@gitlab.example.com:2222/team/project.git"
+if command -v cygpath >/dev/null 2>&1; then REPO_CUSTOM="$(cygpath -m "$REPO_CUSTOM")"; fi
+result=$(PATH="$MOCK_BIN:$PATH" node -e "
+const { isPrivateRepo } = require('$LIB');
+console.log(isPrivateRepo('$REPO_CUSTOM'));
+")
+if [ "$result" = "true" ]; then pass "custom port SSH → treat as private"
+else fail "custom port SSH → treat as private — got: $result"; fi
+
+# github.company.com (not github.com) → treat as private
+setup_mock_gh_public
+REPO_GHE="$TMPDIR_BASE/repo-ghe-$RANDOM"
+mkdir -p "$REPO_GHE"
+git -C "$REPO_GHE" init -q
+git -C "$REPO_GHE" config user.email "test@example.com"
+git -C "$REPO_GHE" config user.name "Test"
+git -C "$REPO_GHE" remote add origin "git@github.company.com:team/project.git"
+if command -v cygpath >/dev/null 2>&1; then REPO_GHE="$(cygpath -m "$REPO_GHE")"; fi
+result=$(PATH="$MOCK_BIN:$PATH" node -e "
+const { isPrivateRepo } = require('$LIB');
+console.log(isPrivateRepo('$REPO_GHE'));
+")
+if [ "$result" = "true" ]; then pass "github.company.com → treat as private"
+else fail "github.company.com → treat as private — got: $result"; fi
+
 # =====================================================================
 # Integration tests: hook behavior with private/public repos
 # =====================================================================
@@ -253,6 +346,12 @@ setup_mock_gh_private
 REPO=$(setup_repo)
 GIT_C_COMMIT="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git -C $REPO commit -m \\\"fix 192.168.1.1\\\"\"}}"
 expect_approve "private repo via git -C → approve" "$HOOK_PRIVATE" "$GIT_C_COMMIT" "$REPO"
+
+# GitLab repo: commit with private info → approve (non-GitHub = private)
+setup_mock_gh_public
+REPO_GL=$(setup_repo)
+git -C "$REPO_GL" remote set-url origin "git@gitlab.example.com:team/project.git"
+expect_approve "GitLab repo — commit with IP address → approve" "$HOOK_PRIVATE" "$COMMIT_WITH_PRIVATE" "$REPO_GL"
 
 echo ""
 echo "=== Integration: check-docs-updated.js ==="
