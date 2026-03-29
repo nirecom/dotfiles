@@ -78,6 +78,8 @@
 | [install/linux/session-sync-init.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/session-sync-init.sh) | Initialize `~/.claude/projects/` as git repo for session sync | Called by `install.sh` |
 | [bin/session-sync.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.ps1) | Session sync daily operation (push/pull/status) | Windows |
 | [bin/session-sync.sh](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.sh) | Session sync daily operation (push/pull/status) | Linux/macOS |
+| [bin/wait-vscode-window.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/wait-vscode-window.ps1) | Wait for VS Code window close by title polling | Windows (Win32 EnumWindows) |
+| [bin/wait-vscode-window.sh](https://github.com/nirecom/dotfiles/blob/main/bin/wait-vscode-window.sh) | Wait for VS Code window close by title polling | Linux/macOS (xdotool/wmctrl/osascript) |
 | [install/win/profile.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/profile.ps1) | PowerShell profile (SSH agent, auto-pull, migration) | Symlinked to PS5 and PS7 profile paths |
 | [install/win/uv.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/uv.ps1) | Install uv (Python package manager) | |
 | [install/linux/uv.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/uv.sh) | Install uv (Python package manager) | |
@@ -255,7 +257,7 @@ Syncs Claude Code session history (`~/.claude/projects/`) across multiple machin
 
 **Automatic sync**:
 - **Terminal startup**: `.profile_common` (Linux/macOS) and `profile.ps1` (Windows) run `git fetch + merge --ff-only` on `~/.claude/projects/` with 3-second timeout
-- **`codes` function**: Opens VS Code in a new window (`--new-window`), automatically runs session-sync push on exit. Supports multiple concurrent instances. Linux/macOS: `session-sync.sh` (output silenced). Windows: `session-sync.ps1` via hidden pwsh process
+- **`codes` function**: Opens VS Code in a new window (`--new-window`), polls for window closure via title matching (`wait-vscode-window.ps1` / `.sh`), then runs session-sync push. Each instance independently detects its own window, so closing one window triggers push even while other windows remain open. Windows: Win32 EnumWindows API. Linux: xdotool/wmctrl. macOS: osascript
 
 **Manual sync**:
 ```

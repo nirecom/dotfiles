@@ -10,6 +10,10 @@ Changes: Added `-Toolchain` parameter to `install.ps1` for heavy build toolchain
 Background: `codes` alias uses `Start-Job` to push session sync after VS Code closes, but `Start-Job` is tied to the parent PowerShell session. Closing the terminal before VS Code was confirmed to sometimes kill the job before push ran.
 Changes: Replaced `Start-Job` with `Start-Process pwsh -WindowStyle Hidden` so the push process is independent of the terminal lifecycle.
 
+### Fix codes session sync not firing per-window
+Background: `code --new-window --wait` の `--wait` は VS Code サーバープロセス全体の終了を待つため、複数ウィンドウが開いている場合、個別のウィンドウを閉じても session-sync push が発火しなかった。全ウィンドウを閉じない限りどの push も実行されない問題。
+Changes: `--wait` を廃止し、Win32 EnumWindows API（Windows）/ xdotool・wmctrl・osascript（Linux/macOS）によるウィンドウタイトルポーリングに置き換え。`bin/wait-vscode-window.ps1` と `bin/wait-vscode-window.sh` を新規作成。`codes` 関数がワークスペース名を解決し、対象ウィンドウの出現→消失を検知してから push を実行する。`.code-workspace` ファイルの場合は `(Workspace)` サフィックス付きタイトルにも対応。
+
 ### Fix codes multi-instance support
 Background: `codes` で2つ目のワークスペースを開くと、VS Code が既存ウィンドウを再利用して1つ目が消える
 Changes: `code --wait` に `--new-window` フラグを追加（.profile_common + profile.ps1）。各呼び出しが独立したウィンドウで開くようになった
