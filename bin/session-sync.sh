@@ -39,7 +39,8 @@ case "$ACTION" in
         fi
         timestamp=$(date "+%Y-%m-%d %H:%M")
         git -C "$PROJECTS_DIR" commit -m "sync: $(hostname -s) $timestamp"
-        git -C "$PROJECTS_DIR" push
+        git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
+        git -C "$PROJECTS_DIR" push -u origin main
         echo "Pushed session data."
         ;;
     pull)

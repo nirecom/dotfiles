@@ -230,7 +230,7 @@ Syncs Claude Code session history (`~/.claude/projects/`) across multiple machin
 | (drive-root LLM dir) | LLM infrastructure (existing, immovable — tightly coupled with NSSM services, TLS certs, GGUF model paths) |
 | `C:\git\` | All other git repositories (Windows) |
 
-**Sync method**: Initialize `~/.claude/projects/` as a git repo, syncing to `nirecom/claude-sessions` (private).
+**Sync method**: Initialize `~/.claude/projects/` as a git repo, syncing to `nirecom/claude-sessions` (private). Init fetches existing remote history (`fetch` + `reset`) before first commit so that 2nd+ machines inherit prior session data without conflict.
 
 | File | Repository | Responsibility |
 |---|---|---|
@@ -254,7 +254,7 @@ Syncs Claude Code session history (`~/.claude/projects/`) across multiple machin
 
 **Automatic sync**:
 - **Terminal startup**: `.profile_common` (Linux/macOS) and `profile.ps1` (Windows) run `git fetch + merge --ff-only` on `~/.claude/projects/` with 3-second timeout
-- **`codes` function** (Linux/macOS): Opens VS Code, automatically runs `session-sync.sh push` on exit
+- **`codes` function** (Linux/macOS): Opens VS Code, automatically runs `session-sync.sh push` on exit (output silenced — background process output would require Enter to dismiss)
 
 **Manual sync**:
 ```

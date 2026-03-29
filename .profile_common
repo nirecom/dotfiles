@@ -183,7 +183,7 @@ unset _session_dir
 codes() {
     (
         code --wait "$@"
-        "$DOTFILES_DIR/bin/session-sync.sh" push
+        "$DOTFILES_DIR/bin/session-sync.sh" push >/dev/null 2>&1
     ) &
     disown
 }

@@ -62,9 +62,17 @@ if (-not $NoRemote) {
 $hasCommits = $false
 try { $hasCommits = [int](git -C $ProjectsDir rev-list --count HEAD 2>$null) -gt 0 } catch {}
 if (-not $hasCommits) {
+    # Pull existing remote history first (e.g., synced from another machine)
+    if (-not $NoRemote) {
+        try {
+            git -C $ProjectsDir fetch origin main 2>$null
+            git -C $ProjectsDir reset origin/main 2>$null
+        } catch {}
+    }
     git -C $ProjectsDir add .gitattributes
     git -C $ProjectsDir add .
-    git -C $ProjectsDir commit -m "Initial session sync from $env:COMPUTERNAME"
+    git -C $ProjectsDir commit -m "Initial session sync from $env:COMPUTERNAME" 2>$null
+    # commit may have nothing to do if remote history already covers all files
     if (-not $NoRemote) {
         git -C $ProjectsDir push -u origin main
     }

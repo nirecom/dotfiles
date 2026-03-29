@@ -84,6 +84,33 @@ fi
 "$DOTFILES_DIR/install/linux/session-sync-init.sh" \
     --claude-dir "$FAKE_CLAUDE" --remote-url "$FAKE_REMOTE" >/dev/null 2>&1
 
+# --- Normal: Init with existing remote history ---
+echo "[init] Init with existing remote history"
+EXISTING_REMOTE="$TMPDIR_BASE/existing-remote.git"
+git init --bare "$EXISTING_REMOTE" >/dev/null 2>&1
+# Seed remote with a commit from "another machine"
+SEED_DIR="$TMPDIR_BASE/seed"
+git init "$SEED_DIR" >/dev/null 2>&1
+git -C "$SEED_DIR" checkout -b main >/dev/null 2>&1
+echo '{"seed":"data"}' > "$SEED_DIR/seed-session.jsonl"
+printf '* text eol=lf\n' > "$SEED_DIR/.gitattributes"
+git -C "$SEED_DIR" add . >/dev/null 2>&1
+git -C "$SEED_DIR" commit -m "seed from other machine" >/dev/null 2>&1
+git -C "$SEED_DIR" remote add origin "$EXISTING_REMOTE" >/dev/null 2>&1
+git -C "$SEED_DIR" push -u origin main >/dev/null 2>&1
+# Now init on a fresh machine pointing at same remote
+EXISTING_CLAUDE="$TMPDIR_BASE/existing/.claude"
+mkdir -p "$EXISTING_CLAUDE"
+"$DOTFILES_DIR/install/linux/session-sync-init.sh" \
+    --claude-dir "$EXISTING_CLAUDE" --remote-url "$EXISTING_REMOTE" >/dev/null 2>&1
+EXISTING_PROJECTS="$EXISTING_CLAUDE/projects"
+seed_in_log=$(git -C "$EXISTING_PROJECTS" log --oneline | grep -c "seed from other machine")
+if [ "$seed_in_log" -ge 1 ]; then
+    pass "remote commit preserved in log"
+else
+    fail "remote commit not in log"
+fi
+
 # --- Edge: Old .git in ~/.claude/ gets migrated ---
 echo "[init] Migration of old git root"
 MIGRATE_HOME="$TMPDIR_BASE/migrate"
@@ -217,6 +244,29 @@ if echo "$last_msg" | grep -qE "^sync: .+ [0-9]{4}-[0-9]{2}-[0-9]{2}"; then
     pass "commit message matches format (sync: hostname date)"
 else
     fail "commit message format unexpected ($last_msg)"
+fi
+
+# --- Edge: Push with diverged remote (pull --rebase) ---
+echo "[sync] Push with diverged remote"
+# Create a second clone that pushes a commit to remote
+SECOND_CLONE="$TMPDIR_BASE/second-clone"
+git clone "$FAKE_REMOTE" "$SECOND_CLONE" >/dev/null 2>&1
+echo '{"other":"machine"}' > "$SECOND_CLONE/other-session.jsonl"
+git -C "$SECOND_CLONE" add . >/dev/null 2>&1
+git -C "$SECOND_CLONE" commit -m "sync: other-machine 2026-01-01 00:00" >/dev/null 2>&1
+git -C "$SECOND_CLONE" push >/dev/null 2>&1
+# Now push from original — should rebase over the diverged commit
+echo '{"local":"new"}' > "$FAKE_PROJECTS/local-new.jsonl"
+output=$("$DOTFILES_DIR/bin/session-sync.sh" push --claude-dir "$FAKE_CLAUDE" 2>&1)
+if echo "$output" | grep -qi "pushed"; then
+    pass "push succeeds after remote diverged"
+else
+    fail "push failed after remote diverged (output: $output)"
+fi
+if [ -f "$FAKE_PROJECTS/other-session.jsonl" ]; then
+    pass "diverged remote file present after rebase"
+else
+    fail "diverged remote file missing after rebase"
 fi
 
 # --- Edge: Pull idempotent (already up-to-date) ---

@@ -39,7 +39,8 @@ switch ($Action) {
 
         $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm"
         git -C $ProjectsDir commit -m "sync: $env:COMPUTERNAME $timestamp"
-        git -C $ProjectsDir push
+        git -C $ProjectsDir pull --rebase origin main 2>$null
+        git -C $ProjectsDir push -u origin main
         Write-Host "Pushed session data." -ForegroundColor Green
     }
     "pull" {
