@@ -4,6 +4,7 @@
 #   session-sync.sh push    # Commit and push session data
 #   session-sync.sh pull    # Pull latest session data
 #   session-sync.sh status  # Show sync status
+#   session-sync.sh reset   # Force-sync local to remote (for initial setup or recovery)
 
 set -euo pipefail
 
@@ -50,8 +51,13 @@ case "$ACTION" in
     status)
         git -C "$PROJECTS_DIR" status
         ;;
+    reset)
+        git -C "$PROJECTS_DIR" fetch origin main
+        git -C "$PROJECTS_DIR" reset --hard origin/main
+        echo "Reset to remote state."
+        ;;
     *)
-        echo "Usage: session-sync.sh {push|pull|status}" >&2
+        echo "Usage: session-sync.sh {push|pull|status|reset}" >&2
         exit 1
         ;;
 esac

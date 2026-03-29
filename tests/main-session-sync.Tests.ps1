@@ -43,13 +43,12 @@ Describe "session-sync-init.ps1" {
         $content | Should -Match '\* text eol=lf'
     }
 
-    It "is idempotent - running twice produces same result" {
+    It "is idempotent - running twice keeps repo intact" {
         $projDir = Join-Path $script:TestDir "projects"
         & $InitScript -ClaudeDir $script:TestDir -NoRemote
-        $commitCount1 = git -C $projDir rev-list --count HEAD
         & $InitScript -ClaudeDir $script:TestDir -NoRemote
-        $commitCount2 = git -C $projDir rev-list --count HEAD
-        $commitCount2 | Should -Be $commitCount1 -Because "second init should not create extra commits"
+        Test-Path (Join-Path $projDir ".git") | Should -BeTrue -Because "repo should survive re-run"
+        Test-Path (Join-Path $projDir ".gitattributes") | Should -BeTrue -Because ".gitattributes should survive re-run"
     }
 
     It "files outside projects/ are not tracked" {
@@ -73,27 +72,12 @@ Describe "session-sync-init.ps1" {
         }
     }
 
-    It "pulls existing remote files into working tree on fresh init" {
-        # Seed a bare remote with a file from "another machine"
-        $fakeRemote = Join-Path $env:TEMP "session-sync-remote-seed-$(Get-Random)"
-        $seedDir = Join-Path $env:TEMP "session-sync-seed-$(Get-Random)"
-        git init --bare $fakeRemote 2>&1 | Out-Null
-        git init $seedDir 2>&1 | Out-Null
-        git -C $seedDir checkout -b main 2>&1 | Out-Null
-        Set-Content -Path (Join-Path $seedDir "seed-session.jsonl") -Value '{"seed":"data"}'
-        git -C $seedDir add . 2>&1 | Out-Null
-        git -C $seedDir commit -m "seed from other machine" 2>&1 | Out-Null
-        git -C $seedDir remote add origin $fakeRemote 2>&1 | Out-Null
-        git -C $seedDir push -u origin main 2>&1 | Out-Null
-        try {
-            # Fresh init pointing at seeded remote
-            $freshDir = Join-Path $env:TEMP "session-sync-fresh-$(Get-Random)"
-            & $InitScript -ClaudeDir $freshDir -RemoteUrl $fakeRemote
-            $projDir = Join-Path $freshDir "projects"
-            Test-Path (Join-Path $projDir "seed-session.jsonl") | Should -BeTrue -Because "remote file should be in working tree"
-        } finally {
-            Remove-Item -Recurse -Force $fakeRemote, $seedDir, $freshDir -ErrorAction SilentlyContinue
-        }
+    It "does not create commits (sync separated from init)" {
+        & $InitScript -ClaudeDir $script:TestDir -NoRemote
+        $projDir = Join-Path $script:TestDir "projects"
+        git -C $projDir rev-list --count HEAD 2>&1 | Out-Null
+        # Should fail or return 0 (no commits)
+        $LASTEXITCODE | Should -Not -Be 0 -Because "init should not create any commits"
     }
 
     It "migrates old git root from claude dir to projects/" {
@@ -118,8 +102,13 @@ Describe "session-sync.ps1" {
         $script:RemoteDir = Join-Path $env:TEMP "session-sync-remote-$(Get-Random)"
         New-Item -ItemType Directory -Path $script:TestDir -Force | Out-Null
         git init --bare $script:RemoteDir 2>&1 | Out-Null
-        # Initialize via init script
+        # Initialize via init script (plumbing only, no commits)
         & $InitScript -ClaudeDir $script:TestDir -RemoteUrl $script:RemoteDir
+        # Create initial commit so push/pull tests work
+        $projDir = Join-Path $script:TestDir "projects"
+        git -C $projDir add .gitattributes 2>&1 | Out-Null
+        git -C $projDir commit -m "initial" 2>&1 | Out-Null
+        git -C $projDir push -u origin main 2>&1 | Out-Null
     }
 
     AfterEach {
@@ -169,5 +158,66 @@ Describe "session-sync.ps1" {
         $log = git -C $gitDir log --oneline -1
         $today = Get-Date -Format "yyyy-MM-dd"
         $log | Should -Match $today -Because "commit message should include date"
+    }
+}
+
+Describe "session-sync.ps1 reset" {
+    BeforeEach {
+        # Create seeded remote
+        $script:RemoteDir = Join-Path $env:TEMP "session-sync-remote-$(Get-Random)"
+        $seedDir = Join-Path $env:TEMP "session-sync-seed-$(Get-Random)"
+        git init --bare $script:RemoteDir 2>&1 | Out-Null
+        git init $seedDir 2>&1 | Out-Null
+        git -C $seedDir checkout -b main 2>&1 | Out-Null
+        Set-Content -Path (Join-Path $seedDir "seed-session.jsonl") -Value '{"seed":"data"}'
+        printf "* text eol=lf`n" | Set-Content -Path (Join-Path $seedDir ".gitattributes") -NoNewline
+        git -C $seedDir add . 2>&1 | Out-Null
+        git -C $seedDir commit -m "seed from other machine" 2>&1 | Out-Null
+        git -C $seedDir remote add origin $script:RemoteDir 2>&1 | Out-Null
+        git -C $seedDir push -u origin main 2>&1 | Out-Null
+        Remove-Item -Recurse -Force $seedDir -ErrorAction SilentlyContinue
+        # Init fresh machine (plumbing only)
+        $script:TestDir = Join-Path $env:TEMP "session-sync-test-$(Get-Random)"
+        New-Item -ItemType Directory -Path $script:TestDir -Force | Out-Null
+        & $InitScript -ClaudeDir $script:TestDir -RemoteUrl $script:RemoteDir
+    }
+
+    AfterEach {
+        Remove-Item -Recurse -Force $script:TestDir -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force $script:RemoteDir -ErrorAction SilentlyContinue
+    }
+
+    It "reset fetches remote files into working tree" {
+        & $SyncScript -Action reset -ClaudeDir $script:TestDir
+        $projDir = Join-Path $script:TestDir "projects"
+        Test-Path (Join-Path $projDir "seed-session.jsonl") | Should -BeTrue -Because "remote file should be in working tree"
+    }
+
+    It "push works after reset (bidirectional)" {
+        & $SyncScript -Action reset -ClaudeDir $script:TestDir
+        $projDir = Join-Path $script:TestDir "projects\local-proj"
+        New-Item -ItemType Directory -Path $projDir -Force | Out-Null
+        Set-Content -Path (Join-Path $projDir "local.jsonl") -Value "data"
+        & $SyncScript -Action push -ClaudeDir $script:TestDir
+        $gitDir = Join-Path $script:TestDir "projects"
+        $log = git -C $gitDir log --oneline -1
+        $log | Should -Match "sync:" -Because "push should create sync commit after reset"
+    }
+
+    It "reset is idempotent" {
+        & $SyncScript -Action reset -ClaudeDir $script:TestDir
+        & $SyncScript -Action reset -ClaudeDir $script:TestDir
+        $projDir = Join-Path $script:TestDir "projects"
+        Test-Path (Join-Path $projDir "seed-session.jsonl") | Should -BeTrue -Because "file should persist after double reset"
+    }
+
+    It "reset discards diverged local commits" {
+        & $SyncScript -Action reset -ClaudeDir $script:TestDir
+        $projDir = Join-Path $script:TestDir "projects"
+        Set-Content -Path (Join-Path $projDir "diverged.jsonl") -Value "local only"
+        git -C $projDir add . 2>&1 | Out-Null
+        git -C $projDir commit -m "diverged local commit" 2>&1 | Out-Null
+        & $SyncScript -Action reset -ClaudeDir $script:TestDir
+        Test-Path (Join-Path $projDir "diverged.jsonl") | Should -BeFalse -Because "diverged file should be discarded"
     }
 }

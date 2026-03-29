@@ -50,22 +50,21 @@ else
     fail "remote not set correctly (got: $remote_url)"
 fi
 
-commit_count=$(git -C "$FAKE_PROJECTS" rev-list --count HEAD 2>/dev/null)
-if [ "$commit_count" -ge 1 ]; then
-    pass "initial commit created"
+has_commits=$(git -C "$FAKE_PROJECTS" rev-list --count HEAD 2>/dev/null || echo 0)
+if [ "$has_commits" -eq 0 ]; then
+    pass "init does not create commits (sync separated)"
 else
-    fail "initial commit not created"
+    fail "init should not create commits (got $has_commits)"
 fi
 
 # --- Edge: Idempotent re-run ---
 echo "[init] Idempotent re-run"
 output=$("$DOTFILES_DIR/install/linux/session-sync-init.sh" \
     --claude-dir "$FAKE_CLAUDE" --remote-url "$FAKE_REMOTE" 2>&1)
-commit_count_after=$(git -C "$FAKE_PROJECTS" rev-list --count HEAD 2>/dev/null)
-if [ "$commit_count_after" = "$commit_count" ]; then
-    pass "re-run does not create extra commits"
+if [ -d "$FAKE_PROJECTS/.git" ]; then
+    pass "re-run keeps repo intact"
 else
-    fail "re-run created extra commits ($commit_count -> $commit_count_after)"
+    fail "re-run broke the repo"
 fi
 
 # --- Edge: Remote already set, updates URL ---
@@ -83,38 +82,6 @@ fi
 # Restore original remote for subsequent tests
 "$DOTFILES_DIR/install/linux/session-sync-init.sh" \
     --claude-dir "$FAKE_CLAUDE" --remote-url "$FAKE_REMOTE" >/dev/null 2>&1
-
-# --- Normal: Init with existing remote history ---
-echo "[init] Init with existing remote history"
-EXISTING_REMOTE="$TMPDIR_BASE/existing-remote.git"
-git init --bare "$EXISTING_REMOTE" >/dev/null 2>&1
-# Seed remote with a commit from "another machine"
-SEED_DIR="$TMPDIR_BASE/seed"
-git init "$SEED_DIR" >/dev/null 2>&1
-git -C "$SEED_DIR" checkout -b main >/dev/null 2>&1
-echo '{"seed":"data"}' > "$SEED_DIR/seed-session.jsonl"
-printf '* text eol=lf\n' > "$SEED_DIR/.gitattributes"
-git -C "$SEED_DIR" add . >/dev/null 2>&1
-git -C "$SEED_DIR" commit -m "seed from other machine" >/dev/null 2>&1
-git -C "$SEED_DIR" remote add origin "$EXISTING_REMOTE" >/dev/null 2>&1
-git -C "$SEED_DIR" push -u origin main >/dev/null 2>&1
-# Now init on a fresh machine pointing at same remote
-EXISTING_CLAUDE="$TMPDIR_BASE/existing/.claude"
-mkdir -p "$EXISTING_CLAUDE"
-"$DOTFILES_DIR/install/linux/session-sync-init.sh" \
-    --claude-dir "$EXISTING_CLAUDE" --remote-url "$EXISTING_REMOTE" >/dev/null 2>&1
-EXISTING_PROJECTS="$EXISTING_CLAUDE/projects"
-seed_in_log=$(git -C "$EXISTING_PROJECTS" log --oneline | grep -c "seed from other machine")
-if [ "$seed_in_log" -ge 1 ]; then
-    pass "remote commit preserved in log"
-else
-    fail "remote commit not in log"
-fi
-if [ -f "$EXISTING_PROJECTS/seed-session.jsonl" ]; then
-    pass "remote file present in working tree after init"
-else
-    fail "remote file missing from working tree (--hard reset bug)"
-fi
 
 # --- Edge: Old .git in ~/.claude/ gets migrated ---
 echo "[init] Migration of old git root"
@@ -180,7 +147,9 @@ fi
 echo ""
 echo "=== session-sync.sh tests ==="
 
-# Push initial state to remote so pull works
+# Create initial commit and push so sync tests work (init no longer does this)
+git -C "$FAKE_PROJECTS" add .gitattributes >/dev/null 2>&1
+git -C "$FAKE_PROJECTS" commit -m "initial" >/dev/null 2>&1
 git -C "$FAKE_PROJECTS" push -u origin main >/dev/null 2>&1 || git -C "$FAKE_PROJECTS" push -u origin master >/dev/null 2>&1
 
 # --- Error: Not initialized ---
@@ -292,6 +261,78 @@ if grep -q "claude" "$DOTFILES_DIR/bin/session-sync.sh" 2>/dev/null; then
     pass "script contains claude process check"
 else
     fail "script missing claude process check"
+fi
+
+echo ""
+echo "=== session-sync.sh reset tests ==="
+
+# --- Normal: Reset fetches remote files into working tree ---
+echo "[reset] Reset fetches remote files"
+RESET_REMOTE="$TMPDIR_BASE/reset-remote.git"
+git init --bare "$RESET_REMOTE" >/dev/null 2>&1
+# Seed remote with a file from "another machine"
+RESET_SEED="$TMPDIR_BASE/reset-seed"
+git init "$RESET_SEED" >/dev/null 2>&1
+git -C "$RESET_SEED" checkout -b main >/dev/null 2>&1
+echo '{"seed":"data"}' > "$RESET_SEED/seed-session.jsonl"
+printf '* text eol=lf\n' > "$RESET_SEED/.gitattributes"
+git -C "$RESET_SEED" add . >/dev/null 2>&1
+git -C "$RESET_SEED" commit -m "seed from other machine" >/dev/null 2>&1
+git -C "$RESET_SEED" remote add origin "$RESET_REMOTE" >/dev/null 2>&1
+git -C "$RESET_SEED" push -u origin main >/dev/null 2>&1
+# Init fresh machine (plumbing only), then reset
+RESET_CLAUDE="$TMPDIR_BASE/reset-test/.claude"
+mkdir -p "$RESET_CLAUDE"
+"$DOTFILES_DIR/install/linux/session-sync-init.sh" \
+    --claude-dir "$RESET_CLAUDE" --remote-url "$RESET_REMOTE" >/dev/null 2>&1
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1)
+RESET_PROJECTS="$RESET_CLAUDE/projects"
+if [ -f "$RESET_PROJECTS/seed-session.jsonl" ]; then
+    pass "reset fetches remote file into working tree"
+else
+    fail "reset did not fetch remote file"
+fi
+
+# --- Normal: Push works after reset (bidirectional) ---
+echo "[reset] Push after reset"
+echo '{"local":"data"}' > "$RESET_PROJECTS/local-session.jsonl"
+output=$("$DOTFILES_DIR/bin/session-sync.sh" push --claude-dir "$RESET_CLAUDE" 2>&1)
+if echo "$output" | grep -qi "pushed"; then
+    pass "push succeeds after reset"
+else
+    fail "push failed after reset (output: $output)"
+fi
+
+# --- Edge: Reset is idempotent ---
+echo "[reset] Reset idempotent"
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1)
+if echo "$output" | grep -qi "reset to remote"; then
+    pass "reset idempotent"
+else
+    fail "reset idempotent failed (output: $output)"
+fi
+
+# --- Edge: Reset discards diverged local commits ---
+echo "[reset] Reset discards diverged local"
+echo '{"diverged":"data"}' > "$RESET_PROJECTS/diverged.jsonl"
+git -C "$RESET_PROJECTS" add . >/dev/null 2>&1
+git -C "$RESET_PROJECTS" commit -m "local diverged commit" >/dev/null 2>&1
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1)
+if [ ! -f "$RESET_PROJECTS/diverged.jsonl" ]; then
+    pass "reset discards diverged local file"
+else
+    fail "reset did not discard diverged local file"
+fi
+
+# --- Error: Reset when not initialized ---
+echo "[reset] Not initialized"
+RESET_NOTINIT="$TMPDIR_BASE/reset-notinit/.claude"
+mkdir -p "$RESET_NOTINIT/projects"
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_NOTINIT" 2>&1) || true
+if echo "$output" | grep -qi "not initialized"; then
+    pass "reset error when not initialized"
+else
+    fail "reset no error for uninitialized (output: $output)"
 fi
 
 echo ""

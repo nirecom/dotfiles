@@ -57,20 +57,4 @@ if ! "$NO_REMOTE"; then
     echo "Remote set to $REMOTE_URL"
 fi
 
-# Initial commit if no commits yet
-commit_count=$(git -C "$PROJECTS_DIR" rev-list --count HEAD 2>/dev/null || echo 0)
-if [ "$commit_count" -eq 0 ]; then
-    # Pull existing remote history first (e.g., synced from another machine)
-    if ! "$NO_REMOTE"; then
-        git -C "$PROJECTS_DIR" fetch origin main 2>/dev/null && \
-            git -C "$PROJECTS_DIR" reset --hard origin/main 2>/dev/null || true
-    fi
-    git -C "$PROJECTS_DIR" add .gitattributes
-    git -C "$PROJECTS_DIR" add .
-    git -C "$PROJECTS_DIR" commit -m "Initial session sync from $(hostname -s)" 2>/dev/null || true
-    if ! "$NO_REMOTE"; then
-        git -C "$PROJECTS_DIR" push -u origin main 2>/dev/null || git -C "$PROJECTS_DIR" push -u origin master 2>/dev/null || true
-    fi
-fi
-
 echo "Session sync initialized."
