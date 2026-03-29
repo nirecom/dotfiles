@@ -32,6 +32,5 @@
 - [x] `install-obsolete.sh` removes Homebrew fnm (macOS tested)
 - [x] Init with existing remote: `rm -rf ~/.claude/projects/.git && session-sync-init.sh` fetches remote history (macOS tested)
 - [x] Idempotent re-init: `install.sh --base` 2回目実行で問題なし (macOS tested)
+- [x] Multi-PC session visibility: `session-sync reset` + history.jsonl merge + mtime restore (Windows tested)
 - [ ] Verify on WSL2: `install.sh` runs session-sync-init without error
-- [ ] Verify on Windows: `install.ps1` migrates old git root and re-initializes
-- [ ] Run `session-sync.ps1 push` on Windows and confirm it works from `~/.claude/projects/`
