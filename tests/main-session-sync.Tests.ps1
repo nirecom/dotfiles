@@ -159,6 +159,18 @@ Describe "session-sync.ps1" {
         $today = Get-Date -Format "yyyy-MM-dd"
         $log | Should -Match $today -Because "commit message should include date"
     }
+
+    It "push copies history.jsonl into sync area" {
+        # Create a history.jsonl in claude dir
+        Set-Content -Path (Join-Path $script:TestDir "history.jsonl") -Value '{"display":"test","project":"C:\\git\\dotfiles","sessionId":"abc"}'
+        $projDir = Join-Path $script:TestDir "projects\test-push-history"
+        New-Item -ItemType Directory -Path $projDir -Force | Out-Null
+        Set-Content -Path (Join-Path $projDir "data.jsonl") -Value "trigger"
+        & $SyncScript -Action push -ClaudeDir $script:TestDir
+        $syncHistory = Join-Path $script:TestDir "projects\.history.jsonl"
+        Test-Path $syncHistory | Should -BeTrue -Because "history.jsonl should be copied into sync area"
+        Get-Content $syncHistory | Should -Match "abc" -Because "content should match source"
+    }
 }
 
 Describe "session-sync.ps1 reset" {
@@ -209,6 +221,23 @@ Describe "session-sync.ps1 reset" {
         & $SyncScript -Action reset -ClaudeDir $script:TestDir
         $projDir = Join-Path $script:TestDir "projects"
         Test-Path (Join-Path $projDir "seed-session.jsonl") | Should -BeTrue -Because "file should persist after double reset"
+    }
+
+    It "reset merges remote history.jsonl with local" {
+        # Seed remote with .history.jsonl
+        $seedDir2 = Join-Path $env:TEMP "session-sync-seed2-$(Get-Random)"
+        git clone $script:RemoteDir $seedDir2 2>&1 | Out-Null
+        Set-Content -Path (Join-Path $seedDir2 ".history.jsonl") -Value '{"display":"remote","project":"C:\\git\\dotfiles","sessionId":"r1","timestamp":1000}'
+        git -C $seedDir2 add . 2>&1 | Out-Null
+        git -C $seedDir2 commit -m "add history" 2>&1 | Out-Null
+        git -C $seedDir2 push 2>&1 | Out-Null
+        Remove-Item -Recurse -Force $seedDir2 -ErrorAction SilentlyContinue
+        # Create local history
+        Set-Content -Path (Join-Path $script:TestDir "history.jsonl") -Value '{"display":"local","project":"C:\\git\\dotfiles","sessionId":"l1","timestamp":2000}'
+        & $SyncScript -Action reset -ClaudeDir $script:TestDir
+        $history = Get-Content (Join-Path $script:TestDir "history.jsonl")
+        ($history | Where-Object { $_ -match "r1" }).Count | Should -Be 1 -Because "remote entry should be merged"
+        ($history | Where-Object { $_ -match "l1" }).Count | Should -Be 1 -Because "local entry should be preserved"
     }
 
     It "reset discards diverged local commits" {

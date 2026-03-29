@@ -33,6 +33,8 @@ case "$ACTION" in
         if pgrep -x "claude" >/dev/null 2>&1; then
             echo "WARNING: Claude Code is running. Close all sessions before push to ensure latest data is saved." >&2
         fi
+        # Copy history.jsonl into sync area
+        cp "$CLAUDE_DIR/history.jsonl" "$PROJECTS_DIR/.history.jsonl" 2>/dev/null || true
         git -C "$PROJECTS_DIR" add .
         if [ -z "$(git -C "$PROJECTS_DIR" status --porcelain)" ]; then
             echo "No changes to push."
@@ -46,6 +48,11 @@ case "$ACTION" in
         ;;
     pull)
         git -C "$PROJECTS_DIR" pull --rebase
+        # Merge remote history with local (dedup, preserve order)
+        if [ -f "$PROJECTS_DIR/.history.jsonl" ]; then
+            cat "$PROJECTS_DIR/.history.jsonl" "$CLAUDE_DIR/history.jsonl" 2>/dev/null | awk '!seen[$0]++' > "$CLAUDE_DIR/history.jsonl.tmp"
+            mv "$CLAUDE_DIR/history.jsonl.tmp" "$CLAUDE_DIR/history.jsonl"
+        fi
         echo "Pulled session data."
         ;;
     status)
@@ -54,6 +61,11 @@ case "$ACTION" in
     reset)
         git -C "$PROJECTS_DIR" fetch origin main
         git -C "$PROJECTS_DIR" reset --hard origin/main
+        # Merge remote history with local (dedup, preserve order)
+        if [ -f "$PROJECTS_DIR/.history.jsonl" ]; then
+            cat "$PROJECTS_DIR/.history.jsonl" "$CLAUDE_DIR/history.jsonl" 2>/dev/null | awk '!seen[$0]++' > "$CLAUDE_DIR/history.jsonl.tmp"
+            mv "$CLAUDE_DIR/history.jsonl.tmp" "$CLAUDE_DIR/history.jsonl"
+        fi
         echo "Reset to remote state."
         ;;
     *)

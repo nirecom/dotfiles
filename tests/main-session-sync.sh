@@ -324,6 +324,35 @@ else
     fail "reset did not discard diverged local file"
 fi
 
+# --- Normal: Push copies history.jsonl into sync area ---
+echo "[history] Push copies history.jsonl"
+echo '{"display":"test","project":"test","sessionId":"h1"}' > "$RESET_CLAUDE/history.jsonl"
+echo '{"new":"trigger"}' > "$RESET_PROJECTS/trigger.jsonl"
+"$DOTFILES_DIR/bin/session-sync.sh" push --claude-dir "$RESET_CLAUDE" >/dev/null 2>&1
+if [ -f "$RESET_PROJECTS/.history.jsonl" ]; then
+    pass "push copies history.jsonl into sync area"
+else
+    fail "push did not copy history.jsonl"
+fi
+
+# --- Normal: Reset merges remote history.jsonl with local ---
+echo "[history] Reset merges history.jsonl"
+# Seed remote with .history.jsonl containing a remote entry
+HIST_SEED="$TMPDIR_BASE/hist-seed"
+git clone "$RESET_REMOTE" "$HIST_SEED" >/dev/null 2>&1
+echo '{"display":"remote","sessionId":"r1","timestamp":1000}' > "$HIST_SEED/.history.jsonl"
+git -C "$HIST_SEED" add . >/dev/null 2>&1
+git -C "$HIST_SEED" commit -m "add history" >/dev/null 2>&1
+git -C "$HIST_SEED" push >/dev/null 2>&1
+# Create local-only entry
+echo '{"display":"local","sessionId":"l1","timestamp":2000}' > "$RESET_CLAUDE/history.jsonl"
+"$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" >/dev/null 2>&1
+if grep -q "r1" "$RESET_CLAUDE/history.jsonl" && grep -q "l1" "$RESET_CLAUDE/history.jsonl"; then
+    pass "reset merges remote and local history"
+else
+    fail "reset did not merge history (content: $(cat "$RESET_CLAUDE/history.jsonl"))"
+fi
+
 # --- Error: Reset when not initialized ---
 echo "[reset] Not initialized"
 RESET_NOTINIT="$TMPDIR_BASE/reset-notinit/.claude"
