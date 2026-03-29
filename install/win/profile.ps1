@@ -86,9 +86,8 @@ if (Get-Command fnm -ErrorAction SilentlyContinue) {
 
 # Launch VS Code with session sync (push on close)
 function codes {
-    Start-Job -ScriptBlock {
-        param($syncScript, $codeArgs)
-        code.cmd --wait @codeArgs
-        & $syncScript push
-    } -ArgumentList "$DotfilesDir\bin\session-sync.ps1", $args | Out-Null
+    $syncScript = "$DotfilesDir\bin\session-sync.ps1"
+    $codeArgs = $args -join ' '
+    Start-Process pwsh -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-Command",
+        "code.cmd --wait $codeArgs; & '$syncScript' push" -WindowStyle Hidden
 }
