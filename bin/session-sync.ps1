@@ -3,10 +3,11 @@
 #   .\session-sync.ps1 push    # Commit and push session data
 #   .\session-sync.ps1 pull    # Pull latest session data
 #   .\session-sync.ps1 status  # Show sync status
+#   .\session-sync.ps1 reset   # Force-sync local to remote (for initial setup or recovery)
 
 param(
     [Parameter(Mandatory, Position = 0)]
-    [ValidateSet("push", "pull", "status")]
+    [ValidateSet("push", "pull", "status", "reset")]
     [string]$Action,
 
     [string]$ClaudeDir = (Join-Path $env:USERPROFILE ".claude")
@@ -51,5 +52,12 @@ switch ($Action) {
     }
     "status" {
         git -C $ProjectsDir status
+    }
+    "reset" {
+        $ErrorActionPreference = "Continue"
+        git -C $ProjectsDir fetch origin main 2>&1 | Out-Null
+        $ErrorActionPreference = "Stop"
+        git -C $ProjectsDir reset --hard origin/main
+        Write-Host "Reset to remote state." -ForegroundColor Green
     }
 }
