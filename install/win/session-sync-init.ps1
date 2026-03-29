@@ -62,20 +62,24 @@ if (-not $NoRemote) {
 $hasCommits = $false
 try { $hasCommits = [int](git -C $ProjectsDir rev-list --count HEAD 2>$null) -gt 0 } catch {}
 if (-not $hasCommits) {
+    # Git commands in this block may fail expectedly (empty remote, nothing to commit).
+    # Use Continue to avoid terminating on stderr/non-zero exit code.
+    $ErrorActionPreference = "Continue"
     # Pull existing remote history first (e.g., synced from another machine)
     if (-not $NoRemote) {
-        try {
-            git -C $ProjectsDir fetch origin main 2>$null
-            git -C $ProjectsDir reset origin/main 2>$null
-        } catch {}
+        git -C $ProjectsDir fetch origin main 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            git -C $ProjectsDir reset --hard origin/main 2>&1 | Out-Null
+        }
     }
     git -C $ProjectsDir add .gitattributes
     git -C $ProjectsDir add .
-    git -C $ProjectsDir commit -m "Initial session sync from $env:COMPUTERNAME" 2>$null
+    git -C $ProjectsDir commit -m "Initial session sync from $env:COMPUTERNAME" 2>&1 | Out-Null
     # commit may have nothing to do if remote history already covers all files
     if (-not $NoRemote) {
         git -C $ProjectsDir push -u origin main
     }
+    $ErrorActionPreference = "Stop"
 }
 
 Write-Host "Session sync initialized." -ForegroundColor Green
