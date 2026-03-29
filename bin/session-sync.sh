@@ -61,6 +61,11 @@ case "$ACTION" in
     reset)
         git -C "$PROJECTS_DIR" fetch origin main
         git -C "$PROJECTS_DIR" reset --hard origin/main
+        # Restore mtime from JSONL timestamps (git doesn't preserve mtime)
+        find "$PROJECTS_DIR" -name "*.jsonl" ! -name ".history.jsonl" | while read -r f; do
+            ts=$(tail -1 "$f" 2>/dev/null | grep -o '"timestamp":"[^"]*"' | head -1 | cut -d'"' -f4)
+            [ -n "$ts" ] && touch -d "$ts" "$f" 2>/dev/null || true
+        done
         # Merge remote history with local (dedup, preserve order)
         if [ -f "$PROJECTS_DIR/.history.jsonl" ]; then
             cat "$PROJECTS_DIR/.history.jsonl" "$CLAUDE_DIR/history.jsonl" 2>/dev/null | awk '!seen[$0]++' > "$CLAUDE_DIR/history.jsonl.tmp"
