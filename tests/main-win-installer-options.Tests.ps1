@@ -1,5 +1,5 @@
 # tests/main-win-installer-options.Tests.ps1
-# Pester tests for install.ps1 option reorganization (-Base, -Develop, -Full)
+# Pester tests for install.ps1 option reorganization (-Base, -Develop, -Toolchain, -Full)
 
 BeforeAll {
     $script:InstallScript = "$PSScriptRoot\..\install.ps1"
@@ -16,6 +16,11 @@ Describe "install.ps1 parameter definitions" {
         $params = (Get-Command $script:InstallScript).Parameters
         $params.ContainsKey('Develop') | Should -BeTrue
         $params['Develop'].ParameterType | Should -Be ([switch])
+    }
+    It "accepts -Toolchain switch" {
+        $params = (Get-Command $script:InstallScript).Parameters
+        $params.ContainsKey('Toolchain') | Should -BeTrue
+        $params['Toolchain'].ParameterType | Should -Be ([switch])
     }
     It "accepts -Full switch" {
         $params = (Get-Command $script:InstallScript).Parameters
@@ -80,11 +85,25 @@ Describe "install.ps1 -Develop conditional block" {
         $devBlock = [regex]::Match($script:Content, 'if\s*\(\$Develop\s+-or\s+\$Full\)\s*\{([\s\S]*?)\n\}').Groups[1].Value
         $devBlock | Should -Not -Match 'fnm\.ps1'
     }
-    It "includes vs-cpp.ps1 in Develop/Full block" {
-        $script:Content | Should -Match '\$Develop\s+-or\s+\$Full\)[\s\S]*?vs-cpp\.ps1'
+    It "includes awscli.ps1 in Develop/Full block" {
+        $script:Content | Should -Match '\$Develop\s+-or\s+\$Full\)[\s\S]*?awscli\.ps1'
+    }
+    It "does NOT include vs-cpp.ps1 in Develop/Full block" {
+        $devBlock = [regex]::Match($script:Content, 'if\s*\(\$Develop\s+-or\s+\$Full\)\s*\{([\s\S]*?)\n\}').Groups[1].Value
+        $devBlock | Should -Not -Match 'vs-cpp\.ps1'
     }
     It "does NOT include starship.ps1 in Develop/Full block" {
         $devBlock = [regex]::Match($script:Content, 'if\s*\(\$Develop\s+-or\s+\$Full\)\s*\{([\s\S]*?)\n\}').Groups[1].Value
         $devBlock | Should -Not -Match 'starship\.ps1'
+    }
+}
+
+Describe "install.ps1 -Toolchain conditional block" {
+    It "includes vs-cpp.ps1 in Toolchain/Full block" {
+        $script:Content | Should -Match '\$Toolchain\s+-or\s+\$Full\)[\s\S]*?vs-cpp\.ps1'
+    }
+    It "does NOT include awscli.ps1 in Toolchain/Full block" {
+        $tcBlock = [regex]::Match($script:Content, 'if\s*\(\$Toolchain\s+-or\s+\$Full\)\s*\{([\s\S]*?)\n\}').Groups[1].Value
+        $tcBlock | Should -Not -Match 'awscli\.ps1'
     }
 }
