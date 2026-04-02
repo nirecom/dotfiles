@@ -339,6 +339,10 @@ Changes:
   - Pull/Reset: merges remote `.history.jsonl` with local history (line-level dedup, remote-first ordering)
   - Reset: restores mtime on each `.jsonl` from its last (or first, as fallback) `timestamp` field
 
+### Session sync: Claude Code format migration causes bulk deletion (28f343b)
+Cause: Claude Code migrated session storage format from `UUID.jsonl` (flat file) to `UUID/subagents/` (directory structure). PENPEN pushed both old and new formats on 3/29. When TEC ran `session-sync push` on 4/2, Claude Code had already deleted the old `.jsonl` files locally, so `git add .` staged 35 deletions and propagated them to remote.
+Fix: No action needed (keep as-is). 25 of 35 files have directory versions — no data loss. Remaining 10 are short sessions (1–15 lines) likely pruned by Claude Code, with no practical impact. The format migration is a one-time event and will not recur. Changing `git add .` to `--ignore-removal` was considered but rejected — it would also block intentional manual deletions and legitimate prunes.
+
 ---
 
 ## Incident History
@@ -418,4 +422,8 @@ Fix: `exec $SHELL -l` を `source-highlight.sh` から削除し `install.sh` 末
 ### #19: Session sync init deletes other machines' sessions (a8b8e5b)
 Cause: `session-sync-init.ps1` / `session-sync-init.sh` used `git reset origin/main` (mixed reset) during initialization. Mixed reset moves HEAD and index to origin/main but leaves the working tree unchanged. The subsequent `git add .` overwrote the index from the working tree (which only contained local files), staging deletions for all remote-only files (other machines' sessions). When a second PC ran init, the primary and other machines' session files were deleted. Additionally, the Windows script had a secondary bug: `$ErrorActionPreference = "Stop"` combined with `try/catch` caused git stderr output to throw a terminating exception, silently skipping the fetch/reset entirely
 Fix: Changed `git reset` to `git reset --hard` so remote files are checked out into the working tree. Fixed PS scripts to temporarily set `$ErrorActionPreference = "Continue"` around git commands that may produce stderr or non-zero exit codes. Also fixed the same stderr handling bug in `session-sync.ps1` `pull --rebase`. Data was restored in `a8b8e5b`; diff between `199a29d` (pre-deletion) and `acc5467` (current) is empty — no data loss
+
+### #20: Session sync propagates Claude Code format migration deletions (28f343b)
+Cause: Claude Code migrated session storage from `UUID.jsonl` (flat file) to `UUID/subagents/` (directory). On TEC, old `.jsonl` files were deleted locally by Claude Code. `session-sync push` (`git add .`) staged these deletions and pushed them to remote, removing 35 files from other machines' history
+Fix: No action taken. 25/35 files had directory versions (no data loss). Remaining 10 were short sessions (1–15 lines) likely auto-pruned. One-time format migration event — will not recur. `--ignore-removal` rejected as it would block legitimate manual deletions
 
