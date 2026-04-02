@@ -265,6 +265,8 @@ End of work:    Close all Claude Code sessions → session-sync push
 Other machine:  session-sync pull → Launch Claude Code
 ```
 
+**Known behavior**: `session-sync push` uses `git add .` to stage all working tree changes. If Claude Code deletes session files locally (format migration, pruning, etc.), those deletions propagate to remote. In 2026-04, a format migration (`UUID.jsonl` → `UUID/subagents/`) caused 35 files to be bulk-deleted, but most had directory versions with no data loss. One-time event — no mitigation needed.
+
 The `claude-global/` directory manages global Claude Code settings centrally. The directory is named `claude-global/` (not `.claude/`) to avoid conflicts with project-level `.claude/` directories.
 
 **Symlink structure**:
