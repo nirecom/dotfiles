@@ -164,7 +164,23 @@ if type git > /dev/null 2>&1; then # if git is installed
     if [ -n "$PID" ] && [ $$ != "$PID" ]; then # if first bash process
         echo "git fetch $DOTFILES_DIR ..."
         if timeout 3 git -C "$DOTFILES_DIR" fetch 2>/dev/null; then
-            git -C "$DOTFILES_DIR" merge --ff-only FETCH_HEAD
+            if ! git -C "$DOTFILES_DIR" merge --ff-only FETCH_HEAD 2>/dev/null; then
+                # ff-only failed — check if diverged (force push scenario)
+                if ! git -C "$DOTFILES_DIR" merge-base --is-ancestor HEAD FETCH_HEAD 2>/dev/null; then
+                    if [ -e "$HOME/.dotfiles-no-auto-reset" ]; then
+                        echo "WARNING: dotfiles diverged from origin. Run: git -C $DOTFILES_DIR reset --hard origin/main"
+                    elif [[ -t 0 ]]; then
+                        echo "dotfiles diverged from origin (force push detected)."
+                        echo "Reset to origin/main? Local changes will be lost. [y/N]"
+                        read -t 10 -r _ans
+                        if [[ "$_ans" =~ ^[Yy]$ ]]; then
+                            git -C "$DOTFILES_DIR" reset --hard origin/main
+                        else
+                            echo "Skipped. Run manually: git -C $DOTFILES_DIR reset --hard origin/main"
+                        fi
+                    fi
+                fi
+            fi
         fi
     fi
 fi
