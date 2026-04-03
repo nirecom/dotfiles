@@ -2,6 +2,10 @@
 
 ## Change History
 
+### Force push divergence detection on shell startup (257958a)
+Background: After git rebase, dotfiles clones on each PC diverged from origin/main. `merge --ff-only` failed silently, leaving no indication that a reset was needed. With 5 PCs, forgetting to reset one was likely.
+Changes: Added divergence detection to `.profile_common` auto-fetch. When `merge --ff-only` fails and histories have diverged, prompts the user with y/N to reset (10s timeout, defaults to N). `~/.dotfiles-no-auto-reset` marker file suppresses the prompt on the master PC (warning only). Non-interactive shells skip silently.
+
 ### Add -Toolchain option and AWS CLI installer for Windows
 Background: vs-cpp (Visual Studio C++ workload) is a heavy install that doesn't belong in the general `-Develop` tier. AWS CLI was available on Linux but missing from Windows.
 Changes: Added `-Toolchain` parameter to `install.ps1` for heavy build toolchain installs (vs-cpp moved here from `-Develop`). Created `install/win/awscli.ps1` using winget, added to `-Develop`. `-Full` now includes Base + Develop + Toolchain.
