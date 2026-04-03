@@ -16,10 +16,11 @@
 - [ ] install-base, install-develop — メタスクリプト（構成が異なる）
 - [ ] config/win ↔ config/mac ペアの hook 対応要否
 
-### dotfiles force push — Other PCs need reset
-History was rewritten to remove private identifiers. All other PCs must run:
-```
-git -C <dotfiles-path> fetch origin
-git -C <dotfiles-path> reset --hard origin/main
-```
+### dotfiles force push — Verifying
+Auto-detection implemented in `.profile_common`. On shell startup:
+- Divergence detected → interactive prompt (y/N, 10s timeout)
+- `~/.dotfiles-no-auto-reset` marker → warning message only (for master PC)
+- Non-interactive shell → silently skipped
+- [ ] Verify on a follower PC: open new shell after force push, confirm prompt appears
+- [ ] Create `~/.dotfiles-no-auto-reset` on master PC (`New-Item -ItemType File -Path "$HOME\.dotfiles-no-auto-reset"` on pwsh)
 
