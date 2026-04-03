@@ -73,7 +73,7 @@
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget (Windows only) | |
 | [install/linux/nvm.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/nvm.sh) | Install nvm + Node.js LTS (WSL2/macOS/Linux) | |
 | [install/win/awscli.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/awscli.ps1) | Install AWS CLI via winget | |
-| [install/win/vs-cpp.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/vs-cpp.ps1) | Install VS 2022 Community with C++ Desktop workload | llama.cpp ソースビルド用 (MSVC compiler + CMake bundled). Auto-elevates via UAC |
+| [install/win/vs-cpp.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/vs-cpp.ps1) | Install VS 2022 Community with C++ Desktop workload | For llama.cpp source build (MSVC compiler + CMake bundled). Auto-elevates via UAC |
 | [install/win/session-sync-init.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/session-sync-init.ps1) | Initialize `~/.claude/projects/` as git repo for session sync | Called by `install.ps1` |
 | [install/linux/session-sync-init.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/session-sync-init.sh) | Initialize `~/.claude/projects/` as git repo for session sync | Called by `install.sh` |
 | [bin/session-sync.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.ps1) | Session sync daily operation (push/pull/status) | Windows |
@@ -312,13 +312,13 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - `check-cross-platform.js` (matcher: `Bash`) — blocks `git commit` when platform-specific files (install/win/ ↔ install/linux/) are staged without counterpart changes
   - Skip mechanisms: `.cross-platform-skiplist` (permanent, base tool names) and `.git/.cross-platform-reviewed` (one-time, HEAD hash)
 
-**Permission glob matching**: settings.json の permissions (allow/deny/ask) はコマンド文字列全体に対する glob マッチ。`&&` でサブコマンド分割はされない。`Bash(git commit *)` は `cd /path && git commit -m msg` にマッチしない（`cd` で始まるため）。deny ルールは先頭 `*` 付き（例: `*git commit --amend*`）で複合コマンドも検知可能。対話的承認（"Yes, don't ask again"）のみサブコマンド分割＋個別ルール保存が行われる（別メカニズム）。
+**Permission glob matching**: settings.json permissions (allow/deny/ask) are glob-matched against the entire command string. `&&` does not split into subcommands. `Bash(git commit *)` does not match `cd /path && git commit -m msg` (because it starts with `cd`). Deny rules use a leading `*` (e.g., `*git commit --amend*`) to catch compound commands. Only interactive approval ("Yes, don't ask again") splits subcommands and saves individual rules (separate mechanism).
 
-**既知の制約**:
-- PreToolUse hook が Edit|Write に設定されていると「Ask before edits」ダイアログがバイパスされる（hook 成功 = 許可と解釈される）。Edit|Write の private info スキャンは pre-commit hook に委ねること。
-- Hook 形式は nested format 必須。Flat format（matcher/command/timeout が同階層）だと settings.json 全体がスキップされる。
-- VSCode 拡張の「Ask before edits」モードは Edit/Write のみ対象。Bash コマンドには ask ダイアログが出ない。「Ask permissions」（全ツール ask）モードは VSCode に存在しない。
-- settings.json の hooks 変更はホットリロードのタイミングが不安定。変更後は Claude Code の再起動が必要。
+**Known limitations**:
+- When a PreToolUse hook is set on Edit|Write, the "Ask before edits" dialog is bypassed (hook success is interpreted as permission granted). Delegate Edit|Write private info scanning to the pre-commit hook.
+- Hook format must be nested format. Flat format (matcher/command/timeout at the same level) causes the entire settings.json to be skipped.
+- VSCode extension's "Ask before edits" mode only covers Edit/Write. Bash commands do not trigger the ask dialog. "Ask permissions" (ask for all tools) mode does not exist in VSCode.
+- Hot-reloading of settings.json hook changes is unreliable. Restart Claude Code after changes.
 
 ---
 
