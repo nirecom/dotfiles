@@ -158,6 +158,7 @@ login
     → source .profile_common
     → PS1 with __git_ps1
     → git auto-pull (fast-forward only, first shell only)
+      → If diverged (force push): prompt y/N to reset (marker file skips)
 ```
 
 ### Windows PowerShell (PS5 / PS7)
