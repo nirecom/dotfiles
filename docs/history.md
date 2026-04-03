@@ -11,12 +11,12 @@ Background: `codes` alias uses `Start-Job` to push session sync after VS Code cl
 Changes: Replaced `Start-Job` with `Start-Process pwsh -WindowStyle Hidden` so the push process is independent of the terminal lifecycle.
 
 ### Fix codes session sync not firing per-window
-Background: `code --new-window --wait` の `--wait` は VS Code サーバープロセス全体の終了を待つため、複数ウィンドウが開いている場合、個別のウィンドウを閉じても session-sync push が発火しなかった。全ウィンドウを閉じない限りどの push も実行されない問題。
-Changes: `--wait` を廃止し、Win32 EnumWindows API（Windows）/ xdotool・wmctrl・osascript（Linux/macOS）によるウィンドウタイトルポーリングに置き換え。`bin/wait-vscode-window.ps1` と `bin/wait-vscode-window.sh` を新規作成。`codes` 関数がワークスペース名を解決し、対象ウィンドウの出現→消失を検知してから push を実行する。`.code-workspace` ファイルの場合は `(Workspace)` サフィックス付きタイトルにも対応。
+Background: `code --new-window --wait`'s `--wait` flag waits for the entire VS Code server process to exit. When multiple windows are open, closing an individual window did not trigger session-sync push. No push ran unless all windows were closed.
+Changes: Replaced `--wait` with window title polling via Win32 EnumWindows API (Windows) / xdotool, wmctrl, osascript (Linux/macOS). Created `bin/wait-vscode-window.ps1` and `bin/wait-vscode-window.sh`. The `codes` function resolves the workspace name and detects the target window's appearance then disappearance before running push. Also handles `.code-workspace` files with `(Workspace)` title suffix.
 
 ### Fix codes multi-instance support
-Background: `codes` で2つ目のワークスペースを開くと、VS Code が既存ウィンドウを再利用して1つ目が消える
-Changes: `code --wait` に `--new-window` フラグを追加（.profile_common + profile.ps1）。各呼び出しが独立したウィンドウで開くようになった
+Background: Opening a second workspace with `codes` caused VS Code to reuse the existing window, making the first one disappear.
+Changes: Added `--new-window` flag to `code --wait` (in `.profile_common` and `profile.ps1`). Each invocation now opens in an independent window.
 
 ### Initial setup (a112597–7419e8d)
 Background: Manage dotfiles on GitHub
@@ -172,7 +172,7 @@ Changes: Added `install/win/powertoys.ps1` (winget install + Keyboard Manager co
 
 ### VS 2022 C++ dev tools (1982d8e)
 Background: `install.ps1 -Develop` for llama.cpp compilation
-Changes: llama-server (llama.cpp) をソースからビルドするために VS 2022 + CMake が必要。Added `install/win/vs-cpp.ps1` (VS 2022 Community + NativeDesktop workload via bootstrapper, vswhere idempotency, UAC auto-elevation with decline handling). Added to `-Develop`/`-Full` block in `install.ps1`. Pester tests added
+Changes: VS 2022 + CMake needed to build llama-server (llama.cpp) from source. Added `install/win/vs-cpp.ps1` (VS 2022 Community + NativeDesktop workload via bootstrapper, vswhere idempotency, UAC auto-elevation with decline handling). Added to `-Develop`/`-Full` block in `install.ps1`. Pester tests added
 
 ### Windows symlink auto-repair (08141cf, 9ab6b54)
 Background: `install.ps1` warns "Exists (not a symlink)" for 4 files — Windows atomic save (editors, Claude Code/Node.js) silently replaces symlinks with regular files
@@ -195,19 +195,19 @@ Background: All PCs migrated; remove temporary code to prevent claude-code/claud
 Changes: Deleted `BEGIN temporary: claude-code → claude-global` blocks from `.profile_common` and `profile.ps1`. Removed `.gitignore` (only held `claude-code` entry). Removed `claude-code/` from `check-test-updated.js` EXEMPT_DIRS. Deleted migration Pester test. `install-obsolete.sh/ps1` retained as safety net
 
 ### Markdown exempt from code detection in hooks ((pending))
-Background: ai-specs（docs-only repo）で `git commit` が PreToolUse フック（check-test-updated.js, check-docs-updated.js）にブロックされる。`projects/` 配下の `.md` ファイルが "source code" として分類されるため
-Changes: EXEMPT_FILES に `/\.md$/i` 追加（両フック）。check-docs-updated.js の `hasDocChanges` で `.md` をドキュメント変更として認識。テスト追加: git -C variant, uppercase .MD, idempotency, stale review marker
+Background: `git commit` in ai-specs (docs-only repo) was blocked by PreToolUse hooks (check-test-updated.js, check-docs-updated.js) because `.md` files under `projects/` were classified as "source code".
+Changes: Added `/\.md$/i` to EXEMPT_FILES in both hooks. `hasDocChanges` in check-docs-updated.js now recognizes `.md` as documentation changes. Added tests: git -C variant, uppercase .MD, idempotency, stale review marker
 
-### Edit 確認フロー統一 ((pending))
-Background: VSCode で Edit 確認が1〜3回と不安定。確認の発生源は3つ: (1) CLAUDE.md/メモリの「diff を見せろ」指示によるチャット内 diff 提示、(2) VSCode Ask モードの内蔵 diff ダイアログ、(3) パーミッション確認ダイアログ。
-Root cause: CLAUDE.md とメモリに同じ指示や矛盾する指示があると、LLM は確率的にしか従わないため挙動が不安定になる。「常に diff を見せろ」と「VSCode 時は不要」が共存すると、見せたり見せなかったりする。
+### Unified Edit confirmation flow ((pending))
+Background: Edit confirmation in VSCode was inconsistent (1–3 prompts). Three sources of confirmation: (1) chat-based diff presentation triggered by CLAUDE.md/memory "show diff" instructions, (2) VSCode Ask mode's built-in diff dialog, (3) permission confirmation dialog.
+Root cause: When CLAUDE.md and memory contain duplicate or conflicting instructions, the LLM follows them only probabilistically, causing inconsistent behavior. "Always show diff" coexisting with "not needed in VSCode" resulted in intermittent diff presentation.
 Alternatives considered:
-  (a) PreToolUse hook で diff 表示を強制 → VSCode UI に hook の stderr/additionalContext が表示されないため不可（過去に検証済み）
-  (b) `permissions.ask` に `Edit` を追加して毎回パーミッション確認 → diff ダイアログと二重確認になる
-  (c) プロンプト指示を削除し VSCode 内蔵 diff ダイアログに一本化 → 仕組みで保証され、確認は常に1回
-  (d) `Edit(**)` を `allow` に追加してパーミッション層をスキップ → セッション初回の二重確認が出た場合の追加対策（今回は不要と判明）
-Decision: (c) を採用。CLI 使用時のみチャットで diff を提示する条件付きルールを残した。
-Changes: `workflow.md` File Edits ルールを CLI 条件付きに変更、メモリから diff 指示削除、feedback メモリ追加、`docs-convention.md` の history.md フォーマットをテーブル→セクション形式に変更
+  (a) Force diff display via PreToolUse hook — not possible because VSCode UI does not display hook stderr/additionalContext (verified previously)
+  (b) Add `Edit` to `permissions.ask` for confirmation every time — causes double confirmation with the diff dialog
+  (c) Remove prompt instructions and rely solely on VSCode's built-in diff dialog — mechanically guaranteed, always exactly one confirmation
+  (d) Add `Edit(**)` to `allow` to skip the permission layer — additional mitigation for first-session double confirmation (found unnecessary)
+Decision: Adopted (c). Kept a conditional rule to show diff in chat only when using the CLI.
+Changes: Changed `workflow.md` File Edits rule to CLI-conditional, removed diff instructions from memory, added feedback memory, changed `docs-convention.md` history.md format from table to section style.
 Follow-up (2026-03-23): (c) proved unreliable — VSCode built-in diff dialog sometimes shows diff, sometimes shows bare permission prompt with no diff. Tested Edit, Write (new file), Write (overwrite): all showed diff, so the inconsistency is not tool-type-dependent. Searched exhaustively: no mechanism in Claude Code permissions/hooks/extension settings to distinguish "diff shown" vs "diff not shown". Additionally tested PermissionRequest hook (unlike PreToolUse, does not bypass Ask dialog). Hook fires for Edit/Write and receives full tool_input (old_string/new_string for Edit, content for Write). However, stderr and additionalContext are not displayed in VSCode UI — same limitation as PreToolUse. Conclusion: no hook-based path exists to force diff display in VSCode; chat-based diff presentation via prompt instruction is the only reliable method. Reverted to "always show diff in chat" policy (double confirmation acceptable, zero confirmation not). Removed CLI-only condition from `workflow.md`, updated feedback memory
 
 ### Private repo detection: non-GitHub hosts skip scanning
@@ -215,51 +215,51 @@ Background: `gh api` returned 404 for non-GitHub remotes (e.g., GitLab, Bitbucke
 Changes: Added `extractHost()` to `is-private-repo.js` to extract hostname from remote URL. Non-`github.com` hosts (GitLab, Bitbucket, GHE, etc.) are treated as private and skip scanning. Added the same hostname check to git hooks (pre-commit, commit-msg). Added 12 tests.
 
 ### Private repo detection: static list → dynamic gh API (ab6820b)
-Background: `private-repos.txt` にローカルで全リポジトリ一覧を保持すると、会社 scan で全体リストが見えるリスクがある。また PreToolUse フックが `git -C <path> commit` 実行時に private repo 判定できないバグがあった（`filePath` が空のため常にスキャン）
-Changes: `gh api repos/{owner}/{repo} --jq .private` で動的に判定する方式に変更。共通モジュール `claude-global/hooks/lib/is-private-repo.js` を新設し、3つの PreToolUse フック（check-private-info/check-docs-updated/check-test-updated）と 2つの git フック（pre-commit/commit-msg）すべてで使用。`gh` 未インストール・API エラー時は fail-open。`bin/update-private-repos.sh` と `.context-private/private-repos.txt` を削除
+Background: Keeping a full repository list locally in `private-repos.txt` risked exposing private repository names if the file was accidentally shared. Also, PreToolUse hooks could not determine private repo status when running `git -C <path> commit` (always scanned because `filePath` was empty).
+Changes: Switched to dynamic detection via `gh api repos/{owner}/{repo} --jq .private`. Created shared module `claude-global/hooks/lib/is-private-repo.js`, used by all 3 PreToolUse hooks (check-private-info/check-docs-updated/check-test-updated) and 2 git hooks (pre-commit/commit-msg). Fail-open when `gh` is not installed or API call fails. Deleted `bin/update-private-repos.sh` and `.context-private/private-repos.txt`.
 
 ### commands → skills migration cleanup (ab6820b)
-Background: 全 PC で commands → skills 移行が完了
-Changes: `.profile_common` と `install/win/profile.ps1` から `BEGIN temporary: commands → skills` ブロックを削除。`install-obsolete.sh/ps1` の claude-code symlink 削除コードは後始末用に残置
+Background: commands → skills migration completed on all PCs.
+Changes: Removed `BEGIN temporary: commands → skills` blocks from `.profile_common` and `install/win/profile.ps1`. Kept claude-code symlink cleanup code in `install-obsolete.sh/ps1` as a safety net.
 
 ### Claude Code branch/push delete deny rules ((pending))
-Background: 別 PJ（langchain-stack）で Claude が `git -C` 経由でローカル・リモートブランチを確認なしに削除。`git push --delete` は deny にあったが、allow の `git -C * push origin *` が動的承認（"Yes, don't ask again"）経由で突破した可能性。`git branch -D` は deny/ask いずれにも未登録だった。ChatGPT と cross-review し `git push origin :branch`（refspec 形式の削除）もカバー
-Changes: deny に `*git branch -D*`, `*git branch -d*`, `*git push origin :*`, `*git push *origin :*` を追加
+Background: In another project (langchain-stack), Claude deleted local and remote branches without confirmation via `git -C`. `git push --delete` was already denied, but the allow rule `git -C * push origin *` may have been approved via dynamic permission ("Yes, don't ask again"). `git branch -D` was not in deny or ask lists. Cross-reviewed with ChatGPT and also covered `git push origin :branch` (refspec-style deletion).
+Changes: Added deny rules: `*git branch -D*`, `*git branch -d*`, `*git push origin :*`, `*git push *origin :*`.
 
-### dotfiles clone 復旧 — git rebase 後 ()
-Background: git rebase 後、各 PC の dotfiles clone が origin/main と diverge した状態を復旧
-Changes: 全 PC で `git fetch origin && git reset --hard origin/main` を実施。完了確認済み
+### dotfiles clone recovery after git rebase ()
+Background: After git rebase, dotfiles clones on each PC diverged from origin/main.
+Changes: Ran `git fetch origin && git reset --hard origin/main` on all PCs. Verified complete.
 
 ### Claude Tabs installer ((pending))
-Background: Claude Tabs (Tauri v2) は Windows ネイティブの Claude Code マルチセッション管理アプリ。タブ UI + Activity Feed でエージェント状態をリアルタイム表示
-Changes: `install/win/claude-tabs.ps1` 新設（GitHub API で最新リリース取得、/S サイレントインストール）。`/releases/latest` がアセット未添付の場合に直近10リリースを走査するフォールバック。`.cross-platform-skiplist` 新設（Windows 専用ツールのフック除外リスト）
+Background: Claude Tabs (Tauri v2) is a Windows-native Claude Code multi-session management app. Tab UI + Activity Feed for real-time agent status display.
+Changes: Created `install/win/claude-tabs.ps1` (fetches latest release via GitHub API, /S silent install). Falls back to scanning the 10 most recent releases when `/releases/latest` has no attached assets. Created `.cross-platform-skiplist` (hook exclusion list for Windows-only tools).
 
 ### Node.js version manager: platform split (fnm → nvm on Unix) (1b74132, (pending))
 Background: NemoClaw official installer unconditionally installs nvm. Conflicts with dotfiles' "fnm everywhere" rule — npm install fails when prek refuses to install hooks with core.hooksPath set. fnm has no advantage over nvm on Unix; nvm is the ecosystem standard. Windows needs fnm (nvm has no Windows support)
 Changes: New rule: Windows=fnm, WSL2/macOS/Linux=nvm. Replaced `install/linux/fnm.sh` with `nvm.sh`. Removed fnm from `.profile_common` PATH and init (nvm init already existed at lines 190-206). Added fnm cleanup to `install-obsolete.sh`. Updated `coding.md` rule to platform-specific. Fixed nvm.sh execute permission (1b74132)
 
 ### Keychain SSH key auto-detect (6b39058)
-Background: keychain の SSH 鍵指定がハードコードだった
-Changes: `install.sh` の keychain ステップをデフォルト実行に昇格。`.profile_common` で `~/.ssh/id_*` を glob して自動検出。`install/linux/keychain.sh` を新設
+Background: SSH key specification for keychain was hardcoded.
+Changes: Promoted keychain step in `install.sh` to run by default. `.profile_common` now auto-detects keys by globbing `~/.ssh/id_*`. Created `install/linux/keychain.sh`.
 
 ### Claude Code session sync (513e3a4, (pending))
-Background: Claude Code のセッション履歴（`~/.claude/projects/`）は各マシンのローカルにのみ保存され、デバイス間同期機能は公式に提供されていない。複数 Windows PC（自宅 + 会社3台）間で過去の会話を参照したい。
+Background: Claude Code session history (`~/.claude/projects/`) is stored locally on each machine with no official cross-device sync. Wanted to reference past conversations across multiple Windows PCs.
 Alternatives considered:
-  (a) Claude Code Web モード（claude.ai/code）のみ使用 → ローカルファイルシステム・MCP サーバー・NSSM サービス操作が必要な作業（NemoClaw, llama-swap 等）では Local モード必須。Local と Web でセッションが分断される。却下
-  (b) perfectra1n/claude-code-sync（Rust 製外部ツール）→ 必要な機能は 50 行以下で実装可能、dotfiles に自然に統合できるため自作を選択
-  (c) Remote Control（`claude remote-control`）→ 元 PC 起動中のみ、10分で切断。履歴参照には不向き
-  (d) Anthropic 公式 sync 機能待ち（Issue #22648）→ 時期未定
+  (a) Use only Claude Code Web mode (claude.ai/code) — Local mode is required for tasks needing local filesystem, MCP servers, or NSSM service operations (NemoClaw, llama-swap, etc.). Sessions are split between Local and Web. Rejected
+  (b) perfectra1n/claude-code-sync (Rust-based external tool) — the needed functionality is implementable in under 50 lines and integrates naturally into dotfiles, so chose to build in-house
+  (c) Remote Control (`claude remote-control`) — requires the original PC to be running, disconnects after 10 minutes. Not suitable for history reference
+  (d) Wait for Anthropic official sync (Issue #22648) — timeline unknown
 Design decisions:
   (1) Path unification: unified under drive root with dedicated directories for LLM infrastructure (existing, immovable) and `C:\git\` (new). Eliminated `~/git/` which contains the username, ensuring identical absolute paths across all machines
-  (2) 行末制御: ChatGPT と cross-review し3方式を比較。`core.autocrlf=false`（変換停止のみ、LF 保証なし）、`* -text`（同上）、`* text eol=lf`（LF を明示的に宣言、repo で伝搬）。`* text eol=lf` を `.gitattributes` で採用。理由: JSONL は全マシンで LF を保証したい + clone/pull で自動伝搬
-  (3) ファイル書き込み: `Set-Content`（PowerShell cmdlet）は Windows 上で CRLF を出力し git add 時に warning。`[System.IO.File]::WriteAllText()` + CRLF→LF 置換で LF 書き込みに変更。ChatGPT と cross-review し互換性確認（.NET 標準 API、PS5/PS7 両対応、UTF-8 BOM なし）
-  (4) 同期対象: `projects/` のみ。`settings.json`, `rules/`, `skills/` 等は dotfiles で管理済み。`statsig/`, `ide/` はマシン固有
-  (5) コンフリクト戦略: JSONL は追記型。push→pull ルーティンで回避。発生時は `git pull --rebase`
-Changes: `install/win/session-sync-init.ps1`（初期化）、`bin/session-sync.ps1`（push/pull/status）、`install.ps1` へ統合、`nirecom/claude-sessions` private repo 作成。Pester テスト 12 ケース
+  (2) Line ending control: cross-reviewed with ChatGPT, compared 3 approaches. `core.autocrlf=false` (stops conversion only, no LF guarantee), `* -text` (same), `* text eol=lf` (explicitly declares LF, propagates via repo). Adopted `* text eol=lf` in `.gitattributes`. Reason: JSONL needs guaranteed LF on all machines + auto-propagation on clone/pull
+  (3) File writing: `Set-Content` (PowerShell cmdlet) outputs CRLF on Windows, causing git add warnings. Switched to `[System.IO.File]::WriteAllText()` with CRLF→LF replacement for LF output. Cross-reviewed with ChatGPT for compatibility (.NET standard API, PS5/PS7 compatible, no UTF-8 BOM)
+  (4) Sync scope: `projects/` only. `settings.json`, `rules/`, `skills/` etc. managed by dotfiles. `statsig/`, `ide/` are machine-specific
+  (5) Conflict strategy: JSONL is append-only. Avoided by push→pull routine. On conflict: `git pull --rebase`
+Changes: Created `install/win/session-sync-init.ps1` (initialization), `bin/session-sync.ps1` (push/pull/status), integrated into `install.ps1`, created `nirecom/claude-sessions` private repo. 12 Pester test cases.
 
 ### Cross-platform check hook (5c7714e)
-Background: `install/win/` のみ変更して `install/linux/` 側を忘れるケースを防止
-Changes: `check-cross-platform.js` PreToolUse hook 新設。`git commit` 時にプラットフォーム固有ファイルの counterpart 変更を検知。`.cross-platform-skiplist` で永続除外、`.git/.cross-platform-reviewed` で一時除外。220 テストケース
+Background: Prevent cases where `install/win/` is modified but `install/linux/` counterpart is forgotten.
+Changes: Created `check-cross-platform.js` PreToolUse hook. Detects missing counterpart changes for platform-specific files at `git commit` time. `.cross-platform-skiplist` for permanent exclusion, `.git/.cross-platform-reviewed` for one-time exclusion. 220 test cases.
 
 ### ~/dotfiles → C:\git\dotfiles path unification ((pending))
 Background: To share Claude Code session history (`~/.claude/projects/`) across Windows PCs, all machines need a uniform dotfiles path. `~/dotfiles` (= `C:\Users\<user>\dotfiles`) includes the username, causing project directory names to differ per PC. `C:\git\dotfiles` makes the project key `c--git-dotfiles` on all PCs.
@@ -312,14 +312,14 @@ Changes:
   - `install-obsolete.sh`: added Homebrew fnm cleanup (`brew list fnm && brew uninstall fnm`; not originally installed via dotfiles but cleaned up as a precaution)
 
 ### Session sync: init/push reliability fix (efbd047)
-Background: `session-sync-init.sh` の初回コミットフローが「リモートに既に履歴がある」ケースを想定しておらず、2台目以降のマシンで init → push が失敗する。また push 時にリモートが先行している場合も失敗する
+Background: `session-sync-init.sh`'s initial commit flow did not account for cases where remote already has history, causing init → push to fail on 2nd+ machines. Push also failed when remote was ahead.
 Design decisions:
-  (1) `reset --hard` vs `reset`（mixed）: `reset --hard` はリモートと同名のローカル JSONL を上書きする危険がある（同一パスの2台で発生）。`reset`（mixed）なら HEAD のみ移動しローカルファイルを保護。ファイル展開は通常の pull で行う
-  (2) `codes()` のバックグラウンド push 出力: プロンプト後に出力が割り込み、Enter が必要になる問題。SIGWINCH によるプロンプト再描画を試みたが効果なし。出力を `/dev/null` に抑制
+  (1) `reset --hard` vs `reset` (mixed): `reset --hard` risks overwriting local JSONL files that share names with remote (happens when two machines use the same path). `reset` (mixed) only moves HEAD, preserving local files. File checkout is handled by normal pull
+  (2) Background push output from `codes()`: output interrupts after prompt, requiring an extra Enter. Attempted SIGWINCH-triggered prompt redraw but it had no effect. Suppressed output to `/dev/null`
 Changes:
-  - `session-sync-init.sh`/`.ps1`: 初回コミット前に `fetch origin main` + `reset origin/main` でリモート履歴を取り込む。差分がない場合の `commit` 失敗を `|| true` で許容
-  - `bin/session-sync.sh`/`.ps1`: push 前に `pull --rebase origin main` を追加
-  - `.profile_common`: `codes()` の push 出力を `>/dev/null 2>&1` で抑制
+  - `session-sync-init.sh`/`.ps1`: added `fetch origin main` + `reset origin/main` before initial commit to incorporate remote history. Tolerate `commit` failure when there are no changes (`|| true`)
+  - `bin/session-sync.sh`/`.ps1`: added `pull --rebase origin main` before push
+  - `.profile_common`: suppressed `codes()` push output with `>/dev/null 2>&1`
 
 ### Session sync: separate init from sync, add reset action (fc71b9e)
 Background: Init script's fetch/reset/commit/push block was dangerous — it could overwrite remote data when a new PC joined (#19). Also, auto-running sync during install made it hard to control which PC should sync first
@@ -411,13 +411,13 @@ Fix: Add `~/.local/bin` to session PATH before calling `uv --version`
 Cause: `profile.ps1` migration block called `New-Item` without permission check. PS5 requires admin for symlinks even with Developer Mode enabled (unlike pwsh which supports `SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE`)
 Fix: Added Developer Mode / admin pre-check (a64aca9), then wrapped `New-Item` in try/catch with `-ErrorAction Stop` for defense in depth
 
-### #17: テスト実行がハングして返ってこない (9b2e88f)
-Cause: Claude Code が自動生成した Pester テストにバグ（WSL の UTF-16 出力の encoding mismatch、Pester スコープ問題）があり、バックグラウンド実行したテストが無限待ちに
-Fix: `test.md` にタイムアウト必須ルール追加（`timeout 120` ラッパー）
+### #17: Test execution hangs indefinitely (9b2e88f)
+Cause: Claude Code auto-generated Pester tests had bugs (WSL UTF-16 output encoding mismatch, Pester scope issue), causing background test execution to hang indefinitely.
+Fix: Added mandatory timeout rule to `test.md` (`timeout 120` wrapper).
 
-### #18: install.sh が Rize / Claude Usage Widget ステップに到達しない
-Cause: `source-highlight.sh` の `exec $SHELL -l` が `install-base.sh` のサブプロセスを置き換え、`install.sh` に制御が戻らなかった。加えて `rize.sh` / `claude-usage-widget.sh` に実行権限がなく、DMG マウント時のボリュームパスパースが空白入りボリューム名で破損、`.app` ファイル名がハードコードされ実際の名前と不一致
-Fix: `exec $SHELL -l` を `source-highlight.sh` から削除し `install.sh` 末尾へ移動。実行権限を付与。DMG 内の `.app` を `find` で動的検出。`install.sh` の macOS 特別扱い（`$OSDIST = "macos"` で常に base 実行）を削除し `install.ps1` と直交性を統一（`--base`/`--full` フラグ必須）
+### #18: install.sh doesn't reach Rize / Claude Usage Widget steps
+Cause: `exec $SHELL -l` in `source-highlight.sh` replaced the `install-base.sh` subprocess, preventing control from returning to `install.sh`. Additionally, `rize.sh` / `claude-usage-widget.sh` lacked execute permissions, DMG mount volume path parsing broke on volume names with spaces, and `.app` filenames were hardcoded instead of matching actual names.
+Fix: Moved `exec $SHELL -l` from `source-highlight.sh` to end of `install.sh`. Added execute permissions. Dynamically detect `.app` in DMG via `find`. Removed macOS special-casing (`$OSDIST = "macos"` always running base) from `install.sh` to unify with `install.ps1` orthogonality (`--base`/`--full` flags required).
 
 ### #19: Session sync init deletes other machines' sessions (a8b8e5b)
 Cause: `session-sync-init.ps1` / `session-sync-init.sh` used `git reset origin/main` (mixed reset) during initialization. Mixed reset moves HEAD and index to origin/main but leaves the working tree unchanged. The subsequent `git add .` overwrote the index from the working tree (which only contained local files), staging deletions for all remote-only files (other machines' sessions). When a second PC ran init, the primary and other machines' session files were deleted. Additionally, the Windows script had a secondary bug: `$ErrorActionPreference = "Stop"` combined with `try/catch` caused git stderr output to throw a terminating exception, silently skipping the fetch/reset entirely
