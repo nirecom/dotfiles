@@ -2,12 +2,6 @@
 
 ## Current Work
 
-### ~/dotfiles → C:\git\dotfiles path unification — Verifying
-- [ ] Run `git clone https://github.com/nirecom/dotfiles.git C:\git\dotfiles` on this PC
-- [ ] Run `C:\git\dotfiles\install.ps1` and confirm symlinks, AHK restart, DOTFILES_DIR env var
-- [ ] Open new terminal and confirm profile.ps1 uses C:\git\dotfiles
-- [ ] Open new Claude Code session and confirm hooks work via $DOTFILES_DIR
-
 ### SSOT 参照ルールの設計 — 検討中
 ポート・URL・ホスト名を推測せず SSOT を確認させる仕組みの設計:
 - [ ] claude-global/rules/ に汎用行動ルール追加（「SSOT を確認してから提示」— ファイル名は含めない）
@@ -16,7 +10,6 @@
 
 ### Cross-platform skiplist — 要判断
 以下のスクリプトの skiplist 分類を決定する（Windows counterpart が必要か）:
-- [ ] dotfiles (確認済み: counterpart あり → skiplist から除外すべき)
 - [ ] go, terraformer — Windows でも使うツール
 - [ ] flutter, react — cross-platform 開発ツール
 - [ ] vim, tmux, source-highlight — エディタ/ターミナル系
@@ -30,10 +23,3 @@ git -C <dotfiles-path> fetch origin
 git -C <dotfiles-path> reset --hard origin/main
 ```
 
-### Session sync cross-platform — Verifying
-- [x] `install.sh` calls `session-sync-init.sh` after Claude Code install (macOS tested)
-- [x] `install-obsolete.sh` removes Homebrew fnm (macOS tested)
-- [x] Init with existing remote: `rm -rf ~/.claude/projects/.git && session-sync-init.sh` fetches remote history (macOS tested)
-- [x] Idempotent re-init: `install.sh --base` 2回目実行で問題なし (macOS tested)
-- [x] Multi-PC session visibility: `session-sync reset` + history.jsonl merge + mtime restore (Windows tested)
-- [ ] Verify on WSL2: `install.sh` runs session-sync-init without error
