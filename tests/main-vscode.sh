@@ -222,6 +222,12 @@ if [ "$EXT_COUNT" -gt 0 ]; then pass "extension list has $EXT_COUNT extension(s)
 else fail "extension list has no extensions"; fi
 
 echo ""
+echo "=== Normal: no container extensions that auto-install Docker Desktop ==="
+if grep -qi 'remote-containers\|vscode-containers' "$EXT_LIST"; then
+    fail "container extensions found — risk of silent Docker Desktop install"
+else pass "no container extensions in list"; fi
+
+echo ""
 echo "=== Results ==="
 if [ "$ERRORS" -eq 0 ]; then echo "All tests passed!"
 else echo "$ERRORS test(s) failed"; exit 1; fi
