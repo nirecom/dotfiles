@@ -2,6 +2,10 @@
 
 ## Change History
 
+### Fix update-docs skill to detect uncommitted changes
+Background: In the workflow, /update-docs runs before commit (step 5), but change detection relied solely on `git log`. Uncommitted session changes were invisible, causing documentation gaps.
+Changes: Added `git diff` / `git diff --cached` to the gather step to detect unstaged and staged changes. Removed LangChain-specific instruction from the procedure, delegating to the Project Detection section.
+
 ### Workflow rules reorganization
 Background: workflow.md contained a mix of procedural rules (verification, diff approval) and design policies (cross-platform/naming orthogonality). Rules files are always loaded into context, so there was no stage-gate mechanism — workflow rules had no more prominence than any other rule file. Community research showed plan mode thresholds vary, with Anthropic's official guidance being "skip if the task is describable in one sentence."
 Changes:
