@@ -2,6 +2,10 @@
 
 ## Change History
 
+### Add research phase to workflow
+Background: Investigated well-known Claude Code frameworks (Alex Kurkin's Research→Plan→Implement, everything-claude-code, claude-research-plan-implement). Found that a research phase before planning prevents implementing against wrong assumptions. Separated into two skills: `/survey-code` (codebase exploration) and `/deep-research` (web research), both at effort: medium — low loses cross-source reasoning, high is overkill for information gathering. Name choices: `research` alone risks future built-in conflict (precedent: `/plan` → `/make-plan`). `deep-research` aligns with established OSS convention. `survey-code` distinguishes from web research.
+Changes: Added `claude-global/skills/survey-code/SKILL.md` and `claude-global/skills/deep-research/SKILL.md`. Updated `claude-global/CLAUDE.md` workflow from 7 steps to 8 (Research as step 1).
+
 ### Fix update-docs skill to detect uncommitted changes
 Background: In the workflow, /update-docs runs before commit (step 5), but change detection relied solely on `git log`. Uncommitted session changes were invisible, causing documentation gaps.
 Changes: Added `git diff` / `git diff --cached` to the gather step to detect unstaged and staged changes. Removed LangChain-specific instruction from the procedure, delegating to the Project Detection section.
