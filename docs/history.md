@@ -2,6 +2,10 @@
 
 ## Change History
 
+### Add write-tests and make-plan skills with effort: high (23e4eba)
+Background: rules/test.md の手順指示はコンテキスト圧で無視されることがあり、effort level も制御できなかった。skill の frontmatter で effort: high を指定すると、skill 実行中のみ reasoning effort が上がる。
+Changes: /write-tests と /make-plan スキルを新規作成（effort: high）。rules/test.md の手順部分を /write-tests 呼び出しに置換。カテゴリ定義・命名規則・timeout ルールは rules に残留（/review-tests との共有 SSOT）。当初 /plan で作成したが組み込みコマンドと衝突したため /make-plan にリネーム。
+
 ### Force push divergence detection on shell startup (257958a)
 Background: After git rebase, dotfiles clones on each PC diverged from origin/main. `merge --ff-only` failed silently, leaving no indication that a reset was needed. With 5 PCs, forgetting to reset one was likely.
 Changes: Added divergence detection to `.profile_common` auto-fetch. When `merge --ff-only` fails and histories have diverged, prompts the user with y/N to reset (10s timeout, defaults to N). `~/.dotfiles-no-auto-reset` marker file suppresses the prompt on the master PC (warning only). Non-interactive shells skip silently.
