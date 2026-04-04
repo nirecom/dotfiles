@@ -117,6 +117,10 @@ if (-not (Test-Path $gitConfigLocal)) {
     Write-Host "Generated: $gitConfigLocal" -ForegroundColor Green
 }
 
+# Set hooksPath in config.local (OS-specific, not in shared config)
+# Shared .config/git/config has ~/dotfiles/... which works on Linux/macOS
+# but not on Windows where dotfiles is at C:\git\dotfiles
+git config --file $gitConfigLocal core.hooksPath "$DotfilesDir\claude-global\hooks"
 
 # Set execution policy for Windows PowerShell 5.x (defaults to Restricted)
 # Write directly to the PS5 registry key since PS7's Set-ExecutionPolicy won't affect PS5

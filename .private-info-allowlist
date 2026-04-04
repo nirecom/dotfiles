@@ -35,6 +35,7 @@ tests/feature-permission-hook2.sh:/mnt/
 tests/main-check-cross-platform.sh:test@example.com
 tests/main-check-docs-updated.sh:test@example.com
 tests/main-check-test-updated.sh:test@example.com
+tests/main-effort-level-unstage.sh:test@example.com
 tests/main-private-repo-detection.sh:test@example.com
 tests/main-private-repo-detection.sh:192.168
 
