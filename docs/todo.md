@@ -2,6 +2,10 @@
 
 ## Current Work
 
+### VS Code installer — Verifying
+- [ ] Verify on another PC: `install.ps1 -Develop` installs VS Code and extensions from `config/vscode-extensions.txt`
+- [ ] Verify on Linux/macOS: `install.sh --develop` installs VS Code and extensions
+
 ### effortLevel auto-unstage — Verifying
 - [ ] Verify: make an effortLevel-only change, stage, and commit other files — settings.json should be auto-unstaged
 

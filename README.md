@@ -64,6 +64,8 @@ dotfiles/
 │   └── starship-powershell.toml  # Starship prompt (Windows)
 ├── .emacs.d/                # Emacs config
 ├── bin/                     # Utility scripts (detectos.sh, etc.)
+├── config/
+│   └── vscode-extensions.txt  # VS Code extensions (shared across platforms)
 ├── claude-global/             # Claude Code global settings
 ├── docs/                    # Architecture and history documentation
 ├── source-highlight/        # GNU source-highlight config

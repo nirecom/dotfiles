@@ -2,7 +2,7 @@
 # Usage:
 #   .\install.ps1            # Symlinks only
 #   .\install.ps1 -Base      # Symlinks + base packages
-#   .\install.ps1 -Develop   # Symlinks + dev tools (awscli)
+#   .\install.ps1 -Develop   # Symlinks + dev tools (awscli, vscode)
 #   .\install.ps1 -Toolchain # Symlinks + toolchain (VS C++)
 #   .\install.ps1 -Full      # Symlinks + base + dev + toolchain
 
@@ -88,10 +88,15 @@ if ($Develop -or $Full) {
     Write-Host ""
     Write-Host "--- Installing development tools ---"
     & "$DotfilesDir\install\win\awscli.ps1"
+
+    # Step 11: Install VS Code and extensions
+    Write-Host ""
+    Write-Host "--- Installing Visual Studio Code ---"
+    & "$DotfilesDir\install\win\vscode.ps1"
 }
 
 if ($Toolchain -or $Full) {
-    # Step 11: Install toolchain
+    # Step 12: Install toolchain
     Write-Host ""
     Write-Host "--- Installing toolchain ---"
     & "$DotfilesDir\install\win\vs-cpp.ps1"
