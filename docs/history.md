@@ -2,6 +2,10 @@
 
 ## Change History
 
+### Remove container extensions from VS Code auto-install (0a3ba69)
+Background: Dev Containers extension (`ms-vscode-remote.remote-containers`) silently installed Docker Desktop on macOS without user prompt. On company PCs, Docker Desktop Personal edition may violate commercial licensing terms.
+Changes: Removed `ms-azuretools.vscode-containers` and `ms-vscode-remote.remote-containers` from `config/vscode-extensions.txt`. Users who need them can install manually.
+
 ### Add VS Code and extensions installer (aa3f295)
 Background: Setting up a new development machine required manually installing VS Code and re-adding extensions one by one. Needed automated install via `-Develop`/`--develop` flag.
 Changes: Created `config/vscode-extensions.txt` (shared extension list), `install/win/vscode.ps1` (winget-based), and `install/linux/vscode.sh` (apt/brew, WSL skip). Added to `-Develop`/`--develop` section in both `install.ps1` and `install.sh`.
