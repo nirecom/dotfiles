@@ -2,6 +2,9 @@
 
 ## Current Work
 
+### effortLevel auto-unstage — Verifying
+- [ ] Verify: make an effortLevel-only change, stage, and commit other files — settings.json should be auto-unstaged
+
 ### SSOT 参照ルールの設計 — 検討中
 ポート・URL・ホスト名を推測せず SSOT を確認させる仕組みの設計:
 - [ ] claude-global/rules/ に汎用行動ルール追加（「SSOT を確認してから提示」— ファイル名は含めない）

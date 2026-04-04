@@ -2,6 +2,10 @@
 
 ## Change History
 
+### Auto-unstage effortLevel-only changes in settings.json (84db276)
+Background: effortLevel is written to settings.json by Claude Code's /fast toggle and effort level changes. Since settings.json is tracked in git, effortLevel-only changes kept appearing in git diff, requiring manual cleanup. Previous fix (84db276) removed effortLevel from the committed file, but it reappears whenever Claude Code writes it.
+Changes: Added auto-unstage logic to claude-global/hooks/pre-commit. On commit, compares HEAD vs staged settings.json after stripping effortLevel (via node JSON parse). If identical, auto-unstages the file. Handles addition, value change, and removal of effortLevel. Mixed changes (effortLevel + real content) are preserved. Also fixed `core.hooksPath` on Windows: shared `.config/git/config` has `~/dotfiles/...` (works on Linux/macOS), but Windows dotfiles is at `C:\git\dotfiles`. Added `core.hooksPath` override in `config.local` via `dotfileslink.ps1`.
+
 ### Add research phase to workflow
 Background: Investigated well-known Claude Code frameworks (Alex Kurkin's Research→Plan→Implement, everything-claude-code, claude-research-plan-implement). Found that a research phase before planning prevents implementing against wrong assumptions. Separated into two skills: `/survey-code` (codebase exploration) and `/deep-research` (web research), both at effort: medium — low loses cross-source reasoning, high is overkill for information gathering. Name choices: `research` alone risks future built-in conflict (precedent: `/plan` → `/make-plan`). `deep-research` aligns with established OSS convention. `survey-code` distinguishes from web research.
 Changes: Added `claude-global/skills/survey-code/SKILL.md` and `claude-global/skills/deep-research/SKILL.md`. Updated `claude-global/CLAUDE.md` workflow from 7 steps to 8 (Research as step 1).
