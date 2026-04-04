@@ -2,6 +2,14 @@
 
 ## Change History
 
+### Workflow rules reorganization
+Background: workflow.md contained a mix of procedural rules (verification, diff approval) and design policies (cross-platform/naming orthogonality). Rules files are always loaded into context, so there was no stage-gate mechanism — workflow rules had no more prominence than any other rule file. Community research showed plan mode thresholds vary, with Anthropic's official guidance being "skip if the task is describable in one sentence."
+Changes:
+- Dissolved `workflow.md` — procedural steps moved to global `CLAUDE.md` as numbered Workflow (Plan → Write tests → Code → Test & Verify → Docs → User verification → Commit)
+- Orthogonality rules extracted to `rules/orthogonality.md` (referenced by `coding.md` and `make-plan/SKILL.md`)
+- `test.md` reordered: Test Case Categories first, removed duplicate "test before code" instruction (now in CLAUDE.md)
+- Removed `Rules are in rules/. Skills are in skills/.` pointer from CLAUDE.md (auto-discovered by Claude Code)
+
 ### Add write-tests and make-plan skills with effort: high (23e4eba, 72f4168)
 Background: rules/test.md の手順指示はコンテキスト圧で無視されることがあり、effort level も制御できなかった。skill の frontmatter で effort: high を指定すると、skill 実行中のみ reasoning effort が上がる。
 Changes: /write-tests と /make-plan スキルを新規作成（effort: high）。rules/test.md の手順部分を /write-tests 呼び出しに置換。カテゴリ定義・命名規則・timeout ルールは rules に残留（/review-tests との共有 SSOT）。当初 /plan で作成したが組み込みコマンドと衝突したため /make-plan にリネーム。effort frontmatter は v2.1.80 で追加された公式機能（優先順位: 環境変数 > skill frontmatter > /effort セッション > モデルデフォルト）。VS Code の UI には effort 変更が反映されない既知バグあり（anthropics/claude-code#31751）が、内部的には切り替わっている。
