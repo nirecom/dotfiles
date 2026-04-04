@@ -203,6 +203,19 @@ if grep -q 'install-extension.*2>/dev/null' "$LINUX_SCRIPT"; then pass "suppress
 else fail "missing error suppression on install-extension"; fi
 
 echo ""
+echo "=== Normal: Linux script has execute permission in git ==="
+MODE=$(git ls-files -s "$LINUX_SCRIPT" | awk '{print $1}')
+if [ "$MODE" = "100755" ]; then pass "vscode.sh has execute permission"
+else fail "vscode.sh is $MODE (expected 100755)"; fi
+
+echo ""
+echo "=== Normal: pre-commit hook checks .sh execute permission ==="
+HOOK="claude-global/hooks/pre-commit"
+if grep -q 'execute permission' "$HOOK" && grep -q '\.sh' "$HOOK"; then
+    pass "pre-commit checks .sh execute permission"
+else fail "pre-commit missing .sh permission check"; fi
+
+echo ""
 echo "=== Edge: extension list has at least one extension ==="
 EXT_COUNT=$(grep -v '^\s*$' "$EXT_LIST" | grep -cv '^\s*#' || true)
 if [ "$EXT_COUNT" -gt 0 ]; then pass "extension list has $EXT_COUNT extension(s)"

@@ -2,6 +2,10 @@
 
 ## Change History
 
+### Add VS Code and extensions installer (aa3f295)
+Background: Setting up a new development machine required manually installing VS Code and re-adding extensions one by one. Needed automated install via `-Develop`/`--develop` flag.
+Changes: Created `config/vscode-extensions.txt` (shared extension list), `install/win/vscode.ps1` (winget-based), and `install/linux/vscode.sh` (apt/brew, WSL skip). Added to `-Develop`/`--develop` section in both `install.ps1` and `install.sh`.
+
 ### Auto-unstage effortLevel-only changes in settings.json (84db276)
 Background: effortLevel is written to settings.json by Claude Code's /fast toggle and effort level changes. Since settings.json is tracked in git, effortLevel-only changes kept appearing in git diff, requiring manual cleanup. Previous fix (84db276) removed effortLevel from the committed file, but it reappears whenever Claude Code writes it.
 Changes: Added auto-unstage logic to claude-global/hooks/pre-commit. On commit, compares HEAD vs staged settings.json after stripping effortLevel (via node JSON parse). If identical, auto-unstages the file. Handles addition, value change, and removal of effortLevel. Mixed changes (effortLevel + real content) are preserved. Also fixed `core.hooksPath` on Windows: shared `.config/git/config` has `~/dotfiles/...` (works on Linux/macOS), but Windows dotfiles is at `C:\git\dotfiles`. Added `core.hooksPath` override in `config.local` via `dotfileslink.ps1`.
