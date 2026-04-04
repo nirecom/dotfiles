@@ -73,6 +73,8 @@
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget (Windows only) | |
 | [install/linux/nvm.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/nvm.sh) | Install nvm + Node.js LTS (WSL2/macOS/Linux) | |
 | [install/win/awscli.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/awscli.ps1) | Install AWS CLI via winget | |
+| [install/win/vscode.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/vscode.ps1) | Install VS Code and extensions | Extensions from `config/vscode-extensions.txt` |
+| [install/linux/vscode.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/vscode.sh) | Install VS Code and extensions | WSL: skip (Windows host). Extensions from shared list |
 | [install/win/vs-cpp.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/vs-cpp.ps1) | Install VS 2022 Community with C++ Desktop workload | For llama.cpp source build (MSVC compiler + CMake bundled). Auto-elevates via UAC |
 | [install/win/session-sync-init.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/session-sync-init.ps1) | Initialize `~/.claude/projects/` as git repo for session sync | Called by `install.ps1` |
 | [install/linux/session-sync-init.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/session-sync-init.sh) | Initialize `~/.claude/projects/` as git repo for session sync | Called by `install.sh` |
@@ -100,6 +102,7 @@
 | `.emacs.d/` | Emacs configuration (init-loader pattern) | |
 | `.config/starship.toml` | Starship prompt (Linux/macOS) | |
 | `.config/starship-powershell.toml` | Starship prompt (Windows PowerShell) | |
+| [config/vscode-extensions.txt](https://github.com/nirecom/dotfiles/blob/main/config/vscode-extensions.txt) | VS Code extension list (shared across platforms) | Used by `vscode.ps1` / `vscode.sh` |
 | [config/win/autohotkey/force-japanese-layout.ahk](https://github.com/nirecom/dotfiles/blob/main/config/win/autohotkey/force-japanese-layout.ahk) | AutoHotkey v2: force Japanese keyboard layout | Windows only |
 | [config/win/powertoys/keyboard-manager/default.json](https://github.com/nirecom/dotfiles/blob/main/config/win/powertoys/keyboard-manager/default.json) | PowerToys Keyboard Manager: Emacs-style key remapping | Windows only |
 
@@ -211,9 +214,9 @@ Variables set by `bin/detectos.sh`:
 
 ### Execution order
 
-`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `session-sync-init.sh` (if Claude Code installed) → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `rize.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh`)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `session-sync-init.sh` (if Claude Code installed) → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `rize.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh` → `vscode.sh`)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `session-sync-init.ps1` (if Claude Code installed) → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Full`: `awscli.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `session-sync-init.ps1` (if Claude Code installed) → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
 
 See [README.md](../README.md) for full platform-specific installation instructions.
 

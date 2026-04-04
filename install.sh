@@ -3,7 +3,7 @@
 # Usage:
 #   ./install.sh            # Symlinks + Claude Code + nvm
 #   ./install.sh --base     # Symlinks + base packages
-#   ./install.sh --develop  # Symlinks + dev tools
+#   ./install.sh --develop  # Symlinks + dev tools (awscli, vscode)
 #   ./install.sh --full     # Symlinks + base + dev tools
 
 set -e
@@ -78,6 +78,11 @@ if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
     echo ""
     echo "--- Installing development tools ---"
     ~/dotfiles/install/linux/install-develop.sh
+
+    # Step 10: Install VS Code and extensions
+    echo ""
+    echo "--- Installing Visual Studio Code ---"
+    ~/dotfiles/install/linux/vscode.sh
 fi
 
 echo ""
