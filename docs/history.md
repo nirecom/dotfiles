@@ -2,6 +2,10 @@
 
 ## Change History
 
+### Restructure /update-docs skill for ai-specs project coverage (uncommitted)
+Background: /update-docs Project Detection only covered langchain-stack projects. As ai-specs grew to include llama-swap, judgeclaw, and others, coverage was insufficient. The llama-swap docs update procedure was also scattered in ai-specs/CLAUDE.md separately.
+Changes: Renamed LangChain projects to ai-specs projects. Added llama-swap and judgeclaw to Source repos. Reordered sections (General projects first, ai-specs second). Simplified ai-specs/CLAUDE.md llama-swap section to a pointer to the /update-docs skill. Attempted external file separation via `!`cat`` preprocessing but abandoned due to security sandbox (blocks cat outside working directory).
+
 ### Remove container extensions from VS Code auto-install (0a3ba69)
 Background: Dev Containers extension (`ms-vscode-remote.remote-containers`) silently installed Docker Desktop on macOS without user prompt. On company PCs, Docker Desktop Personal edition may violate commercial licensing terms.
 Changes: Removed `ms-azuretools.vscode-containers` and `ms-vscode-remote.remote-containers` from `config/vscode-extensions.txt`. Users who need them can install manually.
