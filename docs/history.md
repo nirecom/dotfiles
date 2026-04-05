@@ -2,6 +2,10 @@
 
 ## Change History
 
+### WebSearch/WebFetch 許可プロンプト削減 (uncommitted)
+Background: deep-research スキル実行時、WebSearch と WebFetch の毎回の許可ダイアログが UX の障害になっていた。ユーザーは未知 URL のリスクを判断できず、許可プロンプトがセキュリティ上の価値を提供していなかった。ChatGPT によるセキュリティレビューを 2 回実施し、GitHub 等のユーザー投稿ドメインを allow から除外する判断に至った。
+Changes: settings.json の allow に WebSearch と低リスクドキュメントドメイン 8 件（MDN, Python docs, Microsoft Learn, man7, Anthropic docs, OpenAI docs, Google AI docs, GitHub Docs）の WebFetch を追加。ask から WebSearch と WebFetch(domain:github.com) を削除。ドメイン選定基準は「信頼」ではなく「事故時に既存防御層（deny ルール、diff 確認、pre-commit hook）で被害が出ない」。
+
 ### Restructure /update-docs skill for ai-specs project coverage (uncommitted)
 Background: /update-docs Project Detection only covered langchain-stack projects. As ai-specs grew to include llama-swap, judgeclaw, and others, coverage was insufficient. The llama-swap docs update procedure was also scattered in ai-specs/CLAUDE.md separately.
 Changes: Renamed LangChain projects to ai-specs projects. Added llama-swap and judgeclaw to Source repos. Reordered sections (General projects first, ai-specs second). Simplified ai-specs/CLAUDE.md llama-swap section to a pointer to the /update-docs skill. Attempted external file separation via `!`cat`` preprocessing but abandoned due to security sandbox (blocks cat outside working directory).
