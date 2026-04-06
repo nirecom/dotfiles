@@ -16,3 +16,20 @@ if (Get-Command uv -ErrorAction SilentlyContinue) {
     }
     Write-Host "uv installed: $(uv --version)" -ForegroundColor Green
 }
+
+# Install Python via uv (if not already installed)
+if (Get-Command uv -ErrorAction SilentlyContinue) {
+    $uvPython = uv python list --only-installed 2>&1
+    if ($uvPython -match 'cpython') {
+        Write-Host "Python is already installed via uv." -ForegroundColor DarkGray
+    } else {
+        $env:UV_NATIVE_TLS = "1"
+        Write-Host "Installing Python via uv..."
+        uv python install
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Python installed via uv." -ForegroundColor Green
+        } else {
+            Write-Warning "Python installation failed. Re-run install.ps1 to retry."
+        }
+    }
+}

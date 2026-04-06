@@ -2,6 +2,14 @@
 
 ## Change History
 
+### Security enhancement research and planning (uncommitted)
+Background: No systematic security checklist during architecture planning (information leakage, third-party access, external access). No security test coverage guidelines. OWASP MCP Top 10 identified prompt injection via MCP plugins as a new threat vector.
+Changes: Researched external sources (OWASP WSTG/ASVS/LLM Top 10/MCP Top 10, everything-claude-code, lasso-security/claude-hooks, Gitleaks vs Semgrep comparison). Documented 4-phase plan in `docs/plan.md`. Key design decision: extract security checklists and patterns into skills (not rules/) to minimize always-loaded context window consumption. Skill naming validated against major frameworks (everything-claude-code `/security-scan`, qdhenry `/security:security-audit`, etc.) — `verb-noun` kebab-case is the dominant convention.
+
+### Installer robustness and option hierarchy fix (uncommitted)
+Background: On a secondary PC, `install.ps1 -Develop` failed: AWS CLI winget install hit MSI mutex (exit code 1618) but reported success; Python was missing because `-Develop` didn't include `-Base` packages; PowerShell profile lacked diverge detection (bash-only).
+Changes: Added `Wait-MsiMutex` function to `install.ps1` (waits for running MSI before proceeding). Unified `$LASTEXITCODE` check after `winget install` in all 8 scripts. Added `uv python install` step to `uv.ps1`/`uv.sh` with `UV_NATIVE_TLS=1` for proxy environments. Ported force-push diverge detection from `.profile_common` to `profile.ps1` (y/N prompt, 10s timeout, marker file support). Changed option hierarchy to cumulative: `-Develop` includes `-Base`, `-Toolchain` includes `-Develop`. Extracted installer rules from `coding.md` to `installer.md`.
+
 ### WebSearch/WebFetch 許可プロンプト削減 (uncommitted)
 Background: deep-research スキル実行時、WebSearch と WebFetch の毎回の許可ダイアログが UX の障害になっていた。ユーザーは未知 URL のリスクを判断できず、許可プロンプトがセキュリティ上の価値を提供していなかった。ChatGPT によるセキュリティレビューを 2 回実施し、GitHub 等のユーザー投稿ドメインを allow から除外する判断に至った。
 Changes: settings.json の allow に WebSearch と低リスクドキュメントドメイン 8 件（MDN, Python docs, Microsoft Learn, man7, Anthropic docs, OpenAI docs, Google AI docs, GitHub Docs）の WebFetch を追加。ask から WebSearch と WebFetch(domain:github.com) を削除。ドメイン選定基準は「信頼」ではなく「事故時に既存防御層（deny ルール、diff 確認、pre-commit hook）で被害が出ない」。

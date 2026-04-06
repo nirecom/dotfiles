@@ -12,3 +12,18 @@ else
   export PATH="$HOME/.local/bin:$PATH"
   echo "uv installed: $(uv --version)"
 fi
+
+# Install Python via uv (if not already installed)
+if command -v uv &> /dev/null; then
+    if uv python list --only-installed 2>&1 | grep -q cpython; then
+        echo "Python is already installed via uv."
+    else
+        echo "Installing Python via uv..."
+        uv python install
+        if [ $? -eq 0 ]; then
+            echo "Python installed via uv."
+        else
+            echo "WARNING: Python installation failed. Re-run to retry." >&2
+        fi
+    fi
+fi

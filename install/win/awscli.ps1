@@ -13,8 +13,12 @@ $awscliInstalled = $LASTEXITCODE -eq 0
 if (-not $awscliInstalled) {
     Write-Host "Installing AWS CLI via winget..."
     winget install --id Amazon.AWSCLI --accept-source-agreements --accept-package-agreements
-    Write-Host "AWS CLI installed." -ForegroundColor Green
-    Write-Host "Restart your terminal to use the aws command." -ForegroundColor Yellow
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "AWS CLI installed." -ForegroundColor Green
+        Write-Host "Restart your terminal to use the aws command." -ForegroundColor Yellow
+    } else {
+        Write-Warning "AWS CLI installation failed (exit code: $LASTEXITCODE). Re-run install.ps1 to retry."
+    }
 } else {
     Write-Host "AWS CLI is already installed." -ForegroundColor DarkGray
 }
