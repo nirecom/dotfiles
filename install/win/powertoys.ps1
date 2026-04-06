@@ -19,7 +19,11 @@ $installed = $LASTEXITCODE -eq 0
 if (-not $installed) {
     Write-Host "Installing PowerToys via winget..."
     winget install --id Microsoft.PowerToys --accept-source-agreements --accept-package-agreements
-    Write-Host "PowerToys installed." -ForegroundColor Green
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "PowerToys installed." -ForegroundColor Green
+    } else {
+        Write-Warning "PowerToys installation failed (exit code: $LASTEXITCODE). Re-run install.ps1 to retry."
+    }
 } else {
     Write-Host "PowerToys is already installed." -ForegroundColor DarkGray
 }
