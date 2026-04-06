@@ -38,6 +38,7 @@ tests/main-check-test-updated.sh:test@example.com
 tests/main-effort-level-unstage.sh:test@example.com
 tests/main-private-repo-detection.sh:test@example.com
 tests/main-private-repo-detection.sh:192.168
+tests/main-sort-history.sh:test@example.com
 
 # NVIDIA package version numbers (false positive as IPv4)
 10.3.9.90
