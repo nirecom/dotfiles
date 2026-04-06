@@ -324,6 +324,10 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - VSCode extension's "Ask before edits" mode only covers Edit/Write. Bash commands do not trigger the ask dialog. "Ask permissions" (ask for all tools) mode does not exist in VSCode.
 - Hot-reloading of settings.json hook changes is unreliable. Restart Claude Code after changes.
 
+### Test Iteration Workflow
+
+TDD test writing uses a subagent (`mode: "auto"`) to run the write → run → fix loop autonomously. This reduces user confirmations from O(N) (per-edit approval) to exactly 2: (a) test case plan approval, (b) final test file review. The subagent is instructed to edit only test files, never source code. See `write-tests` skill for the procedure.
+
 ---
 
 ## 8. Git Global Configuration
