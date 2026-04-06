@@ -2,11 +2,12 @@
 
 ## Current Work
 
-### Security Enhancement — Planning
+### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
 Design decision: minimize rules/ context consumption by extracting details into skills.
 Skill naming follows existing `verb-noun` (kebab-case) convention.
-- [ ] Phase 1: Architecture Security Checklist (`/review-security` skill)
+- [x] Phase 1: Architecture Security Checklist (`/review-security` skill)
+  - [ ] Verify: invoke `/review-security` in a new session and confirm TodoWrite-based checklist execution
 - [ ] Phase 2: Security Test Cases (`test.md` edit)
 - [ ] Phase 3: Security Patterns Reference (`/scan-security` skill)
 - [ ] Phase 4: Prompt Injection Defense
