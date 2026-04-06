@@ -1,10 +1,10 @@
 # install.ps1 - Unified installer for dotfiles (Windows)
 # Usage:
 #   .\install.ps1            # Symlinks only
-#   .\install.ps1 -Base      # Symlinks + base packages
-#   .\install.ps1 -Develop   # Symlinks + dev tools (awscli, vscode)
-#   .\install.ps1 -Toolchain # Symlinks + toolchain (VS C++)
-#   .\install.ps1 -Full      # Symlinks + base + dev + toolchain
+#   .\install.ps1 -Base      # + base packages (starship, uv, etc.)
+#   .\install.ps1 -Develop   # + Base + dev tools (awscli, vscode)
+#   .\install.ps1 -Toolchain # + Develop + toolchain (VS C++)
+#   .\install.ps1 -Full      # All of the above
 
 param(
     [switch]$Base,
@@ -23,6 +23,24 @@ Write-Host "=== dotfiles installer (Windows) ===" -ForegroundColor Cyan
 # Set DOTFILES_DIR as persistent user environment variable (used by Claude Code hooks)
 [Environment]::SetEnvironmentVariable('DOTFILES_DIR', $DotfilesDir, 'User')
 $env:DOTFILES_DIR = $DotfilesDir
+
+# Wait for any running MSI installer before proceeding
+function Wait-MsiMutex {
+    $maxWait = 120
+    $waited = 0
+    while (Get-Process msiexec -ErrorAction SilentlyContinue) {
+        if ($waited -eq 0) {
+            Write-Host "Waiting for another installer to finish..." -ForegroundColor Yellow
+        }
+        Start-Sleep -Seconds 5
+        $waited += 5
+        if ($waited -ge $maxWait) {
+            Write-Warning "Installer still running after ${maxWait}s — proceeding anyway"
+            break
+        }
+    }
+}
+Wait-MsiMutex
 
 # Step 1: Create symlinks
 Write-Host ""
@@ -57,7 +75,7 @@ Write-Host ""
 Write-Host "--- Disabling Snipping Tool notifications ---"
 & "$DotfilesDir\install\win\snipping-tool.ps1"
 
-if ($Base -or $Full) {
+if ($Base -or $Develop -or $Toolchain -or $Full) {
     # Step 6: Install base packages
     Write-Host ""
     Write-Host "--- Installing base packages ---"
@@ -83,7 +101,7 @@ if ($Base -or $Full) {
     & "$DotfilesDir\install\win\claude-tabs.ps1"
 }
 
-if ($Develop -or $Full) {
+if ($Develop -or $Toolchain -or $Full) {
     # Step 10: Install development tools
     Write-Host ""
     Write-Host "--- Installing development tools ---"

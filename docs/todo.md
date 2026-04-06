@@ -24,10 +24,23 @@
 - [ ] config/win ↔ config/mac ペアの hook 対応要否
 
 ### dotfiles force push — Verifying
-Auto-detection implemented in `.profile_common`. On shell startup:
+Auto-detection implemented in `.profile_common` and `install/win/profile.ps1`. On shell startup:
 - Divergence detected → interactive prompt (y/N, 10s timeout)
 - `~/.dotfiles-no-auto-reset` marker → warning message only (for master PC)
 - Non-interactive shell → silently skipped
 - [ ] Verify on a follower PC: open new shell after force push, confirm prompt appears
 - [ ] Create `~/.dotfiles-no-auto-reset` on master PC (`New-Item -ItemType File -Path "$HOME\.dotfiles-no-auto-reset"` on pwsh)
+
+### Security Enhancement — Planning
+Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
+Design decision: minimize rules/ context consumption by extracting details into skills.
+Skill naming follows existing `verb-noun` (kebab-case) convention.
+- [ ] Phase 1: Architecture Security Checklist (`/review-security` skill)
+- [ ] Phase 2: Security Test Cases (`test.md` edit)
+- [ ] Phase 3: Security Patterns Reference (`/scan-security` skill)
+- [ ] Phase 4: Prompt Injection Defense
+
+### winget MSI mutex wait — Verifying
+`install.ps1` 冒頭で `Wait-MsiMutex` を実行。別の MSI が走っていれば最大120秒待つ。
+- [ ] Verify: 別の MSI (Windows Update 等) 実行中に `install.ps1 -Base` を実行し、待機メッセージが出ることを確認
 

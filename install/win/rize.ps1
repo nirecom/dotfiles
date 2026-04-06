@@ -14,7 +14,11 @@ $installed = $LASTEXITCODE -eq 0
 if (-not $installed) {
     Write-Host "Installing Rize via winget (MS Store)..."
     winget install --id XPDC57FTXPM1P5 --accept-source-agreements --accept-package-agreements
-    Write-Host "Rize installed." -ForegroundColor Green
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Rize installed." -ForegroundColor Green
+    } else {
+        Write-Warning "Rize installation failed (exit code: $LASTEXITCODE). Re-run install.ps1 to retry."
+    }
 } else {
     Write-Host "Rize is already installed." -ForegroundColor DarkGray
 }

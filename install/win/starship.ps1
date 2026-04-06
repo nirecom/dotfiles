@@ -13,8 +13,12 @@ $starshipInstalled = $LASTEXITCODE -eq 0
 if (-not $starshipInstalled) {
     Write-Host "Installing Starship via winget..."
     winget install --id Starship.Starship --accept-source-agreements --accept-package-agreements
-    Write-Host "Starship installed." -ForegroundColor Green
-    Write-Host "Restart your terminal to activate the Starship prompt." -ForegroundColor Yellow
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Starship installed." -ForegroundColor Green
+        Write-Host "Restart your terminal to activate the Starship prompt." -ForegroundColor Yellow
+    } else {
+        Write-Warning "Starship installation failed (exit code: $LASTEXITCODE). Re-run install.ps1 to retry."
+    }
 } else {
     Write-Host "Starship is already installed." -ForegroundColor DarkGray
 }

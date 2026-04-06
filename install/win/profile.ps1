@@ -26,7 +26,29 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDi
         $fetchProcess.Kill()
         Write-Warning "git fetch timed out after 3s — skipped"
     } elseif ($fetchProcess.ExitCode -eq 0) {
-        git -C $DotfilesDir merge --ff-only FETCH_HEAD
+        git -C $DotfilesDir merge --ff-only FETCH_HEAD 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            # ff-only failed — check if diverged (force push scenario)
+            git -C $DotfilesDir merge-base --is-ancestor HEAD FETCH_HEAD 2>$null
+            if ($LASTEXITCODE -ne 0) {
+                if (Test-Path "$HOME\.dotfiles-no-auto-reset") {
+                    Write-Warning "dotfiles diverged from origin. Run: git -C $DotfilesDir reset --hard origin/main"
+                } elseif ([Environment]::UserInteractive) {
+                    Write-Host "dotfiles diverged from origin (force push detected)."
+                    Write-Host "Reset to origin/main? Local changes will be lost. [y/N]"
+                    $ans = $null
+                    $task = [System.Threading.Tasks.Task]::Run([Func[string]]{ [Console]::ReadLine() })
+                    if ($task.Wait(10000)) {
+                        $ans = $task.Result
+                    }
+                    if ($ans -match '^[Yy]$') {
+                        git -C $DotfilesDir reset --hard origin/main
+                    } else {
+                        Write-Host "Skipped. Run manually: git -C $DotfilesDir reset --hard origin/main"
+                    }
+                }
+            }
+        }
     }
 }
 
