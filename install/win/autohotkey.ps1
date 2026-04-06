@@ -30,7 +30,11 @@ $ahkInstalled = $LASTEXITCODE -eq 0
 if (-not $ahkInstalled) {
     Write-Host "Installing AutoHotkey v2 via winget..."
     winget install --id AutoHotkey.AutoHotkey --accept-source-agreements --accept-package-agreements
-    Write-Host "AutoHotkey v2 installed." -ForegroundColor Green
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "AutoHotkey v2 installed." -ForegroundColor Green
+    } else {
+        Write-Warning "AutoHotkey v2 installation failed (exit code: $LASTEXITCODE). Re-run install.ps1 to retry."
+    }
 } else {
     Write-Host "AutoHotkey v2 is already installed." -ForegroundColor DarkGray
 }

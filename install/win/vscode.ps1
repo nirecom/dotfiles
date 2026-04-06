@@ -14,6 +14,10 @@ if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
     }
     Write-Host "Installing Visual Studio Code via winget..."
     winget install --id Microsoft.VisualStudioCode --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "VS Code installation failed (exit code: $LASTEXITCODE). Re-run install.ps1 to retry."
+        return
+    }
     # Refresh PATH so code command is available
     $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
     if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
