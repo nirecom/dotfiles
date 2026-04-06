@@ -21,9 +21,10 @@
 
 ## Phase 1: Architecture Security Checklist
 
-**Goal**: `claude-global/rules/security.md` を新規作成。計画時にセキュリティ 3 軸を確認させる。
+**Goal**: `/review-security` skill を新規作成。計画時にセキュリティ 3 軸を確認させる。
+`rules/security.md` はスキルへのポインタ（1-2行）のみ。
 
-**変更ファイル**: `claude-global/rules/security.md` (新規)
+**変更ファイル**: `claude-global/skills/review-security/SKILL.md` (新規), `claude-global/rules/security.md` (新規・ポインタのみ)
 
 **内容**:
 - Information Leakage チェック (出典: OWASP ASVS V8 Data Protection, V6 Stored Cryptography)
@@ -45,9 +46,9 @@
 
 ## Phase 3: Security Patterns Reference
 
-**Goal**: `claude-global/rules/security-patterns.md` を新規作成。テストで使えるシグネチャパターン集。
+**Goal**: `/scan-security` skill を新規作成。テストで使えるシグネチャパターン集。
 
-**変更ファイル**: `claude-global/rules/security-patterns.md` (新規), `docs/private-info-scanning.md` (相互参照追加)
+**変更ファイル**: `claude-global/skills/scan-security/SKILL.md` (新規), `docs/private-info-scanning.md` (相互参照追加)
 
 **内容**:
 - Secret Patterns — Gitleaks built-in rules 由来 (https://github.com/gitleaks/gitleaks/tree/master/cmd/generate/config/rules)
@@ -58,7 +59,7 @@
 
 **Goal**: Prompt injection 防御パターンを security.md と security-patterns.md に追加。
 
-**変更ファイル**: `claude-global/rules/security.md` (追記), `claude-global/rules/security-patterns.md` (追記)
+**変更ファイル**: `claude-global/skills/review-security/SKILL.md` (追記), `claude-global/skills/scan-security/SKILL.md` (追記)
 
 **内容**:
 - Prompt Injection Defense セクション (出典: OWASP LLM Top 10 LLM01, MCP Top 10 MCP03/MCP06)
