@@ -22,6 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 HASH_RE = re.compile(r"[0-9a-f]{7,40}")
+DATE_RE = re.compile(r"\b(\d{4}-\d{2}-\d{2})\b")
 
 
 def find_repo_root(start_path):
@@ -53,20 +54,33 @@ def get_commit_date(repo_path, commit_hash):
 
 
 def resolve_entry_date(title_line, repo_path):
-    """Try to resolve a date from commit hashes in a ### title line.
+    """Try to resolve a date from a ### title line.
 
-    Returns a datetime if any hash resolves, None otherwise.
-    Uses the earliest (first) commit date for entries with multiple hashes.
+    Priority: commit hash dates (most accurate) > inline YYYY-MM-DD dates.
+    Returns a datetime if any source resolves, None otherwise.
     """
-    if not repo_path:
-        return None
-    hashes = HASH_RE.findall(title_line)
-    dates = []
-    for h in hashes:
-        date = get_commit_date(repo_path, h)
-        if date:
-            dates.append(date)
-    return min(dates) if dates else None
+    # Try commit hashes first (most accurate)
+    if repo_path:
+        hashes = HASH_RE.findall(title_line)
+        dates = []
+        for h in hashes:
+            date = get_commit_date(repo_path, h)
+            if date:
+                dates.append(date)
+        if dates:
+            return min(dates)
+
+    # Fallback: parse inline YYYY-MM-DD from title
+    date_match = DATE_RE.search(title_line)
+    if date_match:
+        try:
+            return datetime.strptime(date_match.group(1), "%Y-%m-%d").replace(
+                tzinfo=timezone.utc
+            )
+        except ValueError:
+            pass
+
+    return None
 
 
 def parse_sections(content):
