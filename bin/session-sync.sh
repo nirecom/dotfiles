@@ -10,12 +10,14 @@ set -euo pipefail
 
 ACTION="${1:-}"
 CLAUDE_DIR="$HOME/.claude"
+_QUIET=0
 
-# Parse --claude-dir for testing
+# Parse options
 shift || true
 while [ $# -gt 0 ]; do
     case "$1" in
         --claude-dir) CLAUDE_DIR="$2"; shift 2 ;;
+        --quiet) _QUIET=1; shift ;;
         *) shift ;;
     esac
 done
@@ -43,8 +45,14 @@ case "$ACTION" in
         timestamp=$(date "+%Y-%m-%d %H:%M")
         git -C "$PROJECTS_DIR" commit -m "sync: $(hostname -s) $timestamp"
         git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
-        git -C "$PROJECTS_DIR" push -u origin main
-        echo "Pushed session data."
+        if [ "$_QUIET" = "1" ]; then
+            if ! git -C "$PROJECTS_DIR" push -u origin main 2>&1; then
+                notify-send "session-sync" "push failed" 2>/dev/null || echo "session-sync push failed" >&2
+            fi
+        else
+            git -C "$PROJECTS_DIR" push -u origin main
+            echo "Pushed session data."
+        fi
         ;;
     pull)
         git -C "$PROJECTS_DIR" pull --rebase
