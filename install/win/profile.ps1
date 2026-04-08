@@ -118,5 +118,5 @@ function codes {
         $name = Split-Path -Leaf (Resolve-Path $target).Path
     }
     Start-Process pwsh -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-Command",
-        "code.cmd --new-window $codeArgs; & '$waitScript' '$name'; & '$syncScript' push" -WindowStyle Hidden
+        "code.cmd --new-window $codeArgs; & '$waitScript' '$name'; & '$syncScript' push -Quiet" -WindowStyle Hidden
 }
