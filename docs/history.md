@@ -489,3 +489,7 @@ Changes: Replaced "Test Iteration Subagent" section with "Test Writing" (pointer
 ### Session sync: silent push failure notification (2026-04-08, (pending))
 Background: `codes` function ran session-sync push in a hidden process (Windows: `-WindowStyle Hidden`, Linux: `>/dev/null 2>&1`). Push failures were completely invisible — cross-machine sync silently failed for 6 days (diverged branch from 4/2 to 4/8) with no indication.
 Changes: Added `--quiet` flag (sh) / `-Quiet` switch (ps1) to session-sync scripts. In quiet mode, success is silent; failure triggers OS notification (Windows: `System.Windows.Forms.MessageBox`, Linux: `notify-send` with stderr fallback). `codes` function now passes the quiet flag instead of discarding all output.
+
+### Enforce workflow via TodoWrite checklist (2026-04-08, (pending))
+Background: CLAUDE.md workflow steps (Research, Plan) were frequently skipped at session start. The "describable in one sentence" skip criterion was too vague, allowing rationalization.
+Changes: Rewrote workflow preamble to require TodoWrite checklist creation for every task. Removed `as needed` from Research step. Replaced vague skip criteria with concrete conditions (single-file change AND no design decision). Added explicit rule that skipping Research does not justify skipping Plan.
