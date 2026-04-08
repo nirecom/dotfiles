@@ -34,6 +34,12 @@ Auto-detection implemented in `.profile_common` and `install/win/profile.ps1`. O
 - [ ] ai-specs/CLAUDE.md の Infrastructure SSOT セクションに行動指示を追記
 - [ ] docs-convention.md の Standard Files が nirecom PJ 前提である点の整理（他 doc 体系との分離）
 
+### commit 確認を 2回→1回に削減 — 保留
+commit-push skill で commit message をチャット表示→承認のフローが確立できたら、
+settings.json の `git commit` を `ask` → `allow` に移動して permission 側の確認を除去する。
+- [ ] commit-push skill の commit message 表示が確実に機能することを確認
+- [ ] settings.json の `ask` から `Bash(git commit *)` 等3行を `allow` に移動
+
 ### Cross-platform skiplist — 要判断
 以下のスクリプトの skiplist 分類を決定する（Windows counterpart が必要か）:
 - [ ] go, terraformer — Windows でも使うツール
