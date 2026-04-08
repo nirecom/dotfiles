@@ -36,9 +36,7 @@ Auto-detection implemented in `.profile_common` and `install/win/profile.ps1`. O
 
 ### commit 確認を 2回→1回に削減 — Verifying
 commit-push skill で commit message をチャット表示→承認後に commit するフローに変更。
-- [x] commit-push skill の commit message 表示が確実に機能することを確認
-- [x] settings.json: `Bash(git commit *)` のみ `ask` → `allow` に移動（skill 経由の通常 commit）
-- 残り2行 (`git -C`, `cd &&`) は skill 外の直接実行なので `ask` のまま維持
+- `cd && git commit` のみ `ask` に残す（rules/git.md で禁止されたパターン）
 - [ ] Verify: 次回 `/commit-push` で確認ダイアログが1回だけになることを確認
 
 ### Cross-platform skiplist — 要判断
