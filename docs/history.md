@@ -493,3 +493,7 @@ Changes: Added `--quiet` flag (sh) / `-Quiet` switch (ps1) to session-sync scrip
 ### Enforce workflow via TodoWrite checklist (2026-04-08, (pending))
 Background: CLAUDE.md workflow steps (Research, Plan) were frequently skipped at session start. The "describable in one sentence" skip criterion was too vague, allowing rationalization.
 Changes: Rewrote workflow preamble to require TodoWrite checklist creation for every task. Removed `as needed` from Research step. Replaced vague skip criteria with concrete conditions (single-file change AND no design decision). Added explicit rule that skipping Research does not justify skipping Plan.
+
+### Commit confirmation reduced from 2 to 1 (2026-04-08, 74662ae, 4223e09)
+Background: Committing required two approvals — skill chat confirmation and settings.json permission dialog. Hooks (pre-commit, commit-msg) now reliably block private info, making the permission dialog redundant.
+Changes: Added commit message presentation step to commit-push skill (diff stats + message shown in chat, wait for approval). Moved `Bash(git commit *)` and `Bash(git -C * commit *)` from ask to allow in settings.json. `cd && git commit` pattern remains in ask (prohibited by rules/git.md).
