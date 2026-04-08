@@ -10,7 +10,9 @@ param(
     [ValidateSet("push", "pull", "status", "reset")]
     [string]$Action,
 
-    [string]$ClaudeDir = (Join-Path $env:USERPROFILE ".claude")
+    [string]$ClaudeDir = (Join-Path $env:USERPROFILE ".claude"),
+
+    [switch]$Quiet
 )
 
 Set-StrictMode -Version Latest
@@ -45,8 +47,15 @@ switch ($Action) {
         $ErrorActionPreference = "Continue"
         git -C $ProjectsDir pull --rebase origin main 2>&1 | Out-Null
         $ErrorActionPreference = "Stop"
-        git -C $ProjectsDir push -u origin main
-        Write-Host "Pushed session data." -ForegroundColor Green
+        try {
+            git -C $ProjectsDir push -u origin main
+            if (-not $Quiet) { Write-Host "Pushed session data." -ForegroundColor Green }
+        } catch {
+            if ($Quiet) {
+                Add-Type -AssemblyName System.Windows.Forms
+                [System.Windows.Forms.MessageBox]::Show("session-sync push failed:`n$_", "session-sync", "OK", "Warning") | Out-Null
+            } else { throw }
+        }
     }
     "pull" {
         git -C $ProjectsDir pull --rebase

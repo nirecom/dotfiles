@@ -376,7 +376,7 @@ Design decisions:
   (1) `reset --hard` vs `reset` (mixed): `reset --hard` risks overwriting local JSONL files that share names with remote (happens when two machines use the same path). `reset` (mixed) only moves HEAD, preserving local files. File checkout is handled by normal pull
   (2) Background push output from `codes()`: output interrupts after prompt, requiring an extra Enter. Attempted SIGWINCH-triggered prompt redraw but it had no effect. Suppressed output to `/dev/null`
 Changes:
-  - `session-sync-init.sh`/`.ps1`: added `fetch origin main` + `reset origin/main` before initial commit to incorporate remote history. Tolerate `commit` failure when there are no changes (`|| true`)
+  - `session-sync-init.sh`/`.ps1`: added `fetch origin main` + `reset origin/main` before initial commit to merge remote history. Tolerate `commit` failure when there are no changes (`|| true`)
   - `bin/session-sync.sh`/`.ps1`: added `pull --rebase origin main` before push
   - `.profile_common`: suppressed `codes()` push output with `>/dev/null 2>&1`
 
@@ -485,3 +485,7 @@ Changes: Created `bin/translate-history.py` (two-phase workflow: `--extract` out
 ### Consolidate subagent instructions to skill definitions (2026-04-08, (pending))
 Background: rules/test.md contained subagent implementation details (how subagent works, what it launches) that duplicated the authoritative definitions in write-tests and review-tests skills. Prior commit a951983 had added subagent enforcement to rules/test.md because procedural instructions were sometimes ignored, but this created a maintenance burden — two places to update when the mechanism changed.
 Changes: Replaced "Test Iteration Subagent" section with "Test Writing" (pointer to `/write-tests` only). Removed Explore subagent explanation from "Test Coverage Review" (pointer to `/review-tests` only). Subagent implementation details now live exclusively in skill SKILL.md files.
+
+### Session sync: silent push failure notification (2026-04-08, (pending))
+Background: `codes` function ran session-sync push in a hidden process (Windows: `-WindowStyle Hidden`, Linux: `>/dev/null 2>&1`). Push failures were completely invisible — cross-machine sync silently failed for 6 days (diverged branch from 4/2 to 4/8) with no indication.
+Changes: Added `--quiet` flag (sh) / `-Quiet` switch (ps1) to session-sync scripts. In quiet mode, success is silent; failure triggers OS notification (Windows: `System.Windows.Forms.MessageBox`, Linux: `notify-send` with stderr fallback). `codes` function now passes the quiet flag instead of discarding all output.
