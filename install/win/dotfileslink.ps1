@@ -40,6 +40,7 @@ $links = @(
     @{ Source = "claude-global\settings.json"; Dest = "$HOME\.claude\settings.json"; IsDir = $false }
     @{ Source = "claude-global\skills"; Dest = "$HOME\.claude\skills"; IsDir = $true }
     @{ Source = "claude-global\rules"; Dest = "$HOME\.claude\rules"; IsDir = $true }
+    @{ Source = "claude-global\agents"; Dest = "$HOME\.claude\agents"; IsDir = $true }
 )
 
 # Private context directory (gitignored)

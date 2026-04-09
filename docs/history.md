@@ -505,3 +505,7 @@ Changes: Added `git commit -q` flag to suppress file mode messages (both sh/ps1)
 ### todo.md completion cleanup rule (2026-04-09, (pending))
 Background: After verification passed, completed phases/steps were sometimes left behind in todo.md as `[x]` checkboxes or stub pointers back to history.md, causing todo.md to bloat and duplicate history.md content.
 Changes: Updated `claude-global/rules/docs-convention.md` todo.md rule to explicitly require full removal from todo.md after verification passes — no leftover checkboxes, sub-steps, or stub pointers back to history.md. Entry must exist in exactly one place.
+
+### make-plan: planner/reviewer discussion loop (2026-04-09, (pending))
+Background: The Plan phase used a single `/make-plan` skill drafting the plan in the main conversation. No independent critique step — quality relied on the main Claude catching its own gaps, and thorough review was inconsistent.
+Changes: Introduced `claude-global/agents/` with two subagents — `planner` (drafts and revises plans) and `reviewer` (critically reviews, surfaces minor and major issues). `/make-plan` now orchestrates a discussion loop: planner drafts → reviewer returns `APPROVED` or `NEEDS_REVISION` with numbered concerns → planner revises → re-review. Escalates to the user after 3 rounds without approval. Skip conditions (single-file change AND no design decision) are preserved. Added `agents` symlink to install scripts (`install/linux/dotfileslink.sh`, `install/win/dotfileslink.ps1`). Updated `claude-global/CLAUDE.md` workflow Plan step description.
