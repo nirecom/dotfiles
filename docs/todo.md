@@ -24,10 +24,6 @@ Auto-detection implemented in `.profile_common` and `install/win/profile.ps1`. O
 - [ ] Verify on another PC: `install.ps1 -Develop` installs VS Code and extensions from `config/vscode-extensions.txt`
 - [ ] Verify on Linux/macOS: `install.sh --develop` installs VS Code and extensions
 
-### winget MSI mutex wait — Verifying
-`install.ps1` 冒頭で `Wait-MsiMutex` を実行。別の MSI が走っていれば最大120秒待つ。
-- [ ] Verify: 別の MSI (Windows Update 等) 実行中に `install.ps1 -Base` を実行し、待機メッセージが出ることを確認
-
 ### SSOT 参照ルールの設計 — 検討中
 ポート・URL・ホスト名を推測せず SSOT を確認させる仕組みの設計:
 - [ ] claude-global/rules/ に汎用行動ルール追加（「SSOT を確認してから提示」— ファイル名は含めない）
