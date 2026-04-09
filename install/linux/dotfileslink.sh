@@ -46,7 +46,7 @@ else
     ln -sf ~/dotfiles/claude-global/CLAUDE.md ~/.claude/
     ln -sf ~/dotfiles/claude-global/settings.json ~/.claude/
     # Back up regular directories before symlinking (Claude Code may auto-create them)
-    for dir in skills rules; do
+    for dir in skills rules agents; do
         if [ -d ~/.claude/$dir ] && [ ! -L ~/.claude/$dir ]; then
             echo "Backing up ~/.claude/$dir -> ~/.claude/$dir.bak"
             rm -rf ~/.claude/$dir.bak
@@ -60,6 +60,7 @@ else
     fi
     ln -snf ~/dotfiles/claude-global/skills ~/.claude/skills
     ln -snf ~/dotfiles/claude-global/rules ~/.claude/rules
+    ln -snf ~/dotfiles/claude-global/agents ~/.claude/agents
 fi
 
 # Emacs

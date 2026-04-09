@@ -113,6 +113,7 @@
 | [claude-global/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-global/CLAUDE.md) | Global Claude Code instructions (workflow steps) | Symlinked to `~/.claude/CLAUDE.md` |
 | [claude-global/rules/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/rules) | Behavioral rules (coding, git, shell, orthogonality, privacy, docs-convention, test) | Symlinked to `~/.claude/rules/` |
 | [claude-global/skills/*/SKILL.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/skills) | Skills (`/commit-push`, `/deep-research`, `/make-plan`, `/review-security`, `/review-tests`, `/survey-code`, `/update-docs`, `/update-instruction`, `/write-tests`) | Symlinked to `~/.claude/skills/` |
+| [claude-global/agents/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/agents) | Subagents (`@planner`, `@reviewer`) invoked by `/make-plan` in a discussion loop | Symlinked to `~/.claude/agents/` |
 | [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 | [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
@@ -278,6 +279,7 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - `claude-global/settings.json` → `~/.claude/settings.json`
 - `claude-global/skills/` → `~/.claude/skills/`
 - `claude-global/rules/` → `~/.claude/rules/`
+- `claude-global/agents/` → `~/.claude/agents/`
 
 ### settings.json Design
 

@@ -47,3 +47,8 @@ commit-push skill で commit message をチャット表示→承認後に commit
 - [ ] install-base, install-develop — メタスクリプト（構成が異なる）
 - [ ] config/win ↔ config/mac ペアの hook 対応要否
 
+### planner の mid-plan research escalation — 検討
+planner サブエージェントが plan 作成中に調査不足 (未知の外部 API、欠損しているドメイン知識等) に気づいた場合、推測せず orchestrator にエスカレートする仕組み。
+- [ ] `claude-global/agents/planner.md` に `RESEARCH_NEEDED: <question>` エスカレーションルール追加
+- [ ] `claude-global/skills/make-plan/SKILL.md` の Procedure に受信時のハンドリング追加 (ユーザーに `/deep-research` 実行を促す)
+
