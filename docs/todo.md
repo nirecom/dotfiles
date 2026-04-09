@@ -35,9 +35,10 @@ Auto-detection implemented in `.profile_common` and `install/win/profile.ps1`. O
 - [ ] docs-convention.md の Standard Files が nirecom PJ 前提である点の整理（他 doc 体系との分離）
 
 ### commit 確認を 2回→1回に削減 — Verifying
-commit-push skill で commit message をチャット表示→承認後に commit するフローに変更。
-- `cd && git commit` のみ `ask` に残す（rules/git.md で禁止されたパターン）
-- [ ] Verify: 次回 `/commit-push` で確認ダイアログが1回だけになることを確認
+commit permission dialog を単一の承認 gate にするアプローチに変更(4223e09+5b0ceed の revert)。
+- `Bash(git commit *)` / `Bash(git -C * commit *)` を `ask` に戻す
+- SKILL.md 3 の "Wait for user approval" を削除(chat メッセージは参考表示)
+- [ ] Verify: 次回 `/commit-push` で dialog が 1 回だけ出ることを確認
 
 ### Cross-platform skiplist — 要判断
 以下のスクリプトの skiplist 分類を決定する（Windows counterpart が必要か）:
