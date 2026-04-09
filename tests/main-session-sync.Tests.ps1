@@ -283,6 +283,12 @@ Describe "session-sync.ps1 output and notifications" {
         $content | Should -Match 'function Show-SessionToast' -Because "toast notification helper should be defined"
     }
 
+    It "push flow does not emit a pushing toast" {
+        # Only a single completion toast should fire per push — the legacy "pushing..." start toast was removed.
+        $content = Get-Content $SyncScript -Raw
+        $content | Should -Not -Match "Show-SessionToast\s+['""]pushing" -Because "start-of-push toast was removed to avoid a second banner"
+    }
+
     It "quiet push does not write to stdout" {
         $projDir = Join-Path $script:TestDir "projects\quiet-test"
         New-Item -ItemType Directory -Path $projDir -Force | Out-Null
