@@ -365,6 +365,37 @@ else
 fi
 
 echo ""
+echo "=== session-sync.sh output and notification tests ==="
+
+# --- commit -q suppresses create/delete mode ---
+echo "[output] Push does not show create/delete mode"
+echo '{"test":"output"}' > "$FAKE_PROJECTS/output-test.jsonl"
+output=$("$DOTFILES_DIR/bin/session-sync.sh" push --claude-dir "$FAKE_CLAUDE" 2>&1)
+if echo "$output" | grep -qi "create mode\|delete mode"; then
+    fail "push output contains create/delete mode messages"
+else
+    pass "push output suppresses create/delete mode"
+fi
+
+# --- toast function exists ---
+echo "[output] Toast function exists in script"
+if grep -q '_toast()' "$DOTFILES_DIR/bin/session-sync.sh"; then
+    pass "toast function defined in script"
+else
+    fail "toast function not found in script"
+fi
+
+# --- quiet push suppresses stdout ---
+echo "[output] Quiet push suppresses normal stdout"
+echo '{"test":"quiet"}' > "$FAKE_PROJECTS/quiet-test.jsonl"
+output=$("$DOTFILES_DIR/bin/session-sync.sh" push --quiet --claude-dir "$FAKE_CLAUDE" 2>&1)
+if echo "$output" | grep -qi "Pushed session data"; then
+    fail "quiet push shows stdout message"
+else
+    pass "quiet push suppresses stdout message"
+fi
+
+echo ""
 echo "=== Results ==="
 echo "PASS: $PASS  FAIL: $FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
