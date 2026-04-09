@@ -29,6 +29,15 @@ if [ ! -d "$PROJECTS_DIR/.git" ]; then
     exit 1
 fi
 
+_toast() {
+    local msg="$1"
+    if command -v powershell.exe >/dev/null 2>&1; then
+        powershell.exe -NoProfile -Command "[void][Windows.UI.Notifications.ToastNotificationManager,Windows.UI.Notifications,ContentType=WindowsRuntime];[void][Windows.Data.Xml.Dom.XmlDocument,Windows.Data.Xml.Dom.XmlDocument,ContentType=WindowsRuntime];\$x=[Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent(1);\$t=\$x.GetElementsByTagName('text');\$t.Item(0).AppendChild(\$x.CreateTextNode('session-sync'))|Out-Null;\$t.Item(1).AppendChild(\$x.CreateTextNode('$msg'))|Out-Null;[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('PowerShell').Show([Windows.UI.Notifications.ToastNotification]::new(\$x))" 2>/dev/null
+    elif command -v notify-send >/dev/null 2>&1; then
+        notify-send "session-sync" "$msg"
+    fi
+}
+
 case "$ACTION" in
     push)
         # Warn if Claude Code is running
@@ -43,11 +52,14 @@ case "$ACTION" in
             exit 0
         fi
         timestamp=$(date "+%Y-%m-%d %H:%M")
-        git -C "$PROJECTS_DIR" commit -m "sync: $(hostname -s) $timestamp"
+        git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $timestamp"
         git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
         if [ "$_QUIET" = "1" ]; then
-            if ! git -C "$PROJECTS_DIR" push -u origin main 2>&1; then
-                notify-send "session-sync" "push failed" 2>/dev/null || echo "session-sync push failed" >&2
+            _toast "pushing..."
+            if git -C "$PROJECTS_DIR" push -u origin main 2>&1; then
+                _toast "push complete"
+            else
+                _toast "push failed"
             fi
         else
             git -C "$PROJECTS_DIR" push -u origin main

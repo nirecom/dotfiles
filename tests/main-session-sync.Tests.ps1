@@ -250,3 +250,44 @@ Describe "session-sync.ps1 reset" {
         Test-Path (Join-Path $projDir "diverged.jsonl") | Should -BeFalse -Because "diverged file should be discarded"
     }
 }
+
+Describe "session-sync.ps1 output and notifications" {
+    BeforeEach {
+        $script:TestDir = Join-Path $env:TEMP "session-sync-test-$(Get-Random)"
+        $script:RemoteDir = Join-Path $env:TEMP "session-sync-remote-$(Get-Random)"
+        New-Item -ItemType Directory -Path $script:TestDir -Force | Out-Null
+        git init --bare $script:RemoteDir 2>&1 | Out-Null
+        & $InitScript -ClaudeDir $script:TestDir -RemoteUrl $script:RemoteDir
+        $projDir = Join-Path $script:TestDir "projects"
+        git -C $projDir add .gitattributes 2>&1 | Out-Null
+        git -C $projDir commit -m "initial" 2>&1 | Out-Null
+        git -C $projDir push -u origin main 2>&1 | Out-Null
+    }
+
+    AfterEach {
+        Remove-Item -Recurse -Force $script:TestDir -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force $script:RemoteDir -ErrorAction SilentlyContinue
+    }
+
+    It "push does not show create/delete mode messages" {
+        $projDir = Join-Path $script:TestDir "projects\output-test"
+        New-Item -ItemType Directory -Path $projDir -Force | Out-Null
+        Set-Content -Path (Join-Path $projDir "data.jsonl") -Value "test"
+        $output = & $SyncScript -Action push -ClaudeDir $script:TestDir *>&1 | Out-String
+        $output | Should -Not -Match "create mode" -Because "git commit -q should suppress file mode output"
+        $output | Should -Not -Match "delete mode" -Because "git commit -q should suppress file mode output"
+    }
+
+    It "script contains Show-SessionToast function" {
+        $content = Get-Content $SyncScript -Raw
+        $content | Should -Match 'function Show-SessionToast' -Because "toast notification helper should be defined"
+    }
+
+    It "quiet push does not write to stdout" {
+        $projDir = Join-Path $script:TestDir "projects\quiet-test"
+        New-Item -ItemType Directory -Path $projDir -Force | Out-Null
+        Set-Content -Path (Join-Path $projDir "data.jsonl") -Value "test"
+        $output = & $SyncScript -Action push -ClaudeDir $script:TestDir -Quiet *>&1 | Out-String
+        $output | Should -Not -Match "Pushed session data" -Because "quiet mode should use toast, not stdout"
+    }
+}

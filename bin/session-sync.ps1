@@ -25,6 +25,22 @@ if (-not (Test-Path (Join-Path $ProjectsDir ".git"))) {
     return
 }
 
+function Show-SessionToast([string]$Message) {
+    # WinRT type loading requires Windows PowerShell 5.1 — invoke via powershell.exe so this works from both pwsh 7+ and PS 5.1
+    $escaped = $Message -replace "'", "''"
+    $script = @"
+[void][Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
+[void][Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime]
+`$xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+`$text = `$xml.GetElementsByTagName('text')
+[void]`$text.Item(0).AppendChild(`$xml.CreateTextNode('session-sync'))
+[void]`$text.Item(1).AppendChild(`$xml.CreateTextNode('$escaped'))
+`$toast = [Windows.UI.Notifications.ToastNotification]::new(`$xml)
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('PowerShell').Show(`$toast)
+"@
+    powershell.exe -NoProfile -Command $script 2>&1 | Out-Null
+}
+
 switch ($Action) {
     "push" {
         # Warn if Claude Code is running (JSONL may not be flushed)
@@ -35,7 +51,9 @@ switch ($Action) {
 
         # Copy history.jsonl into sync area
         Copy-Item (Join-Path $ClaudeDir "history.jsonl") (Join-Path $ProjectsDir ".history.jsonl") -ErrorAction SilentlyContinue
-        git -C $ProjectsDir add .
+        $ErrorActionPreference = "Continue"
+        git -C $ProjectsDir add . 2>&1 | Out-Null
+        $ErrorActionPreference = "Stop"
         $status = git -C $ProjectsDir status --porcelain
         if (-not $status) {
             Write-Host "No changes to push."
@@ -43,18 +61,21 @@ switch ($Action) {
         }
 
         $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm"
-        git -C $ProjectsDir commit -m "sync: $env:COMPUTERNAME $timestamp"
+        git -C $ProjectsDir commit -q -m "sync: $env:COMPUTERNAME $timestamp"
         $ErrorActionPreference = "Continue"
         git -C $ProjectsDir pull --rebase origin main 2>&1 | Out-Null
         $ErrorActionPreference = "Stop"
-        try {
-            git -C $ProjectsDir push -u origin main
-            if (-not $Quiet) { Write-Host "Pushed session data." -ForegroundColor Green }
-        } catch {
-            if ($Quiet) {
-                Add-Type -AssemblyName System.Windows.Forms
-                [System.Windows.Forms.MessageBox]::Show("session-sync push failed:`n$_", "session-sync", "OK", "Warning") | Out-Null
-            } else { throw }
+        if ($Quiet) { Show-SessionToast "pushing..." }
+        $ErrorActionPreference = "Continue"
+        git -C $ProjectsDir push -u origin main 2>&1 | Out-Null
+        $pushExitCode = $LASTEXITCODE
+        $ErrorActionPreference = "Stop"
+        if ($pushExitCode -eq 0) {
+            if ($Quiet) { Show-SessionToast "push complete" }
+            else { Write-Host "Pushed session data." -ForegroundColor Green }
+        } else {
+            if ($Quiet) { Show-SessionToast "push failed (exit code $pushExitCode)" }
+            else { throw "git push failed with exit code $pushExitCode" }
         }
     }
     "pull" {
