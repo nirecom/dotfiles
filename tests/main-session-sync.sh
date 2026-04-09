@@ -385,6 +385,15 @@ else
     fail "toast function not found in script"
 fi
 
+# --- push flow does not emit a pushing toast ---
+# Only a single completion toast should fire per push — the legacy "pushing..." start toast was removed.
+echo "[output] Push flow does not call _toast \"pushing...\""
+if grep -q '_toast "pushing' "$DOTFILES_DIR/bin/session-sync.sh"; then
+    fail "legacy pushing toast should have been removed"
+else
+    pass "no pushing toast call in script"
+fi
+
 # --- quiet push suppresses stdout ---
 echo "[output] Quiet push suppresses normal stdout"
 echo '{"test":"quiet"}' > "$FAKE_PROJECTS/quiet-test.jsonl"

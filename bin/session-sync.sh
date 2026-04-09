@@ -55,7 +55,6 @@ case "$ACTION" in
         git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $timestamp"
         git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
         if [ "$_QUIET" = "1" ]; then
-            _toast "pushing..."
             if git -C "$PROJECTS_DIR" push -u origin main 2>&1; then
                 _toast "push complete"
             else

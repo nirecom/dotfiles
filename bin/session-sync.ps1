@@ -26,7 +26,8 @@ if (-not (Test-Path (Join-Path $ProjectsDir ".git"))) {
 }
 
 function Show-SessionToast([string]$Message) {
-    # WinRT type loading requires Windows PowerShell 5.1 — invoke via powershell.exe so this works from both pwsh 7+ and PS 5.1
+    # WinRT type loading requires Windows PowerShell 5.1 — invoke via powershell.exe so this works from both pwsh 7+ and PS 5.1.
+    # Tag+Group: consecutive pushes replace the previous toast in Action Center instead of accumulating.
     $escaped = $Message -replace "'", "''"
     $script = @"
 [void][Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
@@ -36,6 +37,8 @@ function Show-SessionToast([string]$Message) {
 [void]`$text.Item(0).AppendChild(`$xml.CreateTextNode('session-sync'))
 [void]`$text.Item(1).AppendChild(`$xml.CreateTextNode('$escaped'))
 `$toast = [Windows.UI.Notifications.ToastNotification]::new(`$xml)
+`$toast.Tag = 'session-sync'
+`$toast.Group = 'session-sync'
 [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('PowerShell').Show(`$toast)
 "@
     powershell.exe -NoProfile -Command $script 2>&1 | Out-Null
@@ -65,7 +68,6 @@ switch ($Action) {
         $ErrorActionPreference = "Continue"
         git -C $ProjectsDir pull --rebase origin main 2>&1 | Out-Null
         $ErrorActionPreference = "Stop"
-        if ($Quiet) { Show-SessionToast "pushing..." }
         $ErrorActionPreference = "Continue"
         git -C $ProjectsDir push -u origin main 2>&1 | Out-Null
         $pushExitCode = $LASTEXITCODE
