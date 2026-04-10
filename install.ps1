@@ -75,8 +75,22 @@ Write-Host ""
 Write-Host "--- Disabling Snipping Tool notifications ---"
 & "$DotfilesDir\install\win\snipping-tool.ps1"
 
+# Step 6: Disable Ctrl+Shift input language hotkey
+Write-Host ""
+Write-Host "--- Disabling input language hotkeys ---"
+$toggleKey = 'HKCU:\Keyboard Layout\Toggle'
+$current = Get-ItemProperty $toggleKey
+if ($current.'Language Hotkey' -ne '3' -or $current.'Layout Hotkey' -ne '3' -or $current.Hotkey -ne '3') {
+    Set-ItemProperty $toggleKey -Name 'Language Hotkey' -Value '3'
+    Set-ItemProperty $toggleKey -Name 'Layout Hotkey' -Value '3'
+    Set-ItemProperty $toggleKey -Name 'Hotkey' -Value '3'
+    Write-Host "Disabled Ctrl+Shift / Alt+Shift language hotkeys." -ForegroundColor Green
+} else {
+    Write-Host "Input language hotkeys already disabled." -ForegroundColor DarkGray
+}
+
 if ($Base -or $Develop -or $Toolchain -or $Full) {
-    # Step 6: Install base packages
+    # Step 7: Install base packages
     Write-Host ""
     Write-Host "--- Installing base packages ---"
     & "$DotfilesDir\install\win\starship.ps1"
@@ -85,36 +99,36 @@ if ($Base -or $Develop -or $Toolchain -or $Full) {
     & "$DotfilesDir\install\win\autohotkey.ps1"
     & "$DotfilesDir\install\win\powertoys.ps1"
 
-    # Step 7: Install Rize
+    # Step 8: Install Rize
     Write-Host ""
     Write-Host "--- Installing Rize ---"
     & "$DotfilesDir\install\win\rize.ps1"
 
-    # Step 8: Install Claude Usage Widget
+    # Step 9: Install Claude Usage Widget
     Write-Host ""
     Write-Host "--- Installing Claude Usage Widget ---"
     & "$DotfilesDir\install\win\claude-usage-widget.ps1"
 
-    # Step 9: Install Claude Tabs
+    # Step 10: Install Claude Tabs
     Write-Host ""
     Write-Host "--- Installing Claude Tabs ---"
     & "$DotfilesDir\install\win\claude-tabs.ps1"
 }
 
 if ($Develop -or $Toolchain -or $Full) {
-    # Step 10: Install development tools
+    # Step 11: Install development tools
     Write-Host ""
     Write-Host "--- Installing development tools ---"
     & "$DotfilesDir\install\win\awscli.ps1"
 
-    # Step 11: Install VS Code and extensions
+    # Step 12: Install VS Code and extensions
     Write-Host ""
     Write-Host "--- Installing Visual Studio Code ---"
     & "$DotfilesDir\install\win\vscode.ps1"
 }
 
 if ($Toolchain -or $Full) {
-    # Step 12: Install toolchain
+    # Step 13: Install toolchain
     Write-Host ""
     Write-Host "--- Installing toolchain ---"
     & "$DotfilesDir\install\win\vs-cpp.ps1"
