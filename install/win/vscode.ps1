@@ -36,12 +36,12 @@ if (-not (Test-Path $extFile)) {
     return
 }
 
-$installedExts = (code --list-extensions 2>$null) -join "`n"
+$installedExts = @(code --list-extensions 2>$null) | ForEach-Object { $_.ToLowerInvariant() }
 $extensions = Get-Content $extFile | Where-Object { $_ -match '\S' -and $_ -notmatch '^\s*#' }
 
 foreach ($ext in $extensions) {
     $ext = $ext.Trim()
-    if ($installedExts -match "(?i)^$([regex]::Escape($ext))$") {
+    if ($installedExts -contains $ext.ToLowerInvariant()) {
         Write-Host "  Extension already installed: $ext" -ForegroundColor DarkGray
     } else {
         Write-Host "  Installing extension: $ext"
