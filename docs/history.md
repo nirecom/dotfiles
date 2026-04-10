@@ -529,3 +529,7 @@ Changes: Replaced the string+regex approach with an array-based case-insensitive
 ### Session sync: filter create/delete mode from pull output (2026-04-10, (pending))
 Background: Previous output cleanup (22fed74) added `git commit -q` to suppress `create mode` / `delete mode` lines during push. However, the same lines still appeared during `pull` — they come from git's fast-forward merge output, not from commit.
 Changes: Added `Where-Object` filter to `git pull --rebase` output in `bin/session-sync.ps1` pull action, excluding lines matching `^\s*(create|delete) mode `.
+
+### Optimize skill token usage with model and effort tuning (2026-04-10, 986d925)
+Background: Total token usage was frequently hitting limits. All skills inherited the session model (Opus) and effort level, even for mechanical tasks like git operations or doc updates. Official docs confirmed `model` and `effort` frontmatter are supported in both skills and subagents (https://code.claude.com/docs/en/skills, https://code.claude.com/docs/en/sub-agents).
+Changes: Set `model: haiku` + `effort: low` on `commit-push` (git-only). Set `model: sonnet` + `effort: low` on `survey-code`, `review-tests`, `update-docs`, `update-instruction`. Reasoning-heavy skills (`deep-research`, `review-security`, `write-tests`) and agents (`planner`, `reviewer`) remain unchanged (inherit session model).
