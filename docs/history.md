@@ -538,3 +538,7 @@ Changes: Set `model: haiku` + `effort: low` on `commit-push` (git-only). Set `mo
 Background: make-plan planner/reviewer loop consumed excessive tokens. Two causes identified: (1) reviewer's 7-item checklist with individual rule file references encouraged redundant Read calls for rules already loaded as Memory Files (~3.6k tokens wasted per round), (2) 3-round loop limit allowed up to 3 expensive revision cycles.
 Research: Surveyed GitHub Claude Code patterns (HumanLayer, everything-claude-code, anthropic repos, lst97/claude-code-sub-agents). Key findings: community consensus is lean subagent prompts; rules/ files loaded via Memory Files should not be re-read; skills: frontmatter enables on-demand injection but is unsuitable for always-applicable rules. Reviewer effort: high retained (core quality mechanism).
 Changes: Consolidated reviewer checklist from 7 items to 4 (correctness+completeness, rules compliance, risks+edge cases, scope). Added explicit instruction not to re-read rules via Read tool. Reduced loop escalation limit from 3 to 2 rounds.
+
+### save-research skill (2026-04-11, (pending))
+Background: Useful research findings from conversations were lost after the session ended, requiring re-investigation on the same topics.
+Changes: Added `claude-global/skills/save-research/SKILL.md`. The skill saves conversation research findings to `../ai-specs/projects/engineering/research-results/<slug>.md` using relative paths (dotfiles is a public repo). Follows the established format of the existing `llm-document-ordering.md` research file.
