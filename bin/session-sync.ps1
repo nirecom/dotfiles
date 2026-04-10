@@ -81,7 +81,7 @@ switch ($Action) {
         }
     }
     "pull" {
-        git -C $ProjectsDir pull --rebase
+        git -C $ProjectsDir pull --rebase 2>&1 | Where-Object { $_ -notmatch '^\s*(create|delete) mode ' }
         # Merge remote history with local (dedup, preserve order)
         $syncHistory = Join-Path $ProjectsDir ".history.jsonl"
         $localHistory = Join-Path $ClaudeDir "history.jsonl"
