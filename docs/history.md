@@ -539,6 +539,10 @@ Background: make-plan planner/reviewer loop consumed excessive tokens. Two cause
 Research: Surveyed GitHub Claude Code patterns (HumanLayer, everything-claude-code, anthropic repos, lst97/claude-code-sub-agents). Key findings: community consensus is lean subagent prompts; rules/ files loaded via Memory Files should not be re-read; skills: frontmatter enables on-demand injection but is unsuitable for always-applicable rules. Reviewer effort: high retained (core quality mechanism).
 Changes: Consolidated reviewer checklist from 7 items to 4 (correctness+completeness, rules compliance, risks+edge cases, scope). Added explicit instruction not to re-read rules via Read tool. Reduced loop escalation limit from 3 to 2 rounds.
 
+### Explicit model pinning for quality-critical skills and agents (2026-04-11, (pending))
+Background: Preparing to set CLI default model to haiku for cost reduction. `model: inherit` and unspecified model fields would inherit haiku, degrading quality for reasoning-heavy tasks. Research confirmed `CLAUDE_CODE_SUBAGENT_MODEL` env var overrides ALL subagents including frontmatter (official docs priority order: env var > call-time > frontmatter > parent model), making it unsuitable for selective control.
+Changes: Set `model: opus` on 6 definitions: planner, reviewer (previously `inherit`), deep-research, make-plan, review-security, write-tests (previously unspecified). Mechanical skills remain unchanged (commit-push: haiku, survey-code/review-tests/update-docs/update-instruction: sonnet).
+
 ### save-research skill (2026-04-11, (pending))
 Background: Useful research findings from conversations were lost after the session ended, requiring re-investigation on the same topics.
 Changes: Added `claude-global/skills/save-research/SKILL.md`. The skill saves conversation research findings to `../ai-specs/projects/engineering/research-results/<slug>.md` using relative paths (dotfiles is a public repo). Follows the established format of the existing `llm-document-ordering.md` research file.
