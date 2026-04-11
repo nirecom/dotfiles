@@ -99,36 +99,31 @@ if ($Base -or $Develop -or $Toolchain -or $Full) {
     & "$DotfilesDir\install\win\autohotkey.ps1"
     & "$DotfilesDir\install\win\powertoys.ps1"
 
-    # Step 8: Install Rize
-    Write-Host ""
-    Write-Host "--- Installing Rize ---"
-    & "$DotfilesDir\install\win\rize.ps1"
-
-    # Step 9: Install Claude Usage Widget
+    # Step 8: Install Claude Usage Widget
     Write-Host ""
     Write-Host "--- Installing Claude Usage Widget ---"
     & "$DotfilesDir\install\win\claude-usage-widget.ps1"
 
-    # Step 10: Install Claude Tabs
+    # Step 9: Install Claude Tabs
     Write-Host ""
     Write-Host "--- Installing Claude Tabs ---"
     & "$DotfilesDir\install\win\claude-tabs.ps1"
 }
 
 if ($Develop -or $Toolchain -or $Full) {
-    # Step 11: Install development tools
+    # Step 10: Install development tools
     Write-Host ""
     Write-Host "--- Installing development tools ---"
     & "$DotfilesDir\install\win\awscli.ps1"
 
-    # Step 12: Install VS Code and extensions
+    # Step 11: Install VS Code and extensions
     Write-Host ""
     Write-Host "--- Installing Visual Studio Code ---"
     & "$DotfilesDir\install\win\vscode.ps1"
 }
 
 if ($Toolchain -or $Full) {
-    # Step 13: Install toolchain
+    # Step 12: Install toolchain
     Write-Host ""
     Write-Host "--- Installing toolchain ---"
     & "$DotfilesDir\install\win\vs-cpp.ps1"
