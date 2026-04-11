@@ -39,3 +39,11 @@ tests/*:/mnt/
 /c/Program Files
 /c/ProgramData
 /c/tools
+
+# Docker internal networks (not routable private addresses)
+docker-compose.yml:172\.24\.0
+
+# Docker official Node.js base image home directory (not a real user path)
+docker-compose.yml:/home/node
+*/generate-web-access-section.sh:/home/node
+docs/history.md:/home/node

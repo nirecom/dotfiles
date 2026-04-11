@@ -127,8 +127,8 @@ scan_line() {
     fi
 
     # Absolute local paths
-    if [[ "$line" =~ /Users/[a-zA-Z] ]] || [[ "$line" =~ /home/[a-zA-Z] ]] || \
-       [[ "$line" =~ [A-Z]:\\Users\\[a-zA-Z] ]] || [[ "$line" =~ [A-Z]:/Users/[a-zA-Z] ]]; then
+    if [[ "$line" =~ /Users/[a-zA-Z][a-zA-Z0-9_.-]* ]] || [[ "$line" =~ /home/[a-zA-Z][a-zA-Z0-9_.-]* ]] || \
+       [[ "$line" =~ [A-Z]:\\Users\\[a-zA-Z][a-zA-Z0-9_.-]* ]] || [[ "$line" =~ [A-Z]:/Users/[a-zA-Z][a-zA-Z0-9_.-]* ]]; then
         local path="${BASH_REMATCH[0]}"
         if [[ ! "$line" =~ /home/linuxbrew ]] && ! is_allowed "$file" "$path"; then
             echo "$file:$lineno: [path] $path"
