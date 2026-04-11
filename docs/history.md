@@ -578,3 +578,15 @@ Changes: Added "Pre-commit check" section to commit-push/SKILL.md instructing Cl
 ### session-sync reset: pipefail early-exit fix (2026-04-11, (pending))
 Background: `reset` (and `pull`) exited before "Reset to remote state." due to two `set -euo pipefail` pitfalls: (1) `ts=$(... | grep | ...)` in the mtime loop exits 1 when grep finds no match in JSONL files lacking a timestamp field — primary early-exit cause; (2) `cat .history.jsonl history.jsonl` exits 1 when `history.jsonl` is absent on a fresh follower machine. `2>/dev/null` suppresses stderr but not the exit code. The outer test script also had unguarded reset calls, masking failures as test-suite aborts.
 Changes: Added `|| true` to both `ts=$(...)` lines in the mtime restoration loop. Added `[ -f history.jsonl ]` existence check before `cat` in both `reset` and `pull`. Added `|| true` guards to 4 reset calls in `tests/main-session-sync.sh`. Added test "[reset] Reset succeeds when local history.jsonl is absent". All 37 tests PASS.
+
+### session-sync: macOS toast notification (2026-04-11, 2882723)
+Background: Toast notification on push/pull completion existed for Windows (PowerShell) and Linux (notify-send) but not macOS.
+Changes: Added osascript branch to _toast() in session-sync.sh, placed between the Windows and Linux paths.
+
+### dotfiles-private: startup fetch in .profile_common (2026-04-11, pending)
+Background: dotfiles-private is a sibling git repo managed alongside dotfiles, but had no automatic pull on shell startup. Separately, "model": "sonnet" was added as a default model to claude-global/settings.json.
+Changes: Added dotfiles-private fetch block to .profile_common, after the dotfiles fetch and before the session-sync fetch. Added "model": "sonnet" to claude-global/settings.json.
+
+### pre-commit: auto-unstage model field in settings.json (2026-04-11, pending)
+Background: Claude Code writes "model" to settings.json dynamically (same as effortLevel), causing it to appear in git diff across sessions and prompting unnecessary commit confirmations.
+Changes: Added `delete j.model` to STRIP_EFFORT in pre-commit hook alongside `delete j.effortLevel`. Added 5 test cases to tests/main-effort-level-unstage.sh (model addition, value change, removal, combined effortLevel+model, mixed with real change). Fixed pre-existing test bug: setup_repo now sets `core.hooksPath /dev/null` to prevent global hook from interfering with intermediate test commits.
