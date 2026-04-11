@@ -71,7 +71,7 @@ case "$ACTION" in
         fi
         ;;
     pull)
-        git -C "$PROJECTS_DIR" pull --rebase
+        git -C "$PROJECTS_DIR" pull --rebase 2>&1 | grep -Ev '^\s*(create|delete) mode '; [ "${PIPESTATUS[0]}" -eq 0 ]
         # Merge remote history with local (dedup, preserve order)
         if [ -f "$PROJECTS_DIR/.history.jsonl" ]; then
             if [ -f "$CLAUDE_DIR/history.jsonl" ]; then
