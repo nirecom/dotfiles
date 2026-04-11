@@ -58,11 +58,14 @@ case "$ACTION" in
         fi
         timestamp=$(date "+%Y-%m-%d %H:%M")
         git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $timestamp"
-        git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
+        git -C "$PROJECTS_DIR" pull --rebase origin main >/dev/null 2>&1 || true
         if [ "$_QUIET" = "1" ]; then
-            if git -C "$PROJECTS_DIR" push -u origin main 2>&1; then
+            push_output=$(git -C "$PROJECTS_DIR" push -u origin main 2>&1)
+            push_exit=$?
+            if [ $push_exit -eq 0 ]; then
                 [ "$_TOAST" = "1" ] && _toast "push complete"
             else
+                echo "$push_output" >&2
                 [ "$_TOAST" = "1" ] && _toast "push failed"
             fi
         else
