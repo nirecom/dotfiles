@@ -59,8 +59,8 @@
 
 | File | Responsibility | Notes |
 |:---|:---|:---|
-| [install.sh](https://github.com/nirecom/dotfiles/blob/main/install.sh) | Unified entry point (Linux/macOS) | `--full` includes packages |
-| [install.ps1](https://github.com/nirecom/dotfiles/blob/main/install.ps1) | Unified entry point (Windows) | `-Base`/`-Develop`/`-Toolchain`/`-Full` |
+| [install.sh](https://github.com/nirecom/dotfiles/blob/main/install.sh) | Unified entry point (Linux/macOS) | `--full` includes packages. Auto-calls `dotfiles-private/install.sh` if present |
+| [install.ps1](https://github.com/nirecom/dotfiles/blob/main/install.ps1) | Unified entry point (Windows) | `-Base`/`-Develop`/`-Toolchain`/`-Full`. Auto-calls `dotfiles-private/install.ps1` if present |
 | [install/linux/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/dotfileslink.sh) | Create symlinks on Linux/macOS | |
 | [install/win/dotfileslink.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/dotfileslink.ps1) | Create symlinks on Windows | Requires Developer Mode or admin |
 | [install/win/autohotkey.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/autohotkey.ps1) | Install AutoHotkey v2 and Japanese layout enforcer | English UI + Japanese preferred only |
@@ -112,6 +112,7 @@
 |:---|:---|:---|
 | [claude-global/CLAUDE.md](https://github.com/nirecom/dotfiles/blob/main/claude-global/CLAUDE.md) | Global Claude Code instructions (workflow steps) | Symlinked to `~/.claude/CLAUDE.md` |
 | [claude-global/rules/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/rules) | Behavioral rules (coding, git, shell, orthogonality, privacy, docs-convention, test) | Symlinked to `~/.claude/rules/` |
+| `claude-global/rules/language.md` | Language policy (conversation, commit, code, docs) | Gitignored; symlinked from `dotfiles-private` |
 | [claude-global/skills/*/SKILL.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/skills) | Skills (`/commit-push`, `/deep-research`, `/make-plan`, `/review-security`, `/review-tests`, `/survey-code`, `/update-docs`, `/update-instruction`, `/write-tests`) | Symlinked to `~/.claude/skills/` |
 | [claude-global/agents/*.md](https://github.com/nirecom/dotfiles/tree/main/claude-global/agents) | Subagents (`@planner`, `@reviewer`) invoked by `/make-plan` in a discussion loop | Symlinked to `~/.claude/agents/` |
 | [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
@@ -137,6 +138,7 @@
 | [.config/git/config](https://github.com/nirecom/dotfiles/blob/main/.config/git/config) | Git global settings (alias, color, push, fetch) | Default branch: `main` |
 | [.config/git/ignore](https://github.com/nirecom/dotfiles/blob/main/.config/git/ignore) | Global gitignore | |
 | `.config/git/config.local` | OS-specific settings (gitignored) | Loaded via `[include]` |
+| `.config/git/config-work` | Work identity (email/name) (gitignored) | Symlinked from `dotfiles-private` |
 
 ---
 

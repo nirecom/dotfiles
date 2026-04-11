@@ -85,6 +85,14 @@ if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
     ~/dotfiles/install/linux/vscode.sh
 fi
 
+# Run dotfiles-private installer if available
+PRIVATE_INSTALLER="$(dirname "$0")/../dotfiles-private/install.sh"
+if [ -x "$PRIVATE_INSTALLER" ]; then
+    echo ""
+    echo "--- Running dotfiles-private installer ---"
+    "$PRIVATE_INSTALLER" "$@"
+fi
+
 echo ""
 echo "=== Done ==="
 exec $SHELL -l
