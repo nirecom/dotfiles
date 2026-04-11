@@ -30,6 +30,17 @@ if ((Test-Path $oldClaude) -and ((Get-Item $oldClaude -Force).Attributes -band [
     Remove-Item $oldClaude -Force
 }
 
+# --- Remove ~/.gitconfig if it overrides dotfiles git config ---
+$gitconfig = "$HOME\.gitconfig"
+if ((Test-Path $gitconfig) -and -not ((Get-Item $gitconfig -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    Write-Host "~/.gitconfig exists and overrides dotfiles git config (XDG)."
+    $response = Read-Host "Delete it? [y/N]"
+    if ($response -eq 'y' -or $response -eq 'Y') {
+        Remove-Item $gitconfig
+        Write-Host "Deleted: $gitconfig" -ForegroundColor Green
+    }
+}
+
 # --- BEGIN temporary: ~/dotfiles,~/git → C:\git migration ---
 # Remove old dotfiles directories after migration to C:\git
 $migrationTargets = @(
