@@ -200,6 +200,29 @@ else
     fail "pull did not succeed (output: $output)"
 fi
 
+# --- Edge: Pull succeeds when local history.jsonl is absent ---
+echo "[pull] Pull succeeds when local history.jsonl is absent"
+# Seed remote .history.jsonl so the merge block runs
+PULL_HIST_SEED="$TMPDIR_BASE/pull-hist-seed"
+git clone "$FAKE_REMOTE" "$PULL_HIST_SEED" >/dev/null 2>&1
+echo '{"display":"remote","sessionId":"pull-absent","timestamp":1}' > "$PULL_HIST_SEED/.history.jsonl"
+git -C "$PULL_HIST_SEED" add . >/dev/null 2>&1
+git -C "$PULL_HIST_SEED" commit -m "seed pull history" >/dev/null 2>&1
+git -C "$PULL_HIST_SEED" push >/dev/null 2>&1
+# Remove local history.jsonl so cat would have failed before the fix
+rm -f "$FAKE_CLAUDE/history.jsonl"
+output=$("$DOTFILES_DIR/bin/session-sync.sh" pull --claude-dir "$FAKE_CLAUDE" 2>&1)
+if echo "$output" | grep -qi "pulled\|up to date\|already"; then
+    pass "pull succeeds when local history.jsonl is absent"
+else
+    fail "pull failed when local history.jsonl absent (output: $output)"
+fi
+if [ -f "$FAKE_CLAUDE/history.jsonl" ] && grep -q "pull-absent" "$FAKE_CLAUDE/history.jsonl"; then
+    pass "pull creates history.jsonl from remote when local is absent"
+else
+    fail "pull did not create history.jsonl from remote (content: $(cat "$FAKE_CLAUDE/history.jsonl" 2>/dev/null || echo 'missing'))"
+fi
+
 # --- Normal: Status ---
 echo "[sync] Status"
 output=$("$DOTFILES_DIR/bin/session-sync.sh" status --claude-dir "$FAKE_CLAUDE" 2>&1)
@@ -285,7 +308,7 @@ RESET_CLAUDE="$TMPDIR_BASE/reset-test/.claude"
 mkdir -p "$RESET_CLAUDE"
 "$DOTFILES_DIR/install/linux/session-sync-init.sh" \
     --claude-dir "$RESET_CLAUDE" --remote-url "$RESET_REMOTE" >/dev/null 2>&1
-output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1)
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1) || true
 RESET_PROJECTS="$RESET_CLAUDE/projects"
 if [ -f "$RESET_PROJECTS/seed-session.jsonl" ]; then
     pass "reset fetches remote file into working tree"
@@ -305,7 +328,7 @@ fi
 
 # --- Edge: Reset is idempotent ---
 echo "[reset] Reset idempotent"
-output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1)
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1) || true
 if echo "$output" | grep -qi "reset to remote"; then
     pass "reset idempotent"
 else
@@ -323,8 +346,8 @@ git -C "$HIST_ABSENT_SEED" commit -m "seed history for absent test" >/dev/null 2
 git -C "$HIST_ABSENT_SEED" push >/dev/null 2>&1
 # Remove local history.jsonl to trigger the bug
 rm -f "$RESET_CLAUDE/history.jsonl"
-output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1)
-exit_code=$?
+exit_code=0
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1) || exit_code=$?
 if [ $exit_code -eq 0 ] && echo "$output" | grep -qi "reset to remote"; then
     pass "reset succeeds when local history.jsonl is absent"
 else
@@ -336,12 +359,27 @@ else
     fail "reset did not create history.jsonl from remote (content: $(cat "$RESET_CLAUDE/history.jsonl" 2>/dev/null || echo 'missing'))"
 fi
 
+# --- Edge: Reset succeeds when .jsonl file has no timestamp field ---
+echo "[reset] Reset succeeds with .jsonl missing timestamp field"
+# Create a .jsonl file in the reset environment with no timestamp field
+echo '{"sessionId":"no-ts","type":"text"}' > "$RESET_PROJECTS/no-timestamp.jsonl"
+git -C "$RESET_PROJECTS" add . >/dev/null 2>&1
+git -C "$RESET_PROJECTS" commit -m "add no-timestamp session" >/dev/null 2>&1
+git -C "$RESET_PROJECTS" push >/dev/null 2>&1
+exit_code=0
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1) || exit_code=$?
+if [ $exit_code -eq 0 ] && echo "$output" | grep -qi "reset to remote"; then
+    pass "reset succeeds with .jsonl missing timestamp field"
+else
+    fail "reset failed with no-timestamp .jsonl (exit=$exit_code, output: $output)"
+fi
+
 # --- Edge: Reset discards diverged local commits ---
 echo "[reset] Reset discards diverged local"
 echo '{"diverged":"data"}' > "$RESET_PROJECTS/diverged.jsonl"
 git -C "$RESET_PROJECTS" add . >/dev/null 2>&1
 git -C "$RESET_PROJECTS" commit -m "local diverged commit" >/dev/null 2>&1
-output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1)
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1) || true
 if [ ! -f "$RESET_PROJECTS/diverged.jsonl" ]; then
     pass "reset discards diverged local file"
 else
@@ -370,7 +408,7 @@ git -C "$HIST_SEED" commit -m "add history" >/dev/null 2>&1
 git -C "$HIST_SEED" push >/dev/null 2>&1
 # Create local-only entry
 echo '{"display":"local","sessionId":"l1","timestamp":2000}' > "$RESET_CLAUDE/history.jsonl"
-"$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" >/dev/null 2>&1
+"$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" >/dev/null 2>&1 || true
 if grep -q "r1" "$RESET_CLAUDE/history.jsonl" && grep -q "l1" "$RESET_CLAUDE/history.jsonl"; then
     pass "reset merges remote and local history"
 else
