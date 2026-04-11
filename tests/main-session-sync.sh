@@ -286,6 +286,14 @@ else
     fail "script missing claude process check"
 fi
 
+# --- WARNING is gated by --quiet flag ---
+echo "[sync] WARNING gated by --quiet"
+if grep -q '_QUIET.*0.*pgrep\|pgrep.*claude' "$DOTFILES_DIR/bin/session-sync.sh" && grep -B1 'pgrep -x "claude"' "$DOTFILES_DIR/bin/session-sync.sh" | grep -q '_QUIET'; then
+    pass "WARNING gated by --quiet flag"
+else
+    fail "WARNING should be gated by --quiet flag"
+fi
+
 echo ""
 echo "=== session-sync.sh reset tests ==="
 
@@ -454,6 +462,20 @@ if grep -q '_toast "pushing' "$DOTFILES_DIR/bin/session-sync.sh"; then
     fail "legacy pushing toast should have been removed"
 else
     pass "no pushing toast call in script"
+fi
+
+# --- --toast flag controls notification ---
+echo "[output] --toast flag parsed and controls toast"
+if grep -q '_TOAST=1' "$DOTFILES_DIR/bin/session-sync.sh"; then
+    pass "--toast flag sets _TOAST"
+else
+    fail "--toast flag not found in script"
+fi
+
+if grep -q '\[ "\$_TOAST" = "1" \] && _toast' "$DOTFILES_DIR/bin/session-sync.sh"; then
+    pass "toast gated on _TOAST flag"
+else
+    fail "toast should be gated on _TOAST flag"
 fi
 
 # --- osascript branch exists ---
