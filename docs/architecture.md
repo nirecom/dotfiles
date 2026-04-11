@@ -368,7 +368,7 @@ Two checkpoints prevent private information from being committed:
 | Checkpoint | Mechanism | Script |
 |:---|:---|:---|
 | Git commit | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Scans staged file content |
-| Git commit (effortLevel) | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Auto-unstages settings.json if only effortLevel changed |
+| Git commit (effortLevel/model) | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Auto-unstages settings.json if only effortLevel and/or model changed |
 | Git commit (.sh perms) | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Blocks commit if `.sh` files lack execute permission (`100644`) |
 | Claude Code edit | `claude-global/hooks/check-private-info.js` (PreToolUse) | Scans Edit/Write content |
 
