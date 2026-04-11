@@ -528,7 +528,7 @@ Changes: Replaced the string+regex approach with an array-based case-insensitive
 
 ### Session sync: filter create/delete mode from pull output (2026-04-10, (pending))
 Background: Previous output cleanup (22fed74) added `git commit -q` to suppress `create mode` / `delete mode` lines during push. However, the same lines still appeared during `pull` — they come from git's fast-forward merge output, not from commit.
-Changes: Added `Where-Object` filter to `git pull --rebase` output in `bin/session-sync.ps1` pull action, excluding lines matching `^\s*(create|delete) mode `.
+Changes: Added `Where-Object` filter to `git pull --rebase` output in `bin/session-sync.ps1` pull action, excluding lines matching `^\s*(create|delete) mode `. Extended the same filter to `bin/session-sync.sh` pull action using `grep -Ev` with `PIPESTATUS[0]` to preserve git's exit code.
 
 ### Optimize skill token usage with model and effort tuning (2026-04-10, 986d925)
 Background: Total token usage was frequently hitting limits. All skills inherited the session model (Opus) and effort level, even for mechanical tasks like git operations or doc updates. Official docs confirmed `model` and `effort` frontmatter are supported in both skills and subagents (https://code.claude.com/docs/en/skills, https://code.claude.com/docs/en/sub-agents).
@@ -594,3 +594,7 @@ Changes: Added `delete j.model` to STRIP_EFFORT in pre-commit hook alongside `de
 ### session-sync: notification timing and quiet-mode suppression (2026-04-11, pending)
 Background: Two notification issues in session-sync: (1) WARNING message was printed even in --quiet mode (auto-runs), polluting terminal output. (2) "push complete" notification appeared even when VS Code was still open — specifically when closing one of multiple simultaneously open windows, or because the VS Code process lingers after window close, causing a process-based check (_vscode_running) to give false positives.
 Changes: Added --quiet guard to WARNING in session-sync.sh. Replaced process-based _vscode_running check with a --toast opt-in flag. Added _any_vscode_window() to .profile_common (osascript on macOS, xdotool/wmctrl on Linux) that checks open windows, not processes. codes() now checks for remaining VS Code windows before push and only passes --toast when none are open. Updated tests/main-session-sync.sh.
+
+### check-private-info: allow Docker internal network and Node.js base image paths (2026-04-11, (pending))
+Background: judgeclaw's docker-compose.yml uses Docker's default bridge network (172.24.0.x) and the official Node.js base image home directory (/home/node). The former matched the RFC 1918 private address pattern; the latter resembled a real user home path — both caused false positives in the private-info scanner.
+Changes: Added two scoped entries to `.private-info-allowlist`: `docker-compose.yml:172\.24\.0` (Docker internal network, not routable) and `docker-compose.yml:/home/node` + `*/generate-web-access-section.sh:/home/node` (Node.js base image path, not a real user). Also fixed the path-capture regex in `bin/check-private-info.sh` from `/home/[a-zA-Z]` (one char) to `/home/[a-zA-Z][a-zA-Z0-9_.-]*` so the full username component is captured and allowlist entries can match precisely.
