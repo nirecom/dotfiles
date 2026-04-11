@@ -1,9 +1,9 @@
 #!/bin/bash
-# Test suite for check-test-updated.js PreToolUse hook
+# Test suite for check-tests-updated.js PreToolUse hook
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-HOOK="$DOTFILES_DIR/claude-global/hooks/check-test-updated.js"
+HOOK="$DOTFILES_DIR/claude-global/hooks/check-tests-updated.js"
 ERRORS=0
 
 fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
