@@ -71,7 +71,11 @@ case "$ACTION" in
         git -C "$PROJECTS_DIR" pull --rebase
         # Merge remote history with local (dedup, preserve order)
         if [ -f "$PROJECTS_DIR/.history.jsonl" ]; then
-            cat "$PROJECTS_DIR/.history.jsonl" "$CLAUDE_DIR/history.jsonl" 2>/dev/null | awk '!seen[$0]++' > "$CLAUDE_DIR/history.jsonl.tmp"
+            if [ -f "$CLAUDE_DIR/history.jsonl" ]; then
+                cat "$PROJECTS_DIR/.history.jsonl" "$CLAUDE_DIR/history.jsonl"
+            else
+                cat "$PROJECTS_DIR/.history.jsonl"
+            fi | awk '!seen[$0]++' > "$CLAUDE_DIR/history.jsonl.tmp"
             mv "$CLAUDE_DIR/history.jsonl.tmp" "$CLAUDE_DIR/history.jsonl"
         fi
         echo "Pulled session data."
@@ -84,13 +88,17 @@ case "$ACTION" in
         git -C "$PROJECTS_DIR" reset --hard origin/main
         # Restore mtime from JSONL timestamps (git doesn't preserve mtime)
         find "$PROJECTS_DIR" -name "*.jsonl" ! -name ".history.jsonl" | while read -r f; do
-            ts=$(tail -1 "$f" 2>/dev/null | grep -o '"timestamp":"[^"]*"' | head -1 | cut -d'"' -f4)
-            [ -z "$ts" ] && ts=$(head -1 "$f" 2>/dev/null | grep -o '"timestamp":"[^"]*"' | head -1 | cut -d'"' -f4)
+            ts=$(tail -1 "$f" 2>/dev/null | grep -o '"timestamp":"[^"]*"' | head -1 | cut -d'"' -f4) || true
+            [ -z "$ts" ] && ts=$(head -1 "$f" 2>/dev/null | grep -o '"timestamp":"[^"]*"' | head -1 | cut -d'"' -f4) || true
             [ -n "$ts" ] && touch -d "$ts" "$f" 2>/dev/null || true
         done
         # Merge remote history with local (dedup, preserve order)
         if [ -f "$PROJECTS_DIR/.history.jsonl" ]; then
-            cat "$PROJECTS_DIR/.history.jsonl" "$CLAUDE_DIR/history.jsonl" 2>/dev/null | awk '!seen[$0]++' > "$CLAUDE_DIR/history.jsonl.tmp"
+            if [ -f "$CLAUDE_DIR/history.jsonl" ]; then
+                cat "$PROJECTS_DIR/.history.jsonl" "$CLAUDE_DIR/history.jsonl"
+            else
+                cat "$PROJECTS_DIR/.history.jsonl"
+            fi | awk '!seen[$0]++' > "$CLAUDE_DIR/history.jsonl.tmp"
             mv "$CLAUDE_DIR/history.jsonl.tmp" "$CLAUDE_DIR/history.jsonl"
         fi
         echo "Reset to remote state."
