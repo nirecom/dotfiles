@@ -2,6 +2,13 @@
 
 ## Current Work
 
+### Workflow State Machine — Verifying
+Deterministic 8-step workflow enforcement via hooks + file-based state machine.
+- [x] Plan, write tests, code (workflow-gate.js, mark-step.js, session-start.js, lib/workflow-state.js)
+- [x] Tests pass (36/36, test 14 skipped — network dependency)
+- [x] Docs updated
+- [ ] Verify: confirm feature works as expected in a real workflow session
+
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
 Design decision: minimize rules/ context consumption by extracting details into skills.
