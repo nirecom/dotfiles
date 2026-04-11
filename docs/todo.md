@@ -12,29 +12,11 @@ Skill naming follows existing `verb-noun` (kebab-case) convention.
 - [ ] Phase 3: Security Patterns Reference (`/scan-security` skill)
 - [ ] Phase 4: Prompt Injection Defense
 
-### dotfiles force push — Verifying
-Auto-detection implemented in `.profile_common` and `install/win/profile.ps1`. On shell startup:
-- Divergence detected → interactive prompt (y/N, 10s timeout)
-- `~/.dotfiles-no-auto-reset` marker → warning message only (for master PC)
-- Non-interactive shell → silently skipped
-- [ ] Verify on a follower PC: open new shell after force push, confirm prompt appears
-- [ ] Create `~/.dotfiles-no-auto-reset` on master PC (`New-Item -ItemType File -Path "$HOME\.dotfiles-no-auto-reset"` on pwsh)
-
-### VS Code installer — Verifying
-- [ ] Verify on another PC: `install.ps1 -Develop` installs VS Code and extensions from `config/vscode-extensions.txt`
-- [ ] Verify on Linux/macOS: `install.sh --develop` installs VS Code and extensions
-
 ### SSOT 参照ルールの設計 — 検討中
 ポート・URL・ホスト名を推測せず SSOT を確認させる仕組みの設計:
 - [ ] claude-global/rules/ に汎用行動ルール追加（「SSOT を確認してから提示」— ファイル名は含めない）
 - [ ] ai-specs/CLAUDE.md の Infrastructure SSOT セクションに行動指示を追記
 - [ ] docs-convention.md の Standard Files が nirecom PJ 前提である点の整理（他 doc 体系との分離）
-
-### commit 確認を 2回→1回に削減 — Verifying
-commit permission dialog を単一の承認 gate にするアプローチに変更(4223e09+5b0ceed の revert)。
-- `Bash(git commit *)` / `Bash(git -C * commit *)` を `ask` に戻す
-- SKILL.md 3 の "Wait for user approval" を削除(chat メッセージは参考表示)
-- [ ] Verify: 次回 `/commit-push` で dialog が 1 回だけ出ることを確認
 
 ### Cross-platform skiplist — 要判断
 以下のスクリプトの skiplist 分類を決定する（Windows counterpart が必要か）:
