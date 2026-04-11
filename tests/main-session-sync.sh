@@ -507,6 +507,59 @@ else
 fi
 
 echo ""
+echo "=== push retry loop tests ==="
+
+# --- Static: Push script contains retry loop ---
+echo "[retry] Push script contains retry loop"
+if grep -q 'for _retry' "$DOTFILES_DIR/bin/session-sync.sh"; then
+    pass "session-sync.sh contains retry loop"
+else
+    fail "session-sync.sh missing retry loop"
+fi
+
+# --- Normal: Push recovers from pre-diverged state with unstaged changes ---
+echo "[retry] Push recovers from pre-diverged state with unstaged changes"
+RETRY_REMOTE="$TMPDIR_BASE/retry-remote.git"
+RETRY_CLAUDE="$TMPDIR_BASE/retry-claude"
+RETRY_PROJECTS="$RETRY_CLAUDE/projects"
+git init --bare "$RETRY_REMOTE" >/dev/null 2>&1
+"$DOTFILES_DIR/install/linux/session-sync-init.sh" \
+    --claude-dir "$RETRY_CLAUDE" --remote-url "$RETRY_REMOTE" >/dev/null 2>&1
+git -C "$RETRY_PROJECTS" add .gitattributes >/dev/null 2>&1
+git -C "$RETRY_PROJECTS" commit -m "initial" >/dev/null 2>&1
+git -C "$RETRY_PROJECTS" push -u origin main >/dev/null 2>&1
+# Other machine pushes to remote (creates diverged state)
+RETRY_OTHER="$TMPDIR_BASE/retry-other"
+git clone "$RETRY_REMOTE" "$RETRY_OTHER" >/dev/null 2>&1
+echo '{"other":"machine"}' > "$RETRY_OTHER/other-session.jsonl"
+git -C "$RETRY_OTHER" add . >/dev/null 2>&1
+git -C "$RETRY_OTHER" commit -m "sync: other 2026-01-01 00:00" >/dev/null 2>&1
+git -C "$RETRY_OTHER" push >/dev/null 2>&1
+# Local also commits (now diverged from remote)
+echo '{"local":"committed"}' > "$RETRY_PROJECTS/local-committed.jsonl"
+git -C "$RETRY_PROJECTS" add . >/dev/null 2>&1
+git -C "$RETRY_PROJECTS" commit -m "sync: local 2026-01-01 00:01" >/dev/null 2>&1
+# Add untracked file to working tree (simulates Claude writing new session data)
+echo '{"local":"unstaged"}' > "$RETRY_PROJECTS/local-unstaged.jsonl"
+# Push should recover via retry loop
+output=$("$DOTFILES_DIR/bin/session-sync.sh" push --claude-dir "$RETRY_CLAUDE" 2>&1)
+if echo "$output" | grep -qi "pushed"; then
+    pass "push recovers from pre-diverged state with unstaged changes"
+else
+    fail "push did not recover from pre-diverged state (output: $output)"
+fi
+# All files should be on remote
+RETRY_CHECK="$TMPDIR_BASE/retry-check"
+git clone "$RETRY_REMOTE" "$RETRY_CHECK" >/dev/null 2>&1
+if [ -f "$RETRY_CHECK/other-session.jsonl" ] && \
+   [ -f "$RETRY_CHECK/local-committed.jsonl" ] && \
+   [ -f "$RETRY_CHECK/local-unstaged.jsonl" ]; then
+    pass "all files present in remote after recovery"
+else
+    fail "missing files after recovery (other=$(ls "$RETRY_CHECK/other-session.jsonl" 2>/dev/null || echo MISSING), local=$(ls "$RETRY_CHECK/local-committed.jsonl" 2>/dev/null || echo MISSING), unstaged=$(ls "$RETRY_CHECK/local-unstaged.jsonl" 2>/dev/null || echo MISSING))"
+fi
+
+echo ""
 echo "=== Results ==="
 echo "PASS: $PASS  FAIL: $FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
