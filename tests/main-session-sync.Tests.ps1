@@ -251,6 +251,59 @@ Describe "session-sync.ps1 reset" {
     }
 }
 
+Describe "session-sync.ps1 retry loop" {
+    BeforeEach {
+        $script:TestDir = Join-Path $env:TEMP "session-sync-test-$(Get-Random)"
+        $script:RemoteDir = Join-Path $env:TEMP "session-sync-remote-$(Get-Random)"
+        New-Item -ItemType Directory -Path $script:TestDir -Force | Out-Null
+        git init --bare $script:RemoteDir 2>&1 | Out-Null
+        & $InitScript -ClaudeDir $script:TestDir -RemoteUrl $script:RemoteDir
+        $projDir = Join-Path $script:TestDir "projects"
+        git -C $projDir add .gitattributes 2>&1 | Out-Null
+        git -C $projDir commit -m "initial" 2>&1 | Out-Null
+        git -C $projDir push -u origin main 2>&1 | Out-Null
+    }
+
+    AfterEach {
+        Remove-Item -Recurse -Force $script:TestDir -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force $script:RemoteDir -ErrorAction SilentlyContinue
+    }
+
+    It "push script contains retry loop" {
+        $content = Get-Content $SyncScript -Raw
+        $content | Should -Match 'for \(\$retry' -Because "push should retry on race condition"
+    }
+
+    It "push recovers from pre-diverged state with unstaged changes" {
+        $projDir = Join-Path $script:TestDir "projects"
+        # Other machine pushes to remote (creates diverged state)
+        $otherDir = Join-Path $env:TEMP "session-sync-other-$(Get-Random)"
+        git clone $script:RemoteDir $otherDir 2>&1 | Out-Null
+        Set-Content -Path (Join-Path $otherDir "other-session.jsonl") -Value '{"other":"machine"}'
+        git -C $otherDir add . 2>&1 | Out-Null
+        git -C $otherDir commit -m "sync: other 2026-01-01 00:00" 2>&1 | Out-Null
+        git -C $otherDir push 2>&1 | Out-Null
+        Remove-Item -Recurse -Force $otherDir -ErrorAction SilentlyContinue
+        # Local also commits (now diverged from remote)
+        Set-Content -Path (Join-Path $projDir "local-committed.jsonl") -Value '{"local":"committed"}'
+        git -C $projDir add . 2>&1 | Out-Null
+        git -C $projDir commit -m "sync: local 2026-01-01 00:01" 2>&1 | Out-Null
+        # Add untracked file (simulates Claude writing new session data)
+        Set-Content -Path (Join-Path $projDir "local-unstaged.jsonl") -Value '{"local":"unstaged"}'
+        # Push should recover via retry loop
+        & $SyncScript -Action push -ClaudeDir $script:TestDir
+        $log = git -C $projDir log --oneline -1
+        $log | Should -Match "sync:" -Because "push should create sync commit after recovery"
+        # All files should be on remote
+        $checkDir = Join-Path $env:TEMP "session-sync-check-$(Get-Random)"
+        git clone $script:RemoteDir $checkDir 2>&1 | Out-Null
+        Test-Path (Join-Path $checkDir "other-session.jsonl") | Should -BeTrue -Because "other machine's file should be on remote"
+        Test-Path (Join-Path $checkDir "local-committed.jsonl") | Should -BeTrue -Because "local committed file should be on remote"
+        Test-Path (Join-Path $checkDir "local-unstaged.jsonl") | Should -BeTrue -Because "unstaged file should be committed and pushed"
+        Remove-Item -Recurse -Force $checkDir -ErrorAction SilentlyContinue
+    }
+}
+
 Describe "session-sync.ps1 output and notifications" {
     BeforeEach {
         $script:TestDir = Join-Path $env:TEMP "session-sync-test-$(Get-Random)"
