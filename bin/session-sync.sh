@@ -11,6 +11,7 @@ set -euo pipefail
 ACTION="${1:-}"
 CLAUDE_DIR="$HOME/.claude"
 _QUIET=0
+_TOAST=0
 
 # Parse options
 shift || true
@@ -18,6 +19,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --claude-dir) CLAUDE_DIR="$2"; shift 2 ;;
         --quiet) _QUIET=1; shift ;;
+        --toast) _TOAST=1; shift ;;
         *) shift ;;
     esac
 done
@@ -40,10 +42,11 @@ _toast() {
     fi
 }
 
+
 case "$ACTION" in
     push)
         # Warn if Claude Code is running
-        if pgrep -x "claude" >/dev/null 2>&1; then
+        if [ "$_QUIET" = "0" ] && pgrep -x "claude" >/dev/null 2>&1; then
             echo "WARNING: Claude Code is running. Close all sessions before push to ensure latest data is saved." >&2
         fi
         # Copy history.jsonl into sync area
@@ -58,9 +61,9 @@ case "$ACTION" in
         git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
         if [ "$_QUIET" = "1" ]; then
             if git -C "$PROJECTS_DIR" push -u origin main 2>&1; then
-                _toast "push complete"
+                [ "$_TOAST" = "1" ] && _toast "push complete"
             else
-                _toast "push failed"
+                [ "$_TOAST" = "1" ] && _toast "push failed"
             fi
         else
             git -C "$PROJECTS_DIR" push -u origin main
