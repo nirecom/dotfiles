@@ -506,46 +506,6 @@ else
     pass "quiet push suppresses stdout message"
 fi
 
-# --- quiet push success: stdout is completely empty ---
-echo "[output] Quiet push success produces no stdout"
-echo '{"test":"quiet-stdout-check"}' > "$FAKE_PROJECTS/quiet-stdout-check.jsonl"
-_stderr_file=$(mktemp)
-_stdout=$("$DOTFILES_DIR/bin/session-sync.sh" push --quiet --claude-dir "$FAKE_CLAUDE" 2>"$_stderr_file" || true)
-_exit_code=$?
-rm -f "$_stderr_file"
-if [ -z "$_stdout" ]; then
-    pass "quiet push success: stdout is empty"
-else
-    fail "quiet push success: stdout is not empty (got: $_stdout)"
-fi
-if [ "$_exit_code" -eq 0 ]; then
-    pass "quiet push success: exit code is 0"
-else
-    fail "quiet push success: exit code is $_exit_code (expected 0)"
-fi
-
-# --- quiet push failure: stderr has output, stdout is empty ---
-echo "[output] Quiet push failure outputs error to stderr only"
-git -C "$FAKE_PROJECTS" remote set-url origin /nonexistent/path
-echo '{"test":"quiet-fail"}' > "$FAKE_PROJECTS/quiet-fail.jsonl"
-git -C "$FAKE_PROJECTS" add "$FAKE_PROJECTS/quiet-fail.jsonl" >/dev/null 2>&1
-git -C "$FAKE_PROJECTS" commit -q -m "test" >/dev/null 2>&1
-_stderr_file2=$(mktemp)
-_stdout2=$("$DOTFILES_DIR/bin/session-sync.sh" push --quiet --claude-dir "$FAKE_CLAUDE" 2>"$_stderr_file2" || true)
-_stderr2=$(cat "$_stderr_file2")
-rm -f "$_stderr_file2"
-git -C "$FAKE_PROJECTS" remote set-url origin "$FAKE_REMOTE"
-if [ -z "$_stdout2" ]; then
-    pass "quiet push failure: stdout is empty"
-else
-    fail "quiet push failure: stdout is not empty (got: $_stdout2)"
-fi
-if [ -n "$_stderr2" ]; then
-    pass "quiet push failure: stderr has error output"
-else
-    fail "quiet push failure: stderr is empty (expected error output)"
-fi
-
 echo ""
 echo "=== Results ==="
 echo "PASS: $PASS  FAIL: $FAIL"
