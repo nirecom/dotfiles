@@ -16,29 +16,20 @@ docs/private-info-scanning.md:/Users/
 docs/private-info-scanning.md:Co-Authored-By
 claude-global/rules/coding.md:Co-Authored-By
 
-# Scanner test data (not real private info)
-tests/feature-permission-hook2.sh:192.168
-tests/feature-permission-hook2.sh:10.0.0
-tests/feature-permission-hook2.sh:172.16
-tests/feature-permission-hook2.sh:172.31
-tests/feature-permission-hook2.sh:172.20
-tests/feature-permission-hook2.sh:@example.com
-tests/feature-permission-hook2.sh:aa:bb:cc:dd:ee:ff
-tests/feature-permission-hook2.sh:/Users/
-tests/feature-permission-hook2.sh:/home/
-tests/feature-permission-hook2.sh:C:\\Users\\
-tests/feature-permission-hook2.sh:/c/
-tests/feature-permission-hook2.sh:/d/
-tests/feature-permission-hook2.sh:/mnt/
-
-# Test dummy email (not real)
-tests/main-check-cross-platform.sh:test@example.com
-tests/main-check-docs-updated.sh:test@example.com
-tests/main-check-test-updated.sh:test@example.com
-tests/main-effort-level-unstage.sh:test@example.com
-tests/main-private-repo-detection.sh:test@example.com
-tests/main-private-repo-detection.sh:192.168
-tests/main-sort-history.sh:test@example.com
+# Scanner test data (not real private info) — glob covers all test files
+tests/*:@example.com
+tests/*:192.168
+tests/*:10\.
+tests/*:172.16
+tests/*:172.31
+tests/*:172.20
+tests/*:aa:bb:cc:dd:ee:ff
+tests/*:/Users/
+tests/*:/home/
+tests/*:C:\\Users\\
+tests/*:/c/
+tests/*:/d/
+tests/*:/mnt/
 
 # NVIDIA package version numbers (false positive as IPv4)
 10.3.9.90

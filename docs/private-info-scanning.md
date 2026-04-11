@@ -38,15 +38,18 @@ Automatically enabled after running `install.sh` / `install.ps1`. The global git
 
 ## Allowlist (Exception Patterns)
 
-Add exceptions to `.private-info-allowlist`, one pattern per line:
+Add exceptions to `.private-info-allowlist`, one pattern per line.
+An optional private allowlist (`../dotfiles-private/.private-info-allowlist`) is also loaded
+for environment-specific patterns. When `dotfiles-private/` is absent, only the local allowlist is used.
 
 ```
 # Global pattern (applies to all files)
 git@github.com
 noreply.github.com
 
-# Per-file pattern (format: filepath:pattern)
+# Per-file pattern (format: filepath:pattern — filepath supports glob matching)
 docs/networking.md:192.168
+tests/*:@example.com
 ```
 
 ## Blocklist (Additional Detection Patterns)
@@ -113,4 +116,5 @@ Ensure `settings.json` has the hooks section (check `~/.claude/settings.json`).
 | `claude-global/hooks/check-private-info.js` | Claude Code PreToolUse hook |
 | `claude-global/hooks/lib/is-private-repo.js` | Shared module: dynamic private repo detection via `gh api` |
 | `.private-info-allowlist` | Exception patterns |
+| `../dotfiles-private/.private-info-allowlist` | Environment-specific exception patterns (private repo) |
 | `../dotfiles-private/.private-info-blocklist` | Additional detection patterns (private repo) |

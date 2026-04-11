@@ -11,7 +11,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
 ALLOWLIST="$DOTFILES_DIR/.private-info-allowlist"
-BLOCKLIST="$DOTFILES_DIR/../dotfiles-private/.private-info-blocklist"
+ALLOWLIST_PRIVATE="$DOTFILES_DIR/../dotfiles-private/.private-info-allowlist"
+BLOCKLIST_PRIVATE="$DOTFILES_DIR/../dotfiles-private/.private-info-blocklist"
 
 VIOLATIONS=0
 MODE=""
@@ -44,14 +45,23 @@ if [ -f "$ALLOWLIST" ]; then
     done < "$ALLOWLIST"
 fi
 
+# Load external allowlist patterns (from dotfiles-private, if available)
+if [ -f "$ALLOWLIST_PRIVATE" ]; then
+    while IFS= read -r line; do
+        line="${line%$'\r'}"
+        [[ -z "$line" || "$line" =~ ^# ]] && continue
+        ALLOW_PATTERNS+=("$line")
+    done < "$ALLOWLIST_PRIVATE"
+fi
+
 # Load blocklist patterns
 BLOCK_PATTERNS=()
-if [ -f "$BLOCKLIST" ]; then
+if [ -f "$BLOCKLIST_PRIVATE" ]; then
     while IFS= read -r line; do
         line="${line%$'\r'}"
         [[ -z "$line" || "$line" =~ ^# ]] && continue
         BLOCK_PATTERNS+=("$line")
-    done < "$BLOCKLIST"
+    done < "$BLOCKLIST_PRIVATE"
 fi
 
 # Check if a match is allowlisted

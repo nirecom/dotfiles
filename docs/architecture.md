@@ -376,7 +376,7 @@ Both call `bin/check-private-info.sh` (single source of truth for detection patt
 
 **Detection patterns**: RFC 1918 IPv4 (`10.x`, `172.16-31.x`, `192.168.x`), email addresses, MAC addresses, absolute local paths (`/Users/`, `/home/`, `C:\Users\`). Additional patterns via `.private-info-blocklist`.
 
-**Exception handling**: `.private-info-allowlist` for known-safe patterns (e.g., `git@github.com` SSH URLs, `noreply.github.com` email).
+**Exception handling**: `.private-info-allowlist` for known-safe patterns (e.g., `git@github.com` SSH URLs, `noreply.github.com` email). Environment-specific exceptions can be added to `../dotfiles-private/.private-info-allowlist`. File-scoped patterns support glob matching (e.g., `tests/*:@example.com`).
 
 **Private repo detection**: non-GitHub hosts (GitLab, Bitbucket, GitHub Enterprise, etc.) are automatically treated as private and skip scanning entirely. For `github.com` remotes, visibility is checked via `gh api repos/{owner}/{repo}`. Private repos are not scanned. If `gh` is unavailable or the API call fails, scanning proceeds (fail-open, safe default). Shared logic in `claude-global/hooks/lib/is-private-repo.js` (Node.js hooks) and inline host extraction (git hooks).
 
