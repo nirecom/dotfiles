@@ -117,7 +117,7 @@
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 | [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
 | [claude-global/hooks/check-docs-updated.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-docs-updated.js) | PreToolUse hook for docs update enforcement | Blocks commit without docs/ changes |
-| [claude-global/hooks/check-test-updated.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-test-updated.js) | PreToolUse hook for test coverage enforcement | Two-stage gate: tests existence + review marker |
+| [claude-global/hooks/check-tests-updated.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-tests-updated.js) | PreToolUse hook for test coverage enforcement | Two-stage gate: tests existence + review marker |
 
 ### Tests
 
@@ -311,7 +311,7 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - `check-docs-updated.js` (matcher: `Bash`) — blocks `git commit` when source code is staged but `docs/` has no changes. Block message directs to `/update-docs`
   - Search order: (1) `docs/` or any `.md` staged in the same repo, (2) sibling `../ai-specs/` directory matching repo name
   - Custom mapping: if ai-specs dir name differs from repo name, place `docs/.ai-specs` containing the logical project name
-- `check-test-updated.js` (matcher: `Bash`) — two-stage gate on `git commit`:
+- `check-tests-updated.js` (matcher: `Bash`) — two-stage gate on `git commit`:
   1. Blocks if source code is staged but `tests/` has no changes
   2. Blocks if `tests/` changes are staged but no review marker exists (`.git/.test-reviewed`)
   Review marker is created by `/review-tests` skill and contains the 7-char HEAD hash. New commits automatically invalidate old markers (hash mismatch). Exempt dirs: `docs/`, `.claude/`, `claude-global/`
