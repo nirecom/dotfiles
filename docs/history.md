@@ -546,3 +546,7 @@ Changes: Set `model: opus` on 6 definitions: planner, reviewer (previously `inhe
 ### save-research skill (2026-04-11, (pending))
 Background: Useful research findings from conversations were lost after the session ended, requiring re-investigation on the same topics.
 Changes: Added `claude-global/skills/save-research/SKILL.md`. The skill saves conversation research findings to `../ai-specs/projects/engineering/research-results/<slug>.md` using relative paths (dotfiles is a public repo). Follows the established format of the existing `llm-document-ordering.md` research file.
+
+### git: remove private emails from history and guard against ~/.gitconfig override (2026-04-11, (pending))
+Background: Private email addresses (personal and old work accounts, plus local-hostname-based addresses) were present in ~600 commits of the public dotfiles repo. Root cause: ~/.gitconfig on the Windows machine contained a private email, which takes precedence over the dotfiles-managed ~/.config/git/config (XDG). Git reads ~/.gitconfig after XDG config, so XDG values are silently overridden even when the symlink is correctly set up.
+Changes: Deleted ~/.gitconfig on the affected machine. Rewrote all commit history with git filter-repo to replace private emails with the GitHub no-reply address. Force-pushed to origin. Added interactive prompt to install-obsolete.ps1 (Windows) and install-obsolete.sh (Linux) to detect and offer deletion of ~/.gitconfig when it exists as a regular file.
