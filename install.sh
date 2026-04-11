@@ -62,24 +62,19 @@ if [ "$1" = "--base" ] || [ "$1" = "--full" ]; then
     echo "--- Installing base packages ---"
     ~/dotfiles/install/linux/install-base.sh
 
-    # Step 7: Install Rize (macOS only)
-    echo ""
-    echo "--- Installing Rize ---"
-    ~/dotfiles/install/linux/rize.sh
-
-    # Step 8: Install Claude Usage Widget
+    # Step 7: Install Claude Usage Widget
     echo ""
     echo "--- Installing Claude Usage Widget ---"
     ~/dotfiles/install/linux/claude-usage-widget.sh
 fi
 
 if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
-    # Step 9: Install development tools
+    # Step 8: Install development tools
     echo ""
     echo "--- Installing development tools ---"
     ~/dotfiles/install/linux/install-develop.sh
 
-    # Step 10: Install VS Code and extensions
+    # Step 9: Install VS Code and extensions
     echo ""
     echo "--- Installing Visual Studio Code ---"
     ~/dotfiles/install/linux/vscode.sh

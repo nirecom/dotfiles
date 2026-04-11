@@ -65,7 +65,6 @@
 | [install/win/dotfileslink.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/dotfileslink.ps1) | Create symlinks on Windows | Requires Developer Mode or admin |
 | [install/win/autohotkey.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/autohotkey.ps1) | Install AutoHotkey v2 and Japanese layout enforcer | English UI + Japanese preferred only |
 | [install/win/powertoys.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/powertoys.ps1) | Install PowerToys and deploy Keyboard Manager settings | |
-| [install/win/rize.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/rize.ps1) | Install Rize time tracker | |
 | [install/win/claude-usage-widget.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/claude-usage-widget.ps1) | Install Claude Usage Widget | |
 | [install/win/claude-tabs.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/claude-tabs.ps1) | Install Claude Tabs (multi-session terminal) | |
 | [install/win/install-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/install-obsolete.ps1) | Remove obsolete files and shortcuts | |
@@ -88,7 +87,6 @@
 | [install/qnap/dotfileslink.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/dotfileslink.sh) | Minimal symlinks for QNAP | Skips Zsh, tmux, Emacs |
 | [install/qnap/autorun.sh](https://github.com/nirecom/dotfiles/blob/main/install/qnap/autorun.sh) | QNAP boot-time Entware activation + dotfiles auto-recovery | Runs as root. `dotfileslink.sh` auto-deploys to flash |
 | [install/linux/claude-code.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/claude-code.sh) | Claude Code installation | |
-| [install/linux/rize.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/rize.sh) | Install Rize time tracker | macOS only |
 | [install/linux/claude-usage-widget.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/claude-usage-widget.sh) | Install Claude Usage Widget | macOS/Ubuntu (skips WSL) |
 | [install/linux/keychain.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/keychain.sh) | Install keychain and configure SSH key auto-detection | |
 
@@ -217,9 +215,9 @@ Variables set by `bin/detectos.sh`:
 
 ### Execution order
 
-`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `session-sync-init.sh` (if Claude Code installed) → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `rize.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh` → `vscode.sh`)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `session-sync-init.sh` (if Claude Code installed) → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh` → `vscode.sh`)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `session-sync-init.ps1` (if Claude Code installed) → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Develop`/`-Toolchain`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `rize.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Toolchain`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `session-sync-init.ps1` (if Claude Code installed) → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Develop`/`-Toolchain`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Toolchain`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
 
 See [README.md](../README.md) for full platform-specific installation instructions.
 
