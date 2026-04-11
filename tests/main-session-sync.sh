@@ -312,6 +312,30 @@ else
     fail "reset idempotent failed (output: $output)"
 fi
 
+# --- Edge: Reset succeeds when local history.jsonl is absent ---
+echo "[reset] Reset succeeds when local history.jsonl is absent"
+# Seed remote with .history.jsonl so it exists after fetch+hard-reset
+HIST_ABSENT_SEED="$TMPDIR_BASE/hist-absent-seed"
+git clone "$RESET_REMOTE" "$HIST_ABSENT_SEED" >/dev/null 2>&1
+echo '{"display":"remote","sessionId":"absent-test","timestamp":1}' > "$HIST_ABSENT_SEED/.history.jsonl"
+git -C "$HIST_ABSENT_SEED" add . >/dev/null 2>&1
+git -C "$HIST_ABSENT_SEED" commit -m "seed history for absent test" >/dev/null 2>&1
+git -C "$HIST_ABSENT_SEED" push >/dev/null 2>&1
+# Remove local history.jsonl to trigger the bug
+rm -f "$RESET_CLAUDE/history.jsonl"
+output=$("$DOTFILES_DIR/bin/session-sync.sh" reset --claude-dir "$RESET_CLAUDE" 2>&1)
+exit_code=$?
+if [ $exit_code -eq 0 ] && echo "$output" | grep -qi "reset to remote"; then
+    pass "reset succeeds when local history.jsonl is absent"
+else
+    fail "reset failed when local history.jsonl absent (exit=$exit_code, output: $output)"
+fi
+if [ -f "$RESET_CLAUDE/history.jsonl" ] && grep -q "absent-test" "$RESET_CLAUDE/history.jsonl"; then
+    pass "reset creates history.jsonl from remote when local is absent"
+else
+    fail "reset did not create history.jsonl from remote (content: $(cat "$RESET_CLAUDE/history.jsonl" 2>/dev/null || echo 'missing'))"
+fi
+
 # --- Edge: Reset discards diverged local commits ---
 echo "[reset] Reset discards diverged local"
 echo '{"diverged":"data"}' > "$RESET_PROJECTS/diverged.jsonl"
@@ -392,6 +416,24 @@ if grep -q '_toast "pushing' "$DOTFILES_DIR/bin/session-sync.sh"; then
     fail "legacy pushing toast should have been removed"
 else
     pass "no pushing toast call in script"
+fi
+
+# --- osascript branch exists ---
+echo "[output] osascript macOS notification branch exists"
+if grep -q 'osascript' "$DOTFILES_DIR/bin/session-sync.sh"; then
+    pass "osascript branch found in script"
+else
+    fail "osascript branch not found in script"
+fi
+
+# --- osascript comes before notify-send ---
+echo "[output] osascript branch appears before notify-send"
+osascript_line=$(grep -n 'osascript' "$DOTFILES_DIR/bin/session-sync.sh" | head -1 | cut -d: -f1)
+notify_send_line=$(grep -n 'notify-send' "$DOTFILES_DIR/bin/session-sync.sh" | head -1 | cut -d: -f1)
+if [ -n "$osascript_line" ] && [ -n "$notify_send_line" ] && [ "$osascript_line" -lt "$notify_send_line" ]; then
+    pass "osascript (line $osascript_line) appears before notify-send (line $notify_send_line)"
+else
+    fail "osascript should appear before notify-send (osascript=$osascript_line, notify-send=$notify_send_line)"
 fi
 
 # --- quiet push suppresses stdout ---
