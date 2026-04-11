@@ -65,13 +65,23 @@ switch ($Action) {
 
         $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm"
         git -C $ProjectsDir commit -q -m "sync: $env:COMPUTERNAME $timestamp"
-        $ErrorActionPreference = "Continue"
-        git -C $ProjectsDir pull --rebase origin main 2>&1 | Out-Null
-        $ErrorActionPreference = "Stop"
-        $ErrorActionPreference = "Continue"
-        git -C $ProjectsDir push -u origin main 2>&1 | Out-Null
-        $pushExitCode = $LASTEXITCODE
-        $ErrorActionPreference = "Stop"
+        # Retry loop: handles simultaneous push race (e.g. Windows + macOS committing at the same time)
+        $maxRetries = 3
+        $pushExitCode = 1
+        for ($retry = 0; $retry -lt $maxRetries; $retry++) {
+            $ErrorActionPreference = "Continue"
+            # Commit any new session files written since the last commit
+            git -C $ProjectsDir add . 2>&1 | Out-Null
+            if (git -C $ProjectsDir status --porcelain 2>&1) {
+                $ts2 = Get-Date -Format "yyyy-MM-dd HH:mm"
+                git -C $ProjectsDir commit -q -m "sync: $env:COMPUTERNAME $ts2" 2>&1 | Out-Null
+            }
+            git -C $ProjectsDir pull --rebase origin main 2>&1 | Out-Null
+            git -C $ProjectsDir push -u origin main 2>&1 | Out-Null
+            $pushExitCode = $LASTEXITCODE
+            $ErrorActionPreference = "Stop"
+            if ($pushExitCode -eq 0) { break }
+        }
         if ($pushExitCode -eq 0) {
             if ($Quiet) { Show-SessionToast "push complete" }
             else { Write-Host "Pushed session data." -ForegroundColor Green }
