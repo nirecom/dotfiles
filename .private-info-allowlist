@@ -3,6 +3,7 @@
 
 # Git SSH URLs (not personal email)
 git@github.com
+git@bitbucket.org
 
 # GitHub noreply email (used in git config)
 noreply.github.com
@@ -18,6 +19,7 @@ claude-global/rules/coding.md:Co-Authored-By
 
 # Scanner test data (not real private info) — glob covers all test files
 tests/*:@example.com
+tests/*:git@gitlab.example.com
 tests/*:192.168
 tests/*:10\.
 tests/*:172.16

@@ -10,7 +10,7 @@ fi
 LIB="$DOTFILES_DIR/claude-global/hooks/lib/is-private-repo.js"
 HOOK_PRIVATE="$DOTFILES_DIR/claude-global/hooks/check-private-info.js"
 HOOK_DOCS="$DOTFILES_DIR/claude-global/hooks/check-docs-updated.js"
-HOOK_TEST="$DOTFILES_DIR/claude-global/hooks/check-test-updated.js"
+HOOK_TEST="$DOTFILES_DIR/claude-global/hooks/check-tests-updated.js"
 ERRORS=0
 
 fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
@@ -371,7 +371,7 @@ git -C "$REPO" add src/app.js
 expect_block "public repo — code without docs → block" "$HOOK_DOCS" "$COMMIT_JSON" "$REPO"
 
 echo ""
-echo "=== Integration: check-test-updated.js ==="
+echo "=== Integration: check-tests-updated.js ==="
 
 # Private repo: code without tests → approve (skipped)
 setup_mock_gh_private
