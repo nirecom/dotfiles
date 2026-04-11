@@ -33,6 +33,8 @@ _toast() {
     local msg="$1"
     if command -v powershell.exe >/dev/null 2>&1; then
         powershell.exe -NoProfile -Command "[void][Windows.UI.Notifications.ToastNotificationManager,Windows.UI.Notifications,ContentType=WindowsRuntime];[void][Windows.Data.Xml.Dom.XmlDocument,Windows.Data.Xml.Dom.XmlDocument,ContentType=WindowsRuntime];\$x=[Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent(1);\$t=\$x.GetElementsByTagName('text');\$t.Item(0).AppendChild(\$x.CreateTextNode('session-sync'))|Out-Null;\$t.Item(1).AppendChild(\$x.CreateTextNode('$msg'))|Out-Null;[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('PowerShell').Show([Windows.UI.Notifications.ToastNotification]::new(\$x))" 2>/dev/null
+    elif command -v osascript >/dev/null 2>&1; then
+        osascript -e "display notification \"$msg\" with title \"session-sync\""
     elif command -v notify-send >/dev/null 2>&1; then
         notify-send "session-sync" "$msg"
     fi
