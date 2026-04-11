@@ -126,6 +126,14 @@ git -C "$REPO" add .gitignore
 expect_approve_repo "config-only (exempt file)" "$REPO" "$COMMIT_JSON"
 
 echo ""
+echo "=== Integration: .config/ dir change (should approve) ==="
+REPO=$(setup_repo)
+mkdir -p "$REPO/.config/git"
+echo "config-work" >> "$REPO/.config/git/ignore"
+git -C "$REPO" add .config/git/ignore
+expect_approve_repo ".config/git/ignore — exempt dir" "$REPO" "$COMMIT_JSON"
+
+echo ""
 echo "=== Integration: nothing staged (should approve) ==="
 REPO=$(setup_repo)
 expect_approve_repo "nothing staged" "$REPO" "$COMMIT_JSON"
