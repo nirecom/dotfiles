@@ -185,6 +185,16 @@ if type git > /dev/null 2>&1; then # if git is installed
     fi
 fi
 
+# Pull dotfiles-private on startup
+_dotfiles_private_dir="$HOME/dotfiles-private"
+if [ -d "$_dotfiles_private_dir/.git" ] && type git >/dev/null 2>&1; then
+    echo "git fetch dotfiles-private ..."
+    if timeout 3 git -C "$_dotfiles_private_dir" fetch 2>/dev/null; then
+        git -C "$_dotfiles_private_dir" merge --ff-only FETCH_HEAD 2>/dev/null
+    fi
+fi
+unset _dotfiles_private_dir
+
 # Pull Claude session sync on startup (from other machines)
 _session_dir="$HOME/.claude/projects"
 if [ -d "$_session_dir/.git" ] && type git >/dev/null 2>&1; then
@@ -194,6 +204,21 @@ if [ -d "$_session_dir/.git" ] && type git >/dev/null 2>&1; then
     fi
 fi
 unset _session_dir
+
+# Returns true if any VS Code window is currently open
+_any_vscode_window() {
+    if [ "$(uname)" = "Darwin" ]; then
+        local count
+        count=$(osascript -e 'tell application "System Events" to (count (every window of every process whose name contains "Code"))' 2>/dev/null)
+        [ "${count:-0}" -gt 0 ]
+    elif type xdotool >/dev/null 2>&1; then
+        xdotool search --name "Visual Studio Code" 2>/dev/null | grep -q .
+    elif type wmctrl >/dev/null 2>&1; then
+        wmctrl -l 2>/dev/null | grep -q "Visual Studio Code"
+    else
+        return 1
+    fi
+}
 
 # Launch VS Code with session sync (push on close)
 codes() {
@@ -207,7 +232,11 @@ codes() {
     (
         code --new-window "$@"
         "$DOTFILES_DIR/bin/wait-vscode-window.sh" "$name"
-        "$DOTFILES_DIR/bin/session-sync.sh" push --quiet
+        if _any_vscode_window; then
+            "$DOTFILES_DIR/bin/session-sync.sh" push --quiet
+        else
+            "$DOTFILES_DIR/bin/session-sync.sh" push --quiet --toast
+        fi
     ) &
     disown
 }
