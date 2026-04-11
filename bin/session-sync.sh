@@ -58,16 +58,36 @@ case "$ACTION" in
         fi
         timestamp=$(date "+%Y-%m-%d %H:%M")
         git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $timestamp"
-        git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
-        if [ "$_QUIET" = "1" ]; then
-            if git -C "$PROJECTS_DIR" push -u origin main 2>&1; then
+        # Retry loop: handles simultaneous push race (e.g. Windows + macOS committing at the same time)
+        _push_ok=0
+        for _retry in 1 2 3; do
+            # Commit any new session files written since the last commit
+            git -C "$PROJECTS_DIR" add . 2>/dev/null || true
+            if [ -n "$(git -C "$PROJECTS_DIR" status --porcelain 2>/dev/null)" ]; then
+                _ts2=$(date "+%Y-%m-%d %H:%M")
+                git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $_ts2" 2>/dev/null || true
+            fi
+            git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
+            if git -C "$PROJECTS_DIR" push -u origin main 2>/dev/null; then
+                _push_ok=1
+                break
+            fi
+        done
+        if [ "$_push_ok" = "1" ]; then
+            if [ "$_QUIET" = "1" ]; then
                 [ "$_TOAST" = "1" ] && _toast "push complete"
+                :
             else
-                [ "$_TOAST" = "1" ] && _toast "push failed"
+                echo "Pushed session data."
             fi
         else
-            git -C "$PROJECTS_DIR" push -u origin main
-            echo "Pushed session data."
+            if [ "$_QUIET" = "1" ]; then
+                [ "$_TOAST" = "1" ] && _toast "push failed"
+                :
+            else
+                echo "git push failed after 3 retries" >&2
+                exit 1
+            fi
         fi
         ;;
     pull)
