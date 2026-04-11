@@ -85,6 +85,14 @@ if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
     ~/dotfiles/install/linux/vscode.sh
 fi
 
+# Run my-private-repo installer if available
+PRIVATE_INSTALLER="$(dirname "$0")/../my-private-repo/install.sh"
+if [ -x "$PRIVATE_INSTALLER" ]; then
+    echo ""
+    echo "--- Running my-private-repo installer ---"
+    "$PRIVATE_INSTALLER" "$@"
+fi
+
 echo ""
 echo "=== Done ==="
 exec $SHELL -l
