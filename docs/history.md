@@ -570,3 +570,7 @@ Changes: Removed language rules from `claude-global/rules/coding.md` and `docs-c
 ### Rize installer: move to dotfiles-private (2026-04-11, (pending))
 Background: Rize is a personal preference app, not a general dotfiles tool. Keeping its installer in the public repo exposes an opinionated choice that forkable dotfiles shouldn't impose.
 Changes: Moved `install/win/rize.ps1` and `install/linux/rize.sh` to `dotfiles-private/install/`. Removed Rize steps from `install.ps1` (Step 8) and `install.sh` (Step 7), renumbered subsequent steps. Added Rize steps to `dotfiles-private/install.ps1` (Step 3, under `-Base`/`-Full`) and `dotfiles-private/install.sh` (Step 2, under `--base`/`--full`). Moved tests (`main-rize.Tests.ps1`, `main-rize.sh`) to `dotfiles-private/tests/`. Updated `docs/architecture.md` (removed file table entries and execution order references).
+
+### commit-push: delegate missing-test case to write-tests skill (2026-04-11, (pending))
+Background: When /commit-push detected missing tests, Claude was writing test files directly in the main conversation instead of via the write-tests subagent. This bypassed acceptEdits mode, caused VSCode "Make this edit" dialogs to appear, and allowed source file edits that the write-tests rules prohibit.
+Changes: Added "Pre-commit check" section to commit-push/SKILL.md instructing Claude to never write tests directly in the main conversation — invoke /write-tests first, then resume commit-push.
