@@ -14,6 +14,20 @@
 
 #### 申し送り: 新規セッションでの確認手順
 
+**前提確認 — デバッグログで書き込み状況を確認する**
+
+まず以下でログを確認し、どの仮説に当てはまるか判断する:
+```
+cat "$TEMP/session-start-debug.log"
+```
+
+結果の解釈:
+- `CLAUDE_ENV_FILE=(not set)` → **仮説2**: SessionStart フックが呼ばれていないか、settings.json の hooks 設定が効いていない（Claude Code 再起動を試みる）
+- `CLAUDE_ENV_FILE=<path>` かつ `wrote CLAUDE_SESSION_ID` → **仮説1**: 書き込みは成功しているが Bash ツールのサブプロセスには注入されない設計の可能性。CLAUDE_ENV_FILE は Claude Code プロセス自身の環境変数として取り込まれるが、Bash ツール経由のシェルには伝播しないかもしれない
+- `CLAUDE_ENV_FILE=<path>` かつ `write failed` → **仮説3**: パーミッション等の書き込みエラー。エラー内容を確認する
+
+仮説1 が本命の場合は `CLAUDE_SESSION_ID` を env 経由で渡す設計を諦め、hook stdin から直接取得する現行フォールバック経路を主経路として確定させることを検討する。
+
 **正常系**
 
 Step 1 — `CLAUDE_SESSION_ID` が設定されているか
