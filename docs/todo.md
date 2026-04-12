@@ -2,18 +2,12 @@
 
 ## Current Work
 
-### Workflow State Machine — 正常系未確認・設計修正必要
 
-実装状況:
-- `mark-step.js`: session ID を `resolveSessionId()` で解決（`CLAUDE_ENV_FILE` 読み取り）
-- `workflow-gate.js`: hook stdin の `session_id` を直接参照 → Windows でも動作
-- `session-start.js`: SessionStart フックで `CLAUDE_ENV_FILE` に `CLAUDE_SESSION_ID=<id>` を書き込み
-- スキル SKILL.md の `$CLAUDE_SESSION_ID` 引数を除去済み（0fe8f0f リファクタ後に残留していたバグ）
+### Workflow State Machine — macOS/Linux 動作確認
 
-残タスク:
-- [ ] 設計修正: `session-start.js` が `.git/workflow/current-session-id` にも session ID を書き込み、`resolveSessionId()` がそこからフォールバック読み込みするよう変更
-- [ ] テスト更新: 上記フォールバック経路のカバレッジを追加
-- [ ] 正常系1: セッション開始 → debug log (`$TEMP/session-start-debug.log`) で `wrote CLAUDE_SESSION_ID` を確認
+Windows での E2E 確認は完了済み。macOS または Linux 環境（mbp-m4pro-nire 等）で同等の確認が必要。
+
+- [ ] 正常系1: セッション開始 → `~/.claude/session-env/<session-id>/sessionstart-hook-0.sh` に `CLAUDE_SESSION_ID=<id>` が書き込まれるか確認
 - [ ] 正常系2: スキル完了後 mark-step.js が実際にステップを記録するか確認
 - [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされるか確認
 - [ ] 正常系4: 全ステップ完了後に git commit が通るか確認
