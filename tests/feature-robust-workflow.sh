@@ -332,12 +332,13 @@ else fail "16. Idempotent block — results differ: '$RESULT1' vs '$RESULT2'"; f
 # ---------------------------------------------------------------------------
 
 run_mark_step() {
-    # Returns exit code via $?
-    node "$MARK_STEP" "$@" 2>/dev/null
+    local env_file="$1"; shift
+    CLAUDE_ENV_FILE="$env_file" node "$MARK_STEP" "$@" 2>/dev/null
 }
 
 run_mark_step_with_stderr() {
-    node "$MARK_STEP" "$@" 2>&1 || true
+    local env_file="$1"; shift
+    CLAUDE_ENV_FILE="$env_file" node "$MARK_STEP" "$@" 2>&1 || true
 }
 
 get_state_file() {
@@ -363,7 +364,9 @@ echo "=== mark-step: Normal cases ==="
 # Test 17: mark research complete → state file created, research=complete
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" research complete 2>/dev/null; then
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" research complete 2>/dev/null; then
     STATE_FILE=$(get_state_file "$REPO" "$SID")
     if [ -f "$STATE_FILE" ]; then
         STATUS=$(node -e "let b='';process.stdin.on('data',c=>b+=c);process.stdin.on('end',()=>console.log(JSON.parse(b).steps.research.status))" < "$STATE_FILE" 2>/dev/null || echo "error")
@@ -375,11 +378,14 @@ if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" research complete 2>/dev/null; then
 else
     fail "17. mark research complete → exit non-zero"
 fi
+rm -f "$ENV_FILE"
 
 # Test 18: plan skipped → accepted (skippable step)
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" plan skipped 2>/dev/null; then
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" plan skipped 2>/dev/null; then
     STATE_FILE=$(get_state_file "$REPO" "$SID")
     if [ -f "$STATE_FILE" ]; then
         STATUS=$(node -e "let b='';process.stdin.on('data',c=>b+=c);process.stdin.on('end',()=>console.log(JSON.parse(b).steps.plan.status))" < "$STATE_FILE" 2>/dev/null || echo "error")
@@ -391,11 +397,15 @@ if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" plan skipped 2>/dev/null; then
 else
     fail "18. plan skipped → exit non-zero"
 fi
+rm -f "$ENV_FILE"
 
 # Test 19: State file doesn't exist → auto-created with all steps pending, then target updated
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" code complete 2>/dev/null || true
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" code complete 2>/dev/null || true
+rm -f "$ENV_FILE"
 STATE_FILE=$(get_state_file "$REPO" "$SID")
 if [ -f "$STATE_FILE" ]; then
     CODE_STATUS=$(node -e "let b='';process.stdin.on('data',c=>b+=c);process.stdin.on('end',()=>console.log(JSON.parse(b).steps.code.status))" < "$STATE_FILE" 2>/dev/null || echo "error")
@@ -412,7 +422,10 @@ fi
 # Test 20: updated_at field is set to a non-null ISO timestamp after marking
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" verify complete 2>/dev/null || true
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" verify complete 2>/dev/null || true
+rm -f "$ENV_FILE"
 STATE_FILE=$(get_state_file "$REPO" "$SID")
 if [ -f "$STATE_FILE" ]; then
     UPDATED=$(node -e "let b='';process.stdin.on('data',c=>b+=c);process.stdin.on('end',()=>console.log(JSON.parse(b).steps.verify.updated_at))" < "$STATE_FILE" 2>/dev/null || echo "null")
@@ -437,7 +450,10 @@ STEPS_IN_ORDER="research plan write_tests code verify docs user_verification"
 # Test 21: --reset-from docs → research/plan/write_tests/code/verify=complete, docs/user_verification=pending
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" --reset-from docs 2>/dev/null || true
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" --reset-from docs 2>/dev/null || true
+rm -f "$ENV_FILE"
 STATE_FILE=$(get_state_file "$REPO" "$SID")
 if [ -f "$STATE_FILE" ]; then
     RESULT=$(node -e "
@@ -461,7 +477,10 @@ fi
 # Test 22: --reset-from research → all 7 steps pending
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" --reset-from research 2>/dev/null || true
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" --reset-from research 2>/dev/null || true
+rm -f "$ENV_FILE"
 STATE_FILE=$(get_state_file "$REPO" "$SID")
 if [ -f "$STATE_FILE" ]; then
     RESULT=$(node -e "
@@ -480,7 +499,10 @@ fi
 # Test 23: --reset-from user_verification → first 6 complete, user_verification pending
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" --reset-from user_verification 2>/dev/null || true
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" --reset-from user_verification 2>/dev/null || true
+rm -f "$ENV_FILE"
 STATE_FILE=$(get_state_file "$REPO" "$SID")
 if [ -f "$STATE_FILE" ]; then
     RESULT=$(node -e "
@@ -504,11 +526,14 @@ fi
 # Test 24: --reset-from with invalid step name → exit 1
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" --reset-from invalid_step_name 2>/dev/null; then
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" --reset-from invalid_step_name 2>/dev/null; then
     fail "24. --reset-from invalid step → expected exit 1, got exit 0"
 else
     pass "24. --reset-from invalid step → exit 1"
 fi
+rm -f "$ENV_FILE"
 
 # ---------------------------------------------------------------------------
 # === mark-step.js: Error cases ===
@@ -520,38 +545,50 @@ echo "=== mark-step: Error cases ==="
 # Test 25: Invalid step name → exit 1
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" not_a_real_step complete 2>/dev/null; then
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" not_a_real_step complete 2>/dev/null; then
     fail "25. Invalid step name → expected exit 1, got exit 0"
 else
     pass "25. Invalid step name → exit 1"
 fi
+rm -f "$ENV_FILE"
 
 # Test 26: Invalid status value → exit 1
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" research done 2>/dev/null; then
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" research done 2>/dev/null; then
     fail "26. Invalid status 'done' → expected exit 1, got exit 0"
 else
     pass "26. Invalid status 'done' → exit 1"
 fi
+rm -f "$ENV_FILE"
 
 # Test 27: user_verification skipped → exit 1
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" user_verification skipped 2>/dev/null; then
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" user_verification skipped 2>/dev/null; then
     fail "27. user_verification skipped → expected exit 1, got exit 0"
 else
     pass "27. user_verification skipped → exit 1"
 fi
+rm -f "$ENV_FILE"
 
-# Test 28: Missing arguments (only 2 args) → exit 1
+# Test 28: Missing arguments (only 1 arg: step name, no status) → exit 1
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" research 2>/dev/null; then
-    fail "28. Missing arguments (2 args) → expected exit 1, got exit 0"
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" research 2>/dev/null; then
+    fail "28. Missing arguments (1 arg) → expected exit 1, got exit 0"
 else
     pass "28. Missing arguments → exit 1"
 fi
+rm -f "$ENV_FILE"
 
 # ---------------------------------------------------------------------------
 # === mark-step.js: Idempotency ===
@@ -563,8 +600,10 @@ echo "=== mark-step: Idempotency ==="
 # Test 29: Mark same step complete twice → exit 0, still complete
 REPO=$(setup_repo)
 SID="sid-$RANDOM"
-HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" research complete 2>/dev/null || true
-if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" research complete 2>/dev/null; then
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" research complete 2>/dev/null || true
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" research complete 2>/dev/null; then
     STATE_FILE=$(get_state_file "$REPO" "$SID")
     STATUS=$(node -e "let b='';process.stdin.on('data',c=>b+=c);process.stdin.on('end',()=>console.log(JSON.parse(b).steps.research.status))" < "$STATE_FILE" 2>/dev/null || echo "error")
     if [ "$STATUS" = "complete" ]; then pass "29. Mark same step complete twice → idempotent"
@@ -572,6 +611,72 @@ if HOOK_CWD="$REPO" node "$MARK_STEP" "$SID" research complete 2>/dev/null; then
 else
     fail "29. Mark same step complete twice → second call exit non-zero"
 fi
+rm -f "$ENV_FILE"
+
+# ---------------------------------------------------------------------------
+# === mark-step.js: Session ID auto-detection ===
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== mark-step: Session ID auto-detection ==="
+
+# Test 30: CLAUDE_ENV_FILE set with valid CLAUDE_SESSION_ID → step marked correctly
+REPO=$(setup_repo)
+SID="sid-autodetect-$RANDOM"
+ENV_FILE=$(mktemp)
+echo "CLAUDE_SESSION_ID=$SID" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" research complete 2>/dev/null; then
+    STATE_FILE=$(get_state_file "$REPO" "$SID")
+    if [ -f "$STATE_FILE" ]; then
+        STATUS=$(node -e "let b='';process.stdin.on('data',c=>b+=c);process.stdin.on('end',()=>console.log(JSON.parse(b).steps.research.status))" < "$STATE_FILE" 2>/dev/null || echo "error")
+        if [ "$STATUS" = "complete" ]; then pass "30. CLAUDE_ENV_FILE with valid CLAUDE_SESSION_ID → step marked correctly"
+        else fail "30. CLAUDE_ENV_FILE → status='$STATUS', expected 'complete'"; fi
+    else
+        fail "30. CLAUDE_ENV_FILE → state file not found at $STATE_FILE"
+    fi
+else
+    fail "30. CLAUDE_ENV_FILE → exit non-zero"
+fi
+rm -f "$ENV_FILE"
+
+# Test 31: CLAUDE_ENV_FILE set but contains no CLAUDE_SESSION_ID line → exit 1
+REPO=$(setup_repo)
+ENV_FILE=$(mktemp)
+echo "SOME_OTHER_VAR=value" > "$ENV_FILE"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" research complete 2>/dev/null; then
+    fail "31. CLAUDE_ENV_FILE without CLAUDE_SESSION_ID → expected exit 1, got exit 0"
+else
+    pass "31. CLAUDE_ENV_FILE without CLAUDE_SESSION_ID → exit 1"
+fi
+rm -f "$ENV_FILE"
+
+# Test 32: CLAUDE_ENV_FILE not set (env var absent) → exit 1
+REPO=$(setup_repo)
+if HOOK_CWD="$REPO" node "$MARK_STEP" research complete 2>/dev/null; then
+    fail "32. CLAUDE_ENV_FILE not set → expected exit 1, got exit 0"
+else
+    pass "32. CLAUDE_ENV_FILE not set → exit 1"
+fi
+
+# Test 33: CLAUDE_ENV_FILE points to non-existent file → exit 1
+REPO=$(setup_repo)
+NONEXISTENT_FILE="$TMPDIR_BASE/does-not-exist-$RANDOM.env"
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$NONEXISTENT_FILE" node "$MARK_STEP" research complete 2>/dev/null; then
+    fail "33. CLAUDE_ENV_FILE non-existent file → expected exit 1, got exit 0"
+else
+    pass "33. CLAUDE_ENV_FILE non-existent file → exit 1"
+fi
+
+# Test 34: CLAUDE_ENV_FILE is set to empty file (no CLAUDE_SESSION_ID line) → exit 1
+REPO=$(setup_repo)
+ENV_FILE=$(mktemp)
+# empty file — no content written
+if HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$MARK_STEP" research complete 2>/dev/null; then
+    fail "34. CLAUDE_ENV_FILE empty file → expected exit 1, got exit 0"
+else
+    pass "34. CLAUDE_ENV_FILE empty file → exit 1"
+fi
+rm -f "$ENV_FILE"
 
 # ---------------------------------------------------------------------------
 # session-start.js helpers
@@ -590,27 +695,27 @@ run_session_start() {
 echo ""
 echo "=== session-start: Normal cases ==="
 
-# Test 30: With CLAUDE_ENV_FILE set → file contains CLAUDE_SESSION_ID=abc123
+# Test 35: With CLAUDE_ENV_FILE set → file contains CLAUDE_SESSION_ID=abc123
 REPO=$(setup_repo)
 ENV_FILE="$TMPDIR_BASE/claude-env-$RANDOM.txt"
 touch "$ENV_FILE"
 echo '{"session_id":"abc123"}' | HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$SESSION_START" 2>/dev/null || true
 if grep -qx "CLAUDE_SESSION_ID=abc123" "$ENV_FILE" 2>/dev/null; then
-    pass "30. CLAUDE_ENV_FILE → file contains KEY=VALUE line (no export prefix)"
+    pass "35. CLAUDE_ENV_FILE → file contains KEY=VALUE line (no export prefix)"
 else
-    fail "30. CLAUDE_ENV_FILE → expected exact line 'CLAUDE_SESSION_ID=abc123', file content: $(cat "$ENV_FILE" 2>/dev/null || echo '(not found)')"
+    fail "35. CLAUDE_ENV_FILE → expected exact line 'CLAUDE_SESSION_ID=abc123', file content: $(cat "$ENV_FILE" 2>/dev/null || echo '(not found)')"
 fi
 
-# Test 31: stdout output is {}
+# Test 36: stdout output is {}
 REPO=$(setup_repo)
 STDOUT=$(echo '{"session_id":"abc123"}' | HOOK_CWD="$REPO" node "$SESSION_START" 2>/dev/null || true)
 if echo "$STDOUT" | grep -q "{}"; then
-    pass "31. session-start stdout is {}"
+    pass "36. session-start stdout is {}"
 else
-    fail "31. session-start stdout → expected '{}', got: '$STDOUT'"
+    fail "36. session-start stdout → expected '{}', got: '$STDOUT'"
 fi
 
-# Test 32: Zombie cleanup — state file with all updated_at 8 days ago → deleted
+# Test 37: Zombie cleanup — state file with all updated_at 8 days ago → deleted
 REPO=$(setup_repo)
 SID_ZOMBIE="zombie-$RANDOM"
 gitdir_zombie=$(git -C "$REPO" rev-parse --git-dir)
@@ -636,12 +741,12 @@ cat > "$ZOMBIE_FILE" <<EOF
 EOF
 echo '{"session_id":"new-session"}' | HOOK_CWD="$REPO" node "$SESSION_START" 2>/dev/null || true
 if [ ! -f "$ZOMBIE_FILE" ]; then
-    pass "32. Zombie cleanup: 8-day-old state file deleted"
+    pass "37. Zombie cleanup: 8-day-old state file deleted"
 else
-    fail "32. Zombie cleanup: state file still exists: $ZOMBIE_FILE"
+    fail "37. Zombie cleanup: state file still exists: $ZOMBIE_FILE"
 fi
 
-# Test 33: State file with updated_at 3 days ago → NOT deleted
+# Test 38: State file with updated_at 3 days ago → NOT deleted
 REPO=$(setup_repo)
 SID_RECENT="recent-$RANDOM"
 gitdir_recent=$(git -C "$REPO" rev-parse --git-dir)
@@ -666,9 +771,9 @@ cat > "$RECENT_FILE" <<EOF
 EOF
 echo '{"session_id":"new-session"}' | HOOK_CWD="$REPO" node "$SESSION_START" 2>/dev/null || true
 if [ -f "$RECENT_FILE" ]; then
-    pass "33. Recent state file (3 days) NOT deleted by zombie cleanup"
+    pass "38. Recent state file (3 days) NOT deleted by zombie cleanup"
 else
-    fail "33. Recent state file was incorrectly deleted"
+    fail "38. Recent state file was incorrectly deleted"
 fi
 
 # ---------------------------------------------------------------------------
@@ -678,29 +783,29 @@ fi
 echo ""
 echo "=== session-start: Edge cases ==="
 
-# Test 34: CLAUDE_ENV_FILE not set → exits 0, no error
+# Test 39: CLAUDE_ENV_FILE not set → exits 0, no error
 REPO=$(setup_repo)
 if echo '{"session_id":"abc123"}' | HOOK_CWD="$REPO" node "$SESSION_START" 2>/dev/null; then
-    pass "34. CLAUDE_ENV_FILE not set → exits 0"
+    pass "39. CLAUDE_ENV_FILE not set → exits 0"
 else
-    fail "34. CLAUDE_ENV_FILE not set → expected exit 0, got non-zero"
+    fail "39. CLAUDE_ENV_FILE not set → expected exit 0, got non-zero"
 fi
 
-# Test 35: .git/workflow/ directory doesn't exist → cleanup runs without error
+# Test 40: .git/workflow/ directory doesn't exist → cleanup runs without error
 REPO=$(setup_repo)
 # Do NOT create the workflow directory — verify no crash
 if echo '{"session_id":"abc123"}' | HOOK_CWD="$REPO" node "$SESSION_START" 2>/dev/null; then
-    pass "35. Missing workflow dir → cleanup runs without error"
+    pass "40. Missing workflow dir → cleanup runs without error"
 else
-    fail "35. Missing workflow dir → session-start crashed (exit non-zero)"
+    fail "40. Missing workflow dir → session-start crashed (exit non-zero)"
 fi
 
-# Test 36: stdin is invalid JSON → exits 0 (fail-open for SessionStart)
+# Test 41: stdin is invalid JSON → exits 0 (fail-open for SessionStart)
 REPO=$(setup_repo)
 if echo 'NOT VALID JSON' | HOOK_CWD="$REPO" node "$SESSION_START" 2>/dev/null; then
-    pass "36. Invalid JSON stdin → exits 0 (fail-open)"
+    pass "41. Invalid JSON stdin → exits 0 (fail-open)"
 else
-    fail "36. Invalid JSON stdin → expected exit 0 (fail-open), got non-zero"
+    fail "41. Invalid JSON stdin → expected exit 0 (fail-open), got non-zero"
 fi
 
 # ---------------------------------------------------------------------------
