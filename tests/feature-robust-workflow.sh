@@ -595,10 +595,10 @@ REPO=$(setup_repo)
 ENV_FILE="$TMPDIR_BASE/claude-env-$RANDOM.txt"
 touch "$ENV_FILE"
 echo '{"session_id":"abc123"}' | HOOK_CWD="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$SESSION_START" 2>/dev/null || true
-if grep -q "CLAUDE_SESSION_ID=abc123" "$ENV_FILE" 2>/dev/null; then
-    pass "30. CLAUDE_ENV_FILE → contains CLAUDE_SESSION_ID=abc123"
+if grep -qx "CLAUDE_SESSION_ID=abc123" "$ENV_FILE" 2>/dev/null; then
+    pass "30. CLAUDE_ENV_FILE → file contains KEY=VALUE line (no export prefix)"
 else
-    fail "30. CLAUDE_ENV_FILE → expected CLAUDE_SESSION_ID=abc123, file content: $(cat "$ENV_FILE" 2>/dev/null || echo '(not found)')"
+    fail "30. CLAUDE_ENV_FILE → expected exact line 'CLAUDE_SESSION_ID=abc123', file content: $(cat "$ENV_FILE" 2>/dev/null || echo '(not found)')"
 fi
 
 # Test 31: stdout output is {}
