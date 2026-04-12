@@ -2,15 +2,21 @@
 
 ## Current Work
 
-### Workflow State Machine — Verifying
-mark-step.js を再設計:
-- `resolveSessionId()` を `lib/workflow-state.js` に追加（`CLAUDE_ENV_FILE` から `CLAUDE_SESSION_ID` を取得）
-- `mark-step.js` の session ID 引数を廃止
-- `workflow-gate.js` のメッセージ更新（session ID 引数なし）
-- テスト 41 件 PASS
+### Workflow State Machine — 正常系未確認・設計修正必要
 
-動作確認（残タスク）:
-- [ ] mark-step.js がスキルから呼ばれる際に `CLAUDE_ENV_FILE` が `process.env` に存在するか確認
+実装状況:
+- `mark-step.js`: session ID を `resolveSessionId()` で解決（`CLAUDE_ENV_FILE` 読み取り）
+- `workflow-gate.js`: hook stdin の `session_id` を直接参照 → Windows でも動作
+- `session-start.js`: SessionStart フックで `CLAUDE_ENV_FILE` に `CLAUDE_SESSION_ID=<id>` を書き込み
+- スキル SKILL.md の `$CLAUDE_SESSION_ID` 引数を除去済み（0fe8f0f リファクタ後に残留していたバグ）
+
+残タスク:
+- [ ] 設計修正: `session-start.js` が `.git/workflow/current-session-id` にも session ID を書き込み、`resolveSessionId()` がそこからフォールバック読み込みするよう変更
+- [ ] テスト更新: 上記フォールバック経路のカバレッジを追加
+- [ ] 正常系1: セッション開始 → debug log (`$TEMP/session-start-debug.log`) で `wrote CLAUDE_SESSION_ID` を確認
+- [ ] 正常系2: スキル完了後 mark-step.js が実際にステップを記録するか確認
+- [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされるか確認
+- [ ] 正常系4: 全ステップ完了後に git commit が通るか確認
 - [ ] 異常系2: ステートファイル破損 → `--reset-from research` で自動リカバリ
 - [ ] 異常系3: 途中からやり直し → `--reset-from <step>` で部分リセット
 
