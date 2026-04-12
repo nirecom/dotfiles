@@ -3,92 +3,16 @@
 ## Current Work
 
 ### Workflow State Machine — Verifying
-実装完了（workflow-gate.js, mark-step.js, session-start.js, lib/workflow-state.js、36テスト pass）。
-`CLAUDE_ENV_FILE` フォーマット修正済み（`export KEY=VALUE` → `KEY=VALUE`）。
+mark-step.js を再設計:
+- `resolveSessionId()` を `lib/workflow-state.js` に追加（`CLAUDE_ENV_FILE` から `CLAUDE_SESSION_ID` を取得）
+- `mark-step.js` の session ID 引数を廃止
+- `workflow-gate.js` のメッセージ更新（session ID 引数なし）
+- テスト 41 件 PASS
 
-動作確認（4ケース）— **NEW SESSION REQUIRED**:
-- [ ] 正常系: CLAUDE_ENV_FILE → CLAUDE_SESSION_ID 設定 → Step 2 以降がつながる
-- [x] 異常系1: CLAUDE_SESSION_ID 取得不可 → hook stdin フォールバックで sessionid 取得（確認済み）
-- [ ] 異常系2: ステートファイル破損 → Claude が block メッセージを読んで `--reset-from research` を自動実行
-- [ ] 異常系3: 途中からやり直し → ユーザーが継続ステップを指定し `--reset-from <step>` を実行
-
-#### 申し送り: 新規セッションでの確認手順
-
-**前提確認 — デバッグログで書き込み状況を確認する**
-
-まず以下でログを確認し、どの仮説に当てはまるか判断する:
-```
-cat "$TEMP/session-start-debug.log"
-```
-
-結果の解釈:
-- `CLAUDE_ENV_FILE=(not set)` → **仮説2**: SessionStart フックが呼ばれていないか、settings.json の hooks 設定が効いていない（Claude Code 再起動を試みる）
-- `CLAUDE_ENV_FILE=<path>` かつ `wrote CLAUDE_SESSION_ID` → **仮説1**: 書き込みは成功しているが Bash ツールのサブプロセスには注入されない設計の可能性。CLAUDE_ENV_FILE は Claude Code プロセス自身の環境変数として取り込まれるが、Bash ツール経由のシェルには伝播しないかもしれない
-- `CLAUDE_ENV_FILE=<path>` かつ `write failed` → **仮説3**: パーミッション等の書き込みエラー。エラー内容を確認する
-
-仮説1 が本命の場合は `CLAUDE_SESSION_ID` を env 経由で渡す設計を諦め、hook stdin から直接取得する現行フォールバック経路を主経路として確定させることを検討する。
-
-**正常系**
-
-Step 1 — `CLAUDE_SESSION_ID` が設定されているか
-```
-echo $CLAUDE_SESSION_ID
-```
-期待値: 非空 UUID
-
-Step 2 — 未完了ステップがある状態で git commit がブロックされるか
-```
-cd c:/git/dotfiles && git add docs/todo.md
-git commit -m "test"
-```
-期待値: blocked + 未完了ステップの一覧と mark-step.js の実行例が表示される
-
-Step 3 — mark-step.js で全ステップをマーク
-```
-node c:/git/dotfiles/claude-global/hooks/mark-step.js $CLAUDE_SESSION_ID research complete
-node c:/git/dotfiles/claude-global/hooks/mark-step.js $CLAUDE_SESSION_ID plan complete
-node c:/git/dotfiles/claude-global/hooks/mark-step.js $CLAUDE_SESSION_ID write_tests complete
-node c:/git/dotfiles/claude-global/hooks/mark-step.js $CLAUDE_SESSION_ID code complete
-node c:/git/dotfiles/claude-global/hooks/mark-step.js $CLAUDE_SESSION_ID verify complete
-node c:/git/dotfiles/claude-global/hooks/mark-step.js $CLAUDE_SESSION_ID docs complete
-```
-
-Step 4 — user_verification のみ残った状態でブロックされるか
-```
-git commit -m "test"
-```
-期待値: user_verification のみ未完了としてブロック
-
-Step 5 — user_verification 完了後にコミットが通るか
-```
-node c:/git/dotfiles/claude-global/hooks/mark-step.js $CLAUDE_SESSION_ID user_verification complete
-git commit -m "test"
-```
-期待値: コミット承認
-
-**異常系2 — ステートファイル破損: Claude が自動リカバリ**
-
-Step 6 — ステートファイルを破損させた状態でブロックされるか
-```
-echo "INVALID JSON" > .git/workflow/$CLAUDE_SESSION_ID.json
-git commit -m "test"
-```
-期待値: blocked + `--reset-from research` の実行を指示するメッセージが表示される
-
-Step 7 — Claude が自動で `--reset-from research` を実行し、全ステップが pending に戻るか  
-期待値: research 以降が pending にリセットされ、再度 Step 3 から進められる状態になる
-
-**異常系3 — 途中からやり直し: ユーザーがステップを指定**
-
-Step 8 — いくつかステップを complete にした後、途中からリセットできるか
-```
-node c:/git/dotfiles/claude-global/hooks/mark-step.js $CLAUDE_SESSION_ID --reset-from write_tests
-```
-期待値: research/plan が complete のまま残り、write_tests 以降が pending に戻る（コマンド出力で確認）
-
-#### Context
-- State ファイルパス: `.git/workflow/<session-id>.json`（gitignore 済み）
-- `DOTFILES_DIR` 未設定の場合は絶対パス `c:/git/dotfiles` で代替可
+動作確認（残タスク）:
+- [ ] mark-step.js がスキルから呼ばれる際に `CLAUDE_ENV_FILE` が `process.env` に存在するか確認
+- [ ] 異常系2: ステートファイル破損 → `--reset-from research` で自動リカバリ
+- [ ] 異常系3: 途中からやり直し → `--reset-from <step>` で部分リセット
 
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
