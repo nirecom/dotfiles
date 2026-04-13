@@ -12,14 +12,8 @@
 - [x] テスト先行: PostToolUse hook の marker 検出・ステップ更新テスト
 - [x] `claude-global/hooks/` に PostToolUse hook 追加 (matcher: Bash, marker: `WORKFLOW_MARK_STEP`)
 - [x] 各スキルの Completion section を `echo "<<WORKFLOW_MARK_STEP:step:complete>>"` に変更
-- [ ] 動作確認 Windows 正常系: スキル完了 → `echo` marker → state file に記録される (`正常系1-4` 相当、commit log 89ba3d7 参照)
+- [x] 動作確認 Windows 正常系: E1 E2E テスト（`RUN_E2E=1`）で PostToolUse hook 実発火・state file 記録を確認
 - [ ] 動作確認 macOS/Linux 正常系: 同上
-
-### HOOK_CWD 依存の整理 — Verifying
-
-`is-private-repo.js` (resolveRepoDir), `mark-step.js`, `session-start.js` の `HOOK_CWD` 参照を `CLAUDE_PROJECT_DIR` に統一。全 107 テスト通過。
-- [x] `HOOK_CWD` → `CLAUDE_PROJECT_DIR` 置換（is-private-repo.js, mark-step.js, session-start.js）
-- [ ] Verify: 次スレ Windows E2E 正常系確認と合わせて動作確認
 
 ### Workflow Step Gate (mid-workflow) — 検討中
 
