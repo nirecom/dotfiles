@@ -15,6 +15,15 @@ ERRORS=0
 fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
 pass() { echo "PASS: $1"; }
 
+# Portable timeout: use system timeout if available, else perl alarm
+run_with_timeout() {
+    if command -v timeout >/dev/null 2>&1; then
+        timeout 180 "$@"
+    else
+        perl -e 'alarm 180; exec @ARGV' -- "$@"
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # Temporary git repo setup
 # ---------------------------------------------------------------------------
@@ -1335,8 +1344,26 @@ if [ "${RUN_E2E:-0}" = "1" ]; then
     git -C "$E1_REPO" config user.email "test@example.com"
     git -C "$E1_REPO" config user.name "Test"
 
-    # Copy settings.json so --setting-sources project picks up the PostToolUse hook
-    cp "$DOTFILES_DIR/claude-global/settings.json" "$E1_REPO/.claude/settings.json"
+    # Write minimal settings.json: only PostToolUse hook, no disableBypassPermissionsMode
+    # (disableBypassPermissionsMode:disable would neutralize --dangerously-skip-permissions)
+    cat > "$E1_REPO/.claude/settings.json" << SETTINGS_EOF
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$DOTFILES_DIR/claude-global/hooks/workflow-mark.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+SETTINGS_EOF
 
     E1_STATE_FILE="$E1_REPO/.git/workflow/$E1_SESSION_ID.json"
 
@@ -1345,8 +1372,9 @@ if [ "${RUN_E2E:-0}" = "1" ]; then
     # --setting-sources project: only load <cwd>/.claude/settings.json (has PostToolUse hook).
     # --dangerously-skip-permissions: allows the echo command without interactive prompt.
     E1_OUTPUT=$(
-        cd "$E1_REPO" && \
-        DOTFILES_DIR="$DOTFILES_DIR" timeout 120 \
+        cd "$E1_REPO" &&
+        unset CLAUDECODE &&
+        DOTFILES_DIR="$DOTFILES_DIR" run_with_timeout \
         claude -p \
             'Run exactly this Bash command and nothing else: echo "<<WORKFLOW_MARK_STEP_research_complete>>"' \
             --session-id "$E1_SESSION_ID" \
