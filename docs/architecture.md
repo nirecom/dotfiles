@@ -117,7 +117,8 @@
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 | [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
 | [claude-global/hooks/workflow-gate.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-gate.js) | PreToolUse commit gate: enforces all 7 workflow steps | Fail-safe: blocks on missing/corrupted state. Replaces check-docs-updated.js and check-tests-updated.js |
-| [claude-global/hooks/mark-step.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/mark-step.js) | Workflow step completion CLI | `node mark-step.js <step> <status>` or `--reset-from <step>` |
+| [claude-global/hooks/workflow-mark.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-mark.js) | PostToolUse step marker hook | Intercepts `echo "<<WORKFLOW_MARK_STEP:step:status>>"` via strict regex on `tool_input.command`; marks step using `session_id` from hook stdin. Uses `CLAUDE_PROJECT_DIR` for repo resolution |
+| [claude-global/hooks/mark-step.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/mark-step.js) | Workflow step completion CLI | `node mark-step.js <step> <status>` or `--reset-from <step>`. Required for `user_verification` (triggers ask-rule) |
 | [claude-global/hooks/session-start.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/session-start.js) | SessionStart hook | Sets CLAUDE_SESSION_ID via CLAUDE_ENV_FILE; runs zombie state file cleanup |
 | [claude-global/hooks/lib/workflow-state.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/lib/workflow-state.js) | Shared state module for workflow hooks | Reads/writes `.git/workflow/<session-id>.json` |
 
@@ -357,15 +358,17 @@ Statuses: `pending` | `in_progress` | `complete` | `skipped`
 
 | Step | How completed |
 |---|---|
-| `research` | `/survey-code` or `/deep-research` skill (calls `mark-step.js` on completion) |
-| `plan` | `/make-plan` skill |
-| `write_tests` | `/write-tests` skill |
+| `research` | `/survey-code` or `/deep-research` skill (emits `WORKFLOW_MARK_STEP` marker) |
+| `plan` | `/make-plan` skill (emits marker) |
+| `write_tests` | `/write-tests` skill (emits marker) |
 | `code` | `node mark-step.js code complete` |
 | `verify` | `node mark-step.js verify complete` |
-| `docs` | `/update-docs` skill |
+| `docs` | `/update-docs` skill (emits marker) |
 | `user_verification` | `node mark-step.js user_verification complete` (ask-gated: Claude must get user approval) |
 
-Each skill appends `node "$DOTFILES_DIR/claude-global/hooks/mark-step.js" <step> complete` at its `## Completion` section.
+Each skill's `## Completion` section runs `echo "<<WORKFLOW_MARK_STEP:<step>:complete>>"` as the sole Bash command (no pipes, no `&&`, no redirection). The PostToolUse hook (`workflow-mark.js`) intercepts this via strict anchored regex on `tool_input.command` and calls `markStep()` directly using `session_id` from the hook's stdin JSON. This bypasses the `CLAUDE_ENV_FILE` propagation issue in Bash tool subprocesses (Anthropic bug #27987).
+
+`user_verification` cannot be marked via echo marker — CLI is required to trigger the `ask`-rule confirmation prompt.
 
 #### Session ID flow
 
@@ -375,7 +378,10 @@ Session start → session-start.js (SessionStart hook)
   runs zombie cleanup
 
 Skill runs (/make-plan, /write-tests, etc.)
-  → mark-step.js marks step complete
+  → Completion section emits: echo "<<WORKFLOW_MARK_STEP:<step>:complete>>"
+  → workflow-mark.js (PostToolUse hook) intercepts command
+     reads session_id from hook stdin JSON (not CLAUDE_ENV_FILE)
+     calls markStep(CLAUDE_PROJECT_DIR, session_id, step, status)
 
 git commit attempt → workflow-gate.js (PreToolUse hook)
   reads session_id from hook stdin JSON

@@ -8,11 +8,19 @@
 `mark-step.js` が Bash サブプロセスから `CLAUDE_ENV_FILE` にアクセスできない問題 (Anthropic bug #27987) の根本対処。
 スキルの Completion section が `echo "<<WORKFLOW_MARK_STEP:step:status>>"` を出力し、PostToolUse hook がそれを検出して mark-step.js を呼ぶ。
 
-- [ ] `/make-plan` で設計確定 (PostToolUse hook 実装方針)
-- [ ] テスト先行: PostToolUse hook の marker 検出・ステップ更新テスト
-- [ ] `claude-global/hooks/` に PostToolUse hook 追加 (matcher: Bash, marker: `WORKFLOW_MARK_STEP`)
-- [ ] 各スキルの Completion section を `echo "<<WORKFLOW_MARK_STEP:step:complete>>"` に変更
-- [ ] 動作確認 (Windows + macOS/Linux)
+- [x] `/make-plan` で設計確定 (PostToolUse hook 実装方針)
+- [x] テスト先行: PostToolUse hook の marker 検出・ステップ更新テスト
+- [x] `claude-global/hooks/` に PostToolUse hook 追加 (matcher: Bash, marker: `WORKFLOW_MARK_STEP`)
+- [x] 各スキルの Completion section を `echo "<<WORKFLOW_MARK_STEP:step:complete>>"` に変更
+- [ ] 動作確認 Windows 正常系: スキル完了 → `echo` marker → state file に記録される (`正常系1-4` 相当、commit log 89ba3d7 参照)
+- [ ] 動作確認 macOS/Linux 正常系: 同上
+
+### HOOK_CWD 依存の整理 — 検討中
+
+`workflow-gate.js` と `mark-step.js` が `process.env.HOOK_CWD` を参照しているが、これは undocumented な env var。
+実際には `extractRepoDirFromCommand + toNativePath` の経路で動いており、HOOK_CWD は利用されていない可能性が高い。
+`workflow-mark.js` は `CLAUDE_PROJECT_DIR` (公式・全 hook 対応) に統一済み。
+- [ ] `workflow-gate.js` / `mark-step.js` の `HOOK_CWD` 参照を `CLAUDE_PROJECT_DIR` ベースに整理
 
 ### Workflow Step Gate (mid-workflow) — 検討中
 
