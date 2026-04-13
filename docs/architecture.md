@@ -313,7 +313,7 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - `check-private-info.js` (matcher: `Bash`) — scans Bash commands for private info patterns
 - `block-dotenv.js` (matcher: `Bash|Read|Grep|Glob`) — blocks `.env` file access. Sanitizes git commit messages to avoid false positives
 - `workflow-gate.js` (matcher: `Bash`) — enforces all 7 workflow steps before `git commit`. Reads state from `.git/workflow/<session-id>.json`. Fail-safe: missing session_id, missing state file, or corrupted JSON → block. Block message lists incomplete steps with remediation commands. `research` and `plan` can be `skipped`; all other steps must be `complete`. Replaces `check-docs-updated.js` and `check-tests-updated.js`
-- `session-start.js` (SessionStart event) — appends `CLAUDE_SESSION_ID=<sid>` to `CLAUDE_ENV_FILE` (available in hook contexts only — NOT propagated to Bash tool subprocesses); runs zombie cleanup (deletes state files with all timestamps older than 7 days)
+- `session-start.js` (SessionStart event) — appends `CLAUDE_SESSION_ID=<sid>` to `CLAUDE_ENV_FILE`; creates `.git/workflow/<session-id>.json` with all steps `pending` if it does not already exist (idempotent, fail-open for non-git dirs); runs zombie cleanup (deletes state files with all timestamps older than 7 days)
 - `check-cross-platform.js` (matcher: `Bash`) — blocks `git commit` when platform-specific files (install/win/ ↔ install/linux/) are staged without counterpart changes
   - Skip mechanisms: `.cross-platform-skiplist` (permanent, base tool names) and `.git/.cross-platform-reviewed` (one-time, HEAD hash)
 
@@ -364,17 +364,18 @@ Statuses: `pending` | `in_progress` | `complete` | `skipped`
 | `code` | `node mark-step.js code complete` |
 | `verify` | `node mark-step.js verify complete` |
 | `docs` | `/update-docs` skill (emits marker) |
-| `user_verification` | `node mark-step.js user_verification complete` (ask-gated: Claude must get user approval) |
+| `user_verification` | `echo "<<WORKFLOW_USER_VERIFIED>>"` — triggers `ask` permission dialog; user must approve; PostToolUse hook marks step complete |
 
 Each skill's `## Completion` section runs `echo "<<WORKFLOW_MARK_STEP:<step>:complete>>"` as the sole Bash command (no pipes, no `&&`, no redirection). The PostToolUse hook (`workflow-mark.js`) intercepts this via strict anchored regex on `tool_input.command` and calls `markStep()` directly using `session_id` from the hook's stdin JSON. This bypasses the `CLAUDE_ENV_FILE` propagation issue in Bash tool subprocesses (Anthropic bug #27987).
 
-`user_verification` cannot be marked via echo marker — CLI is required to trigger the `ask`-rule confirmation prompt.
+`user_verification` uses a dedicated marker `echo "<<WORKFLOW_USER_VERIFIED>>"` (DQ only, single space, no SQ variant). This command is in the `ask` permission category — Claude must request user approval via dialog before the echo runs. The PostToolUse hook intercepts it identically to `WORKFLOW_MARK_STEP`.
 
 #### Session ID flow
 
 ```
 Session start → session-start.js (SessionStart hook)
   appends CLAUDE_SESSION_ID=<sid> to CLAUDE_ENV_FILE
+  creates .git/workflow/<sid>.json with all steps pending (if not exists)
   runs zombie cleanup
 
 Skill runs (/make-plan, /write-tests, etc.)
