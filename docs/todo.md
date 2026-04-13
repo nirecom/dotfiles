@@ -2,34 +2,20 @@
 
 ## Current Work
 
-
-### PostToolUse Marker Interception — 実装
-
-`mark-step.js` が Bash サブプロセスから `CLAUDE_ENV_FILE` にアクセスできない問題 (Anthropic bug #27987) の根本対処。
-スキルの Completion section が `echo "<<WORKFLOW_MARK_STEP:step:status>>"` を出力し、PostToolUse hook がそれを検出して mark-step.js を呼ぶ。
-
-- [x] `/make-plan` で設計確定 (PostToolUse hook 実装方針)
-- [x] テスト先行: PostToolUse hook の marker 検出・ステップ更新テスト
-- [x] `claude-global/hooks/` に PostToolUse hook 追加 (matcher: Bash, marker: `WORKFLOW_MARK_STEP`)
-- [x] 各スキルの Completion section を `echo "<<WORKFLOW_MARK_STEP:step:complete>>"` に変更
-- [x] 動作確認 Windows 正常系: E1 E2E テスト（`RUN_E2E=1`）で PostToolUse hook 実発火・state file 記録を確認
-- [ ] 動作確認 macOS/Linux 正常系: 同上
-
-### Workflow Step Gate (mid-workflow) — 検討中
+### Workflow State Machine — macOS / WSL 環境動作確認
 
 PreToolUse hook で前提ステップ未完了なら Write/Edit をブロックし Claude を前のステップに戻す仕組み。
 research 結果: `ai-specs/projects/engineering/research-results/claude-code-workflow-step-enforcement.md` 参照。
 PostToolUse marker interception 安定後に着手する。
 既知バグ (#37210, #18312) への対処が必要。
 
-### Workflow State Machine — macOS/Linux 動作確認
-
-macOS または Linux 環境（mbp-m4pro-nire 等）で同等の確認が必要。
+macOS または WSL 環境（mbp-m4pro-nire 等）で同等の確認が必要。
 
 - [ ] 正常系1: セッション開始 → `~/.claude/session-env/<session-id>/sessionstart-hook-0.sh` に `CLAUDE_SESSION_ID=<id>` が書き込まれるか確認
 - [ ] 正常系2: スキル完了後 mark-step.js が実際にステップを記録するか確認
 - [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされるか確認
 - [ ] 正常系4: 全ステップ完了後に git commit が通るか確認
+- [ ] 正常系5: PostToolUse hook 実発火・state file 記録を確認（`RUN_E2E=1`）
 - [ ] 異常系2: ステートファイル破損 → `--reset-from research` で自動リカバリ
 - [ ] 異常系3: 途中からやり直し → `--reset-from <step>` で部分リセット
 
