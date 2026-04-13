@@ -67,7 +67,7 @@ case "$ACTION" in
                 _ts2=$(date "+%Y-%m-%d %H:%M")
                 git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $_ts2" 2>/dev/null || true
             fi
-            git -C "$PROJECTS_DIR" pull --rebase origin main 2>/dev/null || true
+            git -C "$PROJECTS_DIR" pull --rebase origin main >/dev/null 2>&1 || true
             if git -C "$PROJECTS_DIR" push -u origin main 2>/dev/null; then
                 _push_ok=1
                 break
