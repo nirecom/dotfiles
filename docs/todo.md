@@ -2,6 +2,10 @@
 
 ## Current Work
 
+### Workflow State Machine — .git/workflow deny rule — Verifying
+Claude Code 再起動後に有効になる。新規セッションで確認すること。
+- [ ] `Edit(**/.git/workflow/**)` / `Write(**/.git/workflow/**)` deny が機能するか確認
+
 ### Workflow State Machine — macOS / WSL 環境動作確認
 
 PreToolUse hook で前提ステップ未完了なら Write/Edit をブロックし Claude を前のステップに戻す仕組み。
