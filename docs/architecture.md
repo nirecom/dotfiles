@@ -80,7 +80,7 @@
 | [bin/session-sync.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.ps1) | Session sync daily operation (push/pull/status) | Windows |
 | [bin/session-sync.sh](https://github.com/nirecom/dotfiles/blob/main/bin/session-sync.sh) | Session sync daily operation (push/pull/status) | Linux/macOS |
 | [bin/wait-vscode-window.ps1](https://github.com/nirecom/dotfiles/blob/main/bin/wait-vscode-window.ps1) | Wait for VS Code window close by title polling | Windows (Win32 EnumWindows) |
-| [bin/wait-vscode-window.sh](https://github.com/nirecom/dotfiles/blob/main/bin/wait-vscode-window.sh) | Wait for VS Code window close by title polling | Linux/macOS (xdotool/wmctrl/osascript) |
+| [bin/wait-vscode-window.sh](https://github.com/nirecom/dotfiles/blob/main/bin/wait-vscode-window.sh) | Wait for VS Code window close by title polling | Linux/macOS (xdotool/wmctrl/osascript); WSL2 (powershell.exe) |
 | [install/win/profile.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/profile.ps1) | PowerShell profile (SSH agent, auto-pull, migration) | Symlinked to PS5 and PS7 profile paths |
 | [install/win/uv.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/uv.ps1) | Install uv (Python package manager) | |
 | [install/linux/uv.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/uv.sh) | Install uv (Python package manager) | |

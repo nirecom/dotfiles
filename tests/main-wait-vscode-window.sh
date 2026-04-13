@@ -69,7 +69,7 @@ else
 fi
 
 # has_vscode_window function is defined for each detection method
-for tool in xdotool wmctrl Darwin; do
+for tool in xdotool wmctrl Darwin WSL_DISTRO_NAME; do
     if grep -q "$tool" "$WAIT_SCRIPT" && grep -q "has_vscode_window" "$WAIT_SCRIPT"; then
         pass "detection method: $tool with has_vscode_window"
     else

@@ -45,6 +45,12 @@ elif type wmctrl >/dev/null 2>&1; then
         done < <(wmctrl -l 2>/dev/null)
         return 1
     }
+elif [ -n "${WSL_DISTRO_NAME:-}" ] && command -v powershell.exe >/dev/null 2>&1; then
+    has_vscode_window() {
+        local result
+        result=$(powershell.exe -NoProfile -Command "[System.Diagnostics.Process]::GetProcessesByName('Code') | Where-Object { \$_.MainWindowTitle -like '* - $SUFFIX*' -or \$_.MainWindowTitle -like '$SUFFIX*' -or \$_.MainWindowTitle -like '* - $SUFFIX_WS*' -or \$_.MainWindowTitle -like '$SUFFIX_WS*' } | Select-Object -First 1 -ExpandProperty MainWindowTitle" 2>/dev/null | tr -d '\r')
+        [ -n "$result" ]
+    }
 elif [ "$(uname)" = "Darwin" ]; then
     has_vscode_window() {
         local t
