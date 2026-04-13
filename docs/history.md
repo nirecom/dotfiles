@@ -650,3 +650,11 @@ Changes: Set `command_timeout = 2000` in `.config/starship.toml`.
 ### Fix wait-vscode-window.sh: add WSL2 window detection (2026-04-13, pending)
 Background: In WSL2, VS Code runs as a Windows process so xdotool/wmctrl (X11 tools) are unavailable. The `codes` function called wait-vscode-window.sh which fell through to the "No window detection tool found" warning and skipped session sync.
 Changes: Added WSL2 branch to bin/wait-vscode-window.sh that uses powershell.exe to enumerate Code.exe MainWindowTitle values via [System.Diagnostics.Process]::GetProcessesByName. Detects WSL via WSL_DISTRO_NAME env var. Updated tests/main-wait-vscode-window.sh to cover WSL_DISTRO_NAME detection. Updated docs/architecture.md.
+
+### Fix QNAP dotfileslink.sh: guard autorun.sh install against mount failure (2026-04-13)
+Background: On QNAP, the first run of install.sh printed "autorun.sh installed." even though the mount failed — /tmp/config directory did not exist, causing sudo mount to fail silently. The script had no set -e, so errors were ignored.
+Changes: Added mkdir -p /tmp/config before mounting. Wrapped mount in an if block; success message and subsequent cp/chmod/umount only execute when mount succeeds. Added WARNING message on failure.
+
+### Workflow State Machine: marker format `:` → `_` (2026-04-13)
+Background: Claude Code's permission glob parser treats `:` as a named-parameter separator inside `Bash(...)` rules, causing silent match failure (confirmed via anthropics/claude-code#33601). `WORKFLOW_RESET_FROM` ask rule was not triggering a dialog; investigation showed `Bash(echo "<<WORKFLOW_USER_VERIFIED>>")` (no colon) worked while any pattern containing `:` silently failed to match. Same issue applied to `WORKFLOW_MARK_STEP` allow rules. Default behavior when no rule matches is auto-allow, masking the problem.
+Changes: Changed both marker formats to use `_` as separator: `<<WORKFLOW_MARK_STEP:step:status>>` → `<<WORKFLOW_MARK_STEP_step_status>>`, `<<WORKFLOW_RESET_FROM:step>>` → `<<WORKFLOW_RESET_FROM_step>>`. Updated workflow-mark.js regexes, settings.json allow/ask rules (RESET_FROM single-quote variant removed — DQ only), workflow-gate.js block message, 5 skill Completion sections, and test suite. Windows re-verification confirmed: normal cases 1–4 and error cases 1–2 all pass.

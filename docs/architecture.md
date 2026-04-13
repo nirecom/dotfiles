@@ -117,7 +117,7 @@
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 | [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
 | [claude-global/hooks/workflow-gate.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-gate.js) | PreToolUse commit gate: enforces all 7 workflow steps | Fail-safe: blocks on missing/corrupted state. Replaces check-docs-updated.js and check-tests-updated.js |
-| [claude-global/hooks/workflow-mark.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-mark.js) | PostToolUse step marker hook | Intercepts `echo "<<WORKFLOW_MARK_STEP:step:status>>"` via strict regex on `tool_input.command`; marks step using `session_id` from hook stdin. Uses `CLAUDE_PROJECT_DIR` for repo resolution |
+| [claude-global/hooks/workflow-mark.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-mark.js) | PostToolUse step marker hook | Intercepts `echo "<<WORKFLOW_MARK_STEP_step_status>>"` via strict regex on `tool_input.command`; marks step using `session_id` from hook stdin. Uses `CLAUDE_PROJECT_DIR` for repo resolution |
 | [claude-global/hooks/mark-step.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/mark-step.js) | Workflow step completion CLI | `node mark-step.js <step> <status>` or `--reset-from <step>`. Required for `user_verification` (triggers ask-rule) |
 | [claude-global/hooks/session-start.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/session-start.js) | SessionStart hook | Sets CLAUDE_SESSION_ID via CLAUDE_ENV_FILE; runs zombie state file cleanup |
 | [claude-global/hooks/lib/workflow-state.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/lib/workflow-state.js) | Shared state module for workflow hooks | Reads/writes `.git/workflow/<session-id>.json` |
@@ -366,7 +366,9 @@ Statuses: `pending` | `in_progress` | `complete` | `skipped`
 | `docs` | `/update-docs` skill (emits marker) |
 | `user_verification` | `echo "<<WORKFLOW_USER_VERIFIED>>"` — triggers `ask` permission dialog; user must approve; PostToolUse hook marks step complete |
 
-Each skill's `## Completion` section runs `echo "<<WORKFLOW_MARK_STEP:<step>:complete>>"` as the sole Bash command (no pipes, no `&&`, no redirection). The PostToolUse hook (`workflow-mark.js`) intercepts this via strict anchored regex on `tool_input.command` and calls `markStep()` directly using `session_id` from the hook's stdin JSON. This bypasses the `CLAUDE_ENV_FILE` propagation issue in Bash tool subprocesses (Anthropic bug #27987).
+Each skill's `## Completion` section runs `echo "<<WORKFLOW_MARK_STEP_<step>_complete>>"` as the sole Bash command (no pipes, no `&&`, no redirection). The PostToolUse hook (`workflow-mark.js`) intercepts this via strict anchored regex on `tool_input.command` and calls `markStep()` directly using `session_id` from the hook's stdin JSON. This bypasses the `CLAUDE_ENV_FILE` propagation issue in Bash tool subprocesses (Anthropic bug #27987).
+
+Note: marker format uses `_` as separator (not `:`). Claude Code's permission glob parser treats `:` as a named-parameter separator inside `Bash(...)` rules, causing silent match failure (anthropics/claude-code#33601). Using `_` avoids this and allows `allow`/`ask` rules to match correctly.
 
 `user_verification` uses a dedicated marker `echo "<<WORKFLOW_USER_VERIFIED>>"` (DQ only, single space, no SQ variant). This command is in the `ask` permission category — Claude must request user approval via dialog before the echo runs. The PostToolUse hook intercepts it identically to `WORKFLOW_MARK_STEP`.
 
@@ -379,7 +381,7 @@ Session start → session-start.js (SessionStart hook)
   runs zombie cleanup
 
 Skill runs (/make-plan, /write-tests, etc.)
-  → Completion section emits: echo "<<WORKFLOW_MARK_STEP:<step>:complete>>"
+  → Completion section emits: echo "<<WORKFLOW_MARK_STEP_<step>_complete>>"
   → workflow-mark.js (PostToolUse hook) intercepts command
      reads session_id from hook stdin JSON (not CLAUDE_ENV_FILE)
      calls markStep(CLAUDE_PROJECT_DIR, session_id, step, status)

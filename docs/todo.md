@@ -2,22 +2,39 @@
 
 ## Current Work
 
-### Workflow State Machine — macOS / WSL 環境動作確認
+### Workflow State Machine — Windows 再確認（マーカー形式変更）
 
-PreToolUse hook で前提ステップ未完了なら Write/Edit をブロックし Claude を前のステップに戻す仕組み。
-research 結果: `ai-specs/projects/engineering/research-results/claude-code-workflow-step-enforcement.md` 参照。
-PostToolUse marker interception 安定後に着手する。
-既知バグ (#37210, #18312) への対処が必要。
+`WORKFLOW_MARK_STEP:step:status` → `WORKFLOW_MARK_STEP_step_status`
+`WORKFLOW_RESET_FROM:step` → `WORKFLOW_RESET_FROM_step`
 
-macOS または WSL 環境（mbp-m4pro-nire 等）で同等の確認が必要。
+マーカー形式の根幹変更のため、以前完了した Windows 動作確認を再実施する。
 
-- [ ] 正常系1: セッション開始 → `~/.claude/session-env/<session-id>/sessionstart-hook-0.sh` に `CLAUDE_SESSION_ID=<id>` が書き込まれるか確認
-- [ ] 正常系2: スキル完了後 mark-step.js が実際にステップを記録するか確認
+- [x] 正常系1: スキル完了後 `echo "<<WORKFLOW_MARK_STEP_research_complete>>"` → PostToolUse hook がステップを記録する
+- [x] 正常系2: `echo "<<WORKFLOW_RESET_FROM_research>>"` → ask ダイアログが出る + hook がワークフローを巻き戻す
+- [x] 正常系3: 未完了ステップがある状態で git commit がブロックされる
+- [x] 正常系4: 全ステップ完了後に git commit が通る
+- [x] 異常系1: 旧形式 `echo "<<WORKFLOW_MARK_STEP:research:complete>>"` が hook に無視される（state 変更なし）
+- [x] 異常系2: 旧形式 `echo "<<WORKFLOW_RESET_FROM:research>>"` → ダイアログ不出・hook 無視
+
+### Workflow State Machine — macOS 環境動作確認
+
+- [ ] 正常系1: セッション開始 → CLAUDE_SESSION_ID が CLAUDE_ENV_FILE に書き込まれるか確認
+- [ ] 正常系2: スキル完了後 `WORKFLOW_MARK_STEP_*` マーカーがステップを記録するか確認
 - [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされるか確認
 - [ ] 正常系4: 全ステップ完了後に git commit が通るか確認
 - [ ] 正常系5: PostToolUse hook 実発火・state file 記録を確認（`RUN_E2E=1`）
-- [ ] 異常系2: ステートファイル破損 → `--reset-from research` で自動リカバリ
-- [ ] 異常系3: 途中からやり直し → `--reset-from <step>` で部分リセット
+- [ ] 異常系1: 旧形式マーカー（`: `区切り）が hook に無視される
+- [ ] 異常系2: `WORKFLOW_RESET_FROM_*` ask ダイアログが出る
+
+### Workflow State Machine — WSL 環境動作確認
+
+- [ ] 正常系1: セッション開始 → CLAUDE_SESSION_ID が CLAUDE_ENV_FILE に書き込まれるか確認
+- [ ] 正常系2: スキル完了後 `WORKFLOW_MARK_STEP_*` マーカーがステップを記録するか確認
+- [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされるか確認
+- [ ] 正常系4: 全ステップ完了後に git commit が通るか確認
+- [ ] 正常系5: PostToolUse hook 実発火・state file 記録を確認（`RUN_E2E=1`）
+- [ ] 異常系1: 旧形式マーカー（`: `区切り）が hook に無視される
+- [ ] 異常系2: `WORKFLOW_RESET_FROM_*` ask ダイアログが出る
 
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
