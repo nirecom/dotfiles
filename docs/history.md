@@ -634,3 +634,7 @@ Fix: Moved PostToolUse registration to the `hooks` block. Added SR1-SR4 structur
 ### Workflow State Machine: PostToolUse Windows E2E verified + CLAUDE_PROJECT_DIR migration confirmed (2026-04-13)
 Background: Windows E2E smoke test for the PostToolUse hook and simultaneous verification that the HOOK_CWD → CLAUDE_PROJECT_DIR migration (commit 264ab0a) works correctly in a real session.
 Changes: E1 E2E test (`claude -p --setting-sources project --session-id`) passed: PostToolUse hook fires in a real Claude session, `CLAUDE_PROJECT_DIR` resolves the repo correctly, and the step is written to the state file. All tests pass with `RUN_E2E=1`. macOS/Linux verification remains pending.
+
+### Workflow State Machine: Robust Improvements — Windows verification (2026-04-13)
+Background: User verification of three robustness improvements on Windows (VSCode extension).
+Changes: (1) `echo "<<WORKFLOW_USER_VERIFIED>>"` ask dialog confirmed — permissions.ask rule fires and PostToolUse hook records user_verification as complete. (2) SessionStart creates UUID-format state file at session start (.git/workflow/<session-id>.json confirmed). (3) isPrivateRepo bypass removal confirmed via git diff — a6ad6ab had `if (isPrivateRepo(repoDir)) approve()`, current code imports only resolveRepoDir.
