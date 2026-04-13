@@ -958,28 +958,28 @@ build_mark_json() {
 # Test N1: echo "<<WORKFLOW_MARK_STEP:research:complete>>" (double-quoted)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-N1_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:research:complete>>"')
+N1_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_research_complete>>"')
 run_mark_hook "$REPO" "$N1_JSON" >/dev/null
 expect_state_step "N1. echo \"<<...>>\" (double-quoted) → research=complete" "$REPO" "test-session" "research" "complete"
 
-# Test N2: echo '<<WORKFLOW_MARK_STEP:research:complete>>' (single-quoted)
+# Test N2: echo '<<WORKFLOW_MARK_STEP_research_complete>>' (single-quoted)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-N2_JSON=$(build_mark_json "echo '<<WORKFLOW_MARK_STEP:research:complete>>'")
+N2_JSON=$(build_mark_json "echo '<<WORKFLOW_MARK_STEP_research_complete>>'")
 run_mark_hook "$REPO" "$N2_JSON" >/dev/null
 expect_state_step "N2. echo '<<...>>' (single-quoted) → research=complete" "$REPO" "test-session" "research" "complete"
 
 # Test N3: status skipped on research → recorded
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-N3_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:research:skipped>>"')
+N3_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_research_skipped>>"')
 run_mark_hook "$REPO" "$N3_JSON" >/dev/null
 expect_state_step "N3. status=skipped on research → recorded" "$REPO" "test-session" "research" "skipped"
 
 # Test N4: status in_progress on write_tests → recorded
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-N4_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:write_tests:in_progress>>"')
+N4_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_write_tests_in_progress>>"')
 run_mark_hook "$REPO" "$N4_JSON" >/dev/null
 expect_state_step "N4. status=in_progress on write_tests → recorded" "$REPO" "test-session" "write_tests" "in_progress"
 
@@ -1010,28 +1010,28 @@ expect_no_state_change "F3. grep WORKFLOW_MARK_STEP → unchanged" "$REPO" "test
 # Test F4: echo piped to tee
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-F4_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:research:complete>>" | tee /tmp/log')
+F4_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_research_complete>>" | tee /tmp/log')
 run_mark_hook "$REPO" "$F4_JSON" >/dev/null
 expect_no_state_change "F4. echo \"<<...>>\" | tee /tmp/log → unchanged" "$REPO" "test-session" "research" "pending"
 
 # Test F5: cd /tmp && echo "<<...>>" (prefix chaining)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-F5_JSON=$(build_mark_json 'cd /tmp && echo "<<WORKFLOW_MARK_STEP:research:complete>>"')
+F5_JSON=$(build_mark_json 'cd /tmp && echo "<<WORKFLOW_MARK_STEP_research_complete>>"')
 run_mark_hook "$REPO" "$F5_JSON" >/dev/null
 expect_no_state_change "F5. cd /tmp && echo \"<<...>>\" (prefix chain) → unchanged" "$REPO" "test-session" "research" "pending"
 
 # Test F6: echo "<<...>>" ; rm foo (trailing chain)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-F6_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:research:complete>>" ; rm foo')
+F6_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_research_complete>>" ; rm foo')
 run_mark_hook "$REPO" "$F6_JSON" >/dev/null
 expect_no_state_change "F6. echo \"<<...>>\" ; rm foo (trailing chain) → unchanged" "$REPO" "test-session" "research" "pending"
 
 # Test F7: echo " <<...>> " (inner spaces around marker inside quotes)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-F7_JSON=$(build_mark_json 'echo " <<WORKFLOW_MARK_STEP:research:complete>> "')
+F7_JSON=$(build_mark_json 'echo " <<WORKFLOW_MARK_STEP_research_complete>> "')
 run_mark_hook "$REPO" "$F7_JSON" >/dev/null
 expect_no_state_change "F7. echo \" <<...>> \" (inner spaces) → unchanged" "$REPO" "test-session" "research" "pending"
 
@@ -1046,7 +1046,7 @@ expect_no_state_change "F8. 10KB padded command with 'echo' as substring → unc
 # Test F9: printf instead of echo
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-F9_JSON=$(build_mark_json 'printf "<<WORKFLOW_MARK_STEP:research:complete>>"')
+F9_JSON=$(build_mark_json 'printf "<<WORKFLOW_MARK_STEP_research_complete>>"')
 run_mark_hook "$REPO" "$F9_JSON" >/dev/null
 expect_no_state_change "F9. printf \"<<...>>\" (not echo) → unchanged" "$REPO" "test-session" "research" "pending"
 
@@ -1056,36 +1056,36 @@ echo "=== workflow-mark: New hook — Error / edge cases ==="
 # Test E1: unknown step "foo" → state unchanged, hook exit 0
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-E1_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:foo:complete>>"')
+E1_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_foo_complete>>"')
 run_mark_hook "$REPO" "$E1_JSON" >/dev/null
 expect_no_state_change "E1. unknown step 'foo' → research unchanged" "$REPO" "test-session" "research" "pending"
 
 # Test E2: unknown status "done" → state unchanged
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-E2_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:research:done>>"')
+E2_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_research_done>>"')
 run_mark_hook "$REPO" "$E2_JSON" >/dev/null
 expect_no_state_change "E2. unknown status 'done' → research unchanged" "$REPO" "test-session" "research" "pending"
 
-# Test E3: user_verification:complete via marker → REJECTED
+# Test E3: user_verification_complete via marker → REJECTED
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-E3_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:user_verification:complete>>"')
+E3_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_user_verification_complete>>"')
 run_mark_hook "$REPO" "$E3_JSON" >/dev/null
-expect_no_state_change "E3. user_verification:complete via marker → REJECTED" "$REPO" "test-session" "user_verification" "pending"
+expect_no_state_change "E3. user_verification_complete via marker → REJECTED" "$REPO" "test-session" "user_verification" "pending"
 
-# Test E4: user_verification:skipped via marker → REJECTED
+# Test E4: user_verification_skipped via marker → REJECTED
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-E4_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:user_verification:skipped>>"')
+E4_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_user_verification_skipped>>"')
 run_mark_hook "$REPO" "$E4_JSON" >/dev/null
-expect_no_state_change "E4. user_verification:skipped via marker → REJECTED" "$REPO" "test-session" "user_verification" "pending"
+expect_no_state_change "E4. user_verification_skipped via marker → REJECTED" "$REPO" "test-session" "user_verification" "pending"
 
 # Test E5: session_id not in stdin AND CLAUDE_ENV_FILE unset →
 #   state unchanged, hook stdout JSON contains "systemMessage", exit 0
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-E5_CMD='echo "<<WORKFLOW_MARK_STEP:research:complete>>"'
+E5_CMD='echo "<<WORKFLOW_MARK_STEP_research_complete>>"'
 E5_ESC=${E5_CMD//\"/\\\"}
 E5_JSON=$(printf '{"tool_name":"Bash","tool_input":{"command":"%s"},"tool_response":{"exit_code":0,"stdout":"%s\\n","stderr":""}}' "$E5_ESC" "$E5_ESC")
 E5_OUT=$(echo "$E5_JSON" | CLAUDE_PROJECT_DIR="$REPO" env -u CLAUDE_ENV_FILE node "$MARK_HOOK" 2>/dev/null || true)
@@ -1109,7 +1109,7 @@ fi
 # Test E7: tool_response.exit_code=1 → state unchanged (echo supposedly failed)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-E7_CMD='echo "<<WORKFLOW_MARK_STEP:research:complete>>"'
+E7_CMD='echo "<<WORKFLOW_MARK_STEP_research_complete>>"'
 E7_ESC=${E7_CMD//\"/\\\"}
 E7_JSON=$(printf '{"tool_name":"Bash","tool_input":{"command":"%s"},"tool_response":{"exit_code":1,"stdout":"","stderr":"oops"},"session_id":"test-session"}' "$E7_ESC")
 run_mark_hook "$REPO" "$E7_JSON" >/dev/null
@@ -1118,7 +1118,7 @@ expect_no_state_change "E7. tool_response.exit_code=1 → unchanged" "$REPO" "te
 # Test E8: tool_name != Bash (e.g. Write) → ignored, state unchanged
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-E8_JSON='{"tool_name":"Write","tool_input":{"file_path":"/tmp/foo","content":"<<WORKFLOW_MARK_STEP:research:complete>>"},"tool_response":{"success":true},"session_id":"test-session"}'
+E8_JSON='{"tool_name":"Write","tool_input":{"file_path":"/tmp/foo","content":"<<WORKFLOW_MARK_STEP_research_complete>>"},"tool_response":{"success":true},"session_id":"test-session"}'
 run_mark_hook "$REPO" "$E8_JSON" >/dev/null
 expect_no_state_change "E8. tool_name=Write → unchanged" "$REPO" "test-session" "research" "pending"
 
@@ -1128,7 +1128,7 @@ echo "=== workflow-mark: New hook — Idempotency ==="
 # Test I1: same marker applied twice → state valid, status=complete
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-I1_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP:research:complete>>"')
+I1_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_research_complete>>"')
 run_mark_hook "$REPO" "$I1_JSON" >/dev/null
 run_mark_hook "$REPO" "$I1_JSON" >/dev/null
 expect_state_step "I1. same marker applied twice → research=complete (idempotent)" "$REPO" "test-session" "research" "complete"
@@ -1153,12 +1153,12 @@ build_reset_json() {
     printf '{"tool_name":"Bash","tool_input":{"command":"%s"},"tool_response":{"exit_code":0,"stdout":"%s\\n","stderr":""},"session_id":"%s"}' "$esc" "$esc" "$sid"
 }
 
-# Test R1: RESET_FROM:write_tests on ALL_COMPLETE → research=complete, plan=complete,
+# Test R1: RESET_FROM_write_tests on ALL_COMPLETE → research=complete, plan=complete,
 #          write_tests=pending, code=pending, verify=pending, docs=pending,
 #          user_verification=pending
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-R1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM:write_tests>>"')
+R1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_write_tests>>"')
 run_mark_hook "$REPO" "$R1_JSON" >/dev/null
 expect_state_step "R1a. RESET_FROM:write_tests → research=complete" "$REPO" "test-session" "research" "complete"
 expect_state_step "R1b. RESET_FROM:write_tests → plan=complete"     "$REPO" "test-session" "plan"     "complete"
@@ -1168,10 +1168,10 @@ expect_state_step "R1e. RESET_FROM:write_tests → verify=pending"    "$REPO" "t
 expect_state_step "R1f. RESET_FROM:write_tests → docs=pending"      "$REPO" "test-session" "docs"     "pending"
 expect_state_step "R1g. RESET_FROM:write_tests → user_verification=pending" "$REPO" "test-session" "user_verification" "pending"
 
-# Test R2: RESET_FROM:research → all steps pending (nothing before research)
+# Test R2: RESET_FROM_research → all steps pending (nothing before research)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-R2_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM:research>>"')
+R2_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_research>>"')
 run_mark_hook "$REPO" "$R2_JSON" >/dev/null
 expect_state_step "R2a. RESET_FROM:research → research=pending"          "$REPO" "test-session" "research"          "pending"
 expect_state_step "R2b. RESET_FROM:research → plan=pending"              "$REPO" "test-session" "plan"              "pending"
@@ -1181,10 +1181,10 @@ expect_state_step "R2e. RESET_FROM:research → verify=pending"            "$REP
 expect_state_step "R2f. RESET_FROM:research → docs=pending"              "$REPO" "test-session" "docs"              "pending"
 expect_state_step "R2g. RESET_FROM:research → user_verification=pending" "$REPO" "test-session" "user_verification" "pending"
 
-# Test R3: RESET_FROM:user_verification → all steps before it complete, user_verification=pending
+# Test R3: RESET_FROM_user_verification → all steps before it complete, user_verification=pending
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
-R3_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM:user_verification>>"')
+R3_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_user_verification>>"')
 run_mark_hook "$REPO" "$R3_JSON" >/dev/null
 expect_state_step "R3a. RESET_FROM:user_verification → research=complete"    "$REPO" "test-session" "research"          "complete"
 expect_state_step "R3b. RESET_FROM:user_verification → plan=complete"        "$REPO" "test-session" "plan"              "complete"
@@ -1194,37 +1194,37 @@ expect_state_step "R3e. RESET_FROM:user_verification → verify=complete"      "
 expect_state_step "R3f. RESET_FROM:user_verification → docs=complete"        "$REPO" "test-session" "docs"              "complete"
 expect_state_step "R3g. RESET_FROM:user_verification → user_verification=pending" "$REPO" "test-session" "user_verification" "pending"
 
-# Test R4: single-quote variant → same result as R1
+# Test R4: single-quote variant → NOT processed (SQ RESET_FROM removed from source)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-R4_JSON=$(build_reset_json "echo '<<WORKFLOW_RESET_FROM:write_tests>>'")
+R4_JSON=$(build_reset_json "echo '<<WORKFLOW_RESET_FROM_write_tests>>'")
 run_mark_hook "$REPO" "$R4_JSON" >/dev/null
-expect_state_step "R4a. single-quote variant → research=complete"   "$REPO" "test-session" "research"   "complete"
-expect_state_step "R4b. single-quote variant → plan=complete"       "$REPO" "test-session" "plan"       "complete"
-expect_state_step "R4c. single-quote variant → write_tests=pending" "$REPO" "test-session" "write_tests" "pending"
-expect_state_step "R4d. single-quote variant → code=pending"        "$REPO" "test-session" "code"       "pending"
+expect_no_state_change "R4a. single-quote RESET_FROM → research unchanged (complete)"   "$REPO" "test-session" "research"   "complete"
+expect_no_state_change "R4b. single-quote RESET_FROM → plan unchanged (complete)"       "$REPO" "test-session" "plan"       "complete"
+expect_no_state_change "R4c. single-quote RESET_FROM → write_tests unchanged (complete)" "$REPO" "test-session" "write_tests" "complete"
+expect_no_state_change "R4d. single-quote RESET_FROM → code unchanged (complete)"       "$REPO" "test-session" "code"       "complete"
 
 echo ""
 echo "=== workflow-mark: RESET_FROM marker — Must-NOT-match cases ==="
 
-# Test RF1: echo "<<WORKFLOW_RESET_FROM:write_tests>>" | tee /tmp/log → state unchanged
+# Test RF1: echo "<<WORKFLOW_RESET_FROM_write_tests>>" | tee /tmp/log → state unchanged
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-RF1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM:write_tests>>" | tee /tmp/log')
+RF1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_write_tests>>" | tee /tmp/log')
 run_mark_hook "$REPO" "$RF1_JSON" >/dev/null
 expect_no_state_change "RF1. echo \"<<...>>\" | tee /tmp/log → write_tests unchanged (complete)" "$REPO" "test-session" "write_tests" "complete"
 
-# Test RF2: cd /tmp && echo "<<WORKFLOW_RESET_FROM:write_tests>>" → state unchanged
+# Test RF2: cd /tmp && echo "<<WORKFLOW_RESET_FROM_write_tests>>" → state unchanged
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-RF2_JSON=$(build_reset_json 'cd /tmp && echo "<<WORKFLOW_RESET_FROM:write_tests>>"')
+RF2_JSON=$(build_reset_json 'cd /tmp && echo "<<WORKFLOW_RESET_FROM_write_tests>>"')
 run_mark_hook "$REPO" "$RF2_JSON" >/dev/null
 expect_no_state_change "RF2. cd && echo \"<<...>>\" (prefix chain) → write_tests unchanged (complete)" "$REPO" "test-session" "write_tests" "complete"
 
-# Test RF3: printf "<<WORKFLOW_RESET_FROM:write_tests>>" → state unchanged
+# Test RF3: printf "<<WORKFLOW_RESET_FROM_write_tests>>" → state unchanged
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-RF3_JSON=$(build_reset_json 'printf "<<WORKFLOW_RESET_FROM:write_tests>>"')
+RF3_JSON=$(build_reset_json 'printf "<<WORKFLOW_RESET_FROM_write_tests>>"')
 run_mark_hook "$REPO" "$RF3_JSON" >/dev/null
 expect_no_state_change "RF3. printf \"<<...>>\" (not echo) → write_tests unchanged (complete)" "$REPO" "test-session" "write_tests" "complete"
 
@@ -1234,14 +1234,14 @@ echo "=== workflow-mark: RESET_FROM marker — Error / edge cases ==="
 # Test RE1: unknown step "foo" → state unchanged, hook exit 0
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-RE1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM:foo>>"')
+RE1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_foo>>"')
 run_mark_hook "$REPO" "$RE1_JSON" >/dev/null
 expect_no_state_change "RE1. unknown step 'foo' → research unchanged (complete)" "$REPO" "test-session" "research" "complete"
 
 # Test RE2: missing session_id → state unchanged, hook exit 0, stdout has additionalContext
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-RE2_CMD='echo "<<WORKFLOW_RESET_FROM:write_tests>>"'
+RE2_CMD='echo "<<WORKFLOW_RESET_FROM_write_tests>>"'
 RE2_ESC=${RE2_CMD//\"/\\\"}
 RE2_JSON=$(printf '{"tool_name":"Bash","tool_input":{"command":"%s"},"tool_response":{"exit_code":0,"stdout":"%s\\n","stderr":""}}' "$RE2_ESC" "$RE2_ESC")
 RE2_OUT=$(echo "$RE2_JSON" | CLAUDE_PROJECT_DIR="$REPO" env -u CLAUDE_ENV_FILE node "$MARK_HOOK" 2>/dev/null || true)
@@ -1261,7 +1261,7 @@ fi
 # Test RE3: exit_code=1 → state unchanged
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-RE3_CMD='echo "<<WORKFLOW_RESET_FROM:write_tests>>"'
+RE3_CMD='echo "<<WORKFLOW_RESET_FROM_write_tests>>"'
 RE3_ESC=${RE3_CMD//\"/\\\"}
 RE3_JSON=$(printf '{"tool_name":"Bash","tool_input":{"command":"%s"},"tool_response":{"exit_code":1,"stdout":"","stderr":"oops"},"session_id":"test-session"}' "$RE3_ESC")
 run_mark_hook "$REPO" "$RE3_JSON" >/dev/null
@@ -1273,7 +1273,7 @@ echo "=== workflow-mark: RESET_FROM marker — Idempotency ==="
 # Test RI1: apply R1 twice → same final state (no crash, write_tests still pending)
 REPO=$(setup_repo)
 write_state "$REPO" "test-session" "$(ALL_COMPLETE_JSON test-session)"
-RI1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM:write_tests>>"')
+RI1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_write_tests>>"')
 run_mark_hook "$REPO" "$RI1_JSON" >/dev/null
 run_mark_hook "$REPO" "$RI1_JSON" >/dev/null
 expect_state_step "RI1a. RESET_FROM applied twice → research=complete (idempotent)"   "$REPO" "test-session" "research"   "complete"
@@ -1348,7 +1348,7 @@ if [ "${RUN_E2E:-0}" = "1" ]; then
         cd "$E1_REPO" && \
         DOTFILES_DIR="$DOTFILES_DIR" timeout 120 \
         claude -p \
-            'Run exactly this Bash command and nothing else: echo "<<WORKFLOW_MARK_STEP:research:complete>>"' \
+            'Run exactly this Bash command and nothing else: echo "<<WORKFLOW_MARK_STEP_research_complete>>"' \
             --session-id "$E1_SESSION_ID" \
             --setting-sources project \
             --dangerously-skip-permissions \

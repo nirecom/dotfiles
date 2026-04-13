@@ -45,18 +45,25 @@ if command -v /sbin/hal_app >/dev/null 2>&1; then
     BOOT_DEV="$(/sbin/hal_app --get_boot_pd port_id=0)6"
     if [ -n "$BOOT_DEV" ]; then
         echo "Installing autorun.sh to config partition..."
+        mkdir -p /tmp/config
         if [ "$(id -u)" = "0" ]; then
-            mount "$BOOT_DEV" /tmp/config
-            cp ~/dotfiles/install/qnap/autorun.sh /tmp/config/autorun.sh
-            chmod +x /tmp/config/autorun.sh
-            umount /tmp/config
-            echo "autorun.sh installed. Enable 'Run user defined startup processes' in QNAP Control Panel -> Hardware -> General (one-time)."
+            if mount "$BOOT_DEV" /tmp/config; then
+                cp ~/dotfiles/install/qnap/autorun.sh /tmp/config/autorun.sh
+                chmod +x /tmp/config/autorun.sh
+                umount /tmp/config
+                echo "autorun.sh installed. Enable 'Run user defined startup processes' in QNAP Control Panel -> Hardware -> General (one-time)."
+            else
+                echo "WARNING: Failed to mount config partition. autorun.sh was NOT installed."
+            fi
         elif command -v sudo >/dev/null 2>&1; then
-            sudo mount "$BOOT_DEV" /tmp/config
-            sudo cp ~/dotfiles/install/qnap/autorun.sh /tmp/config/autorun.sh
-            sudo chmod +x /tmp/config/autorun.sh
-            sudo umount /tmp/config
-            echo "autorun.sh installed. Enable 'Run user defined startup processes' in QNAP Control Panel -> Hardware -> General (one-time)."
+            if sudo mount "$BOOT_DEV" /tmp/config; then
+                sudo cp ~/dotfiles/install/qnap/autorun.sh /tmp/config/autorun.sh
+                sudo chmod +x /tmp/config/autorun.sh
+                sudo umount /tmp/config
+                echo "autorun.sh installed. Enable 'Run user defined startup processes' in QNAP Control Panel -> Hardware -> General (one-time)."
+            else
+                echo "WARNING: Failed to mount config partition. autorun.sh was NOT installed."
+            fi
         else
             echo "WARNING: Root privileges required to install autorun.sh. Run as root or install sudo."
         fi

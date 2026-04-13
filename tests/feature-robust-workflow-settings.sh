@@ -74,43 +74,58 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# SR-D3-4: permissions.allow contains single-quote MARK_STEP entry
-# Expected FAIL before settings.json is updated
+# SR-D3-4: permissions.allow contains MARK_STEP entry (underscore format)
 # ---------------------------------------------------------------------------
 
 echo ""
-echo "=== settings.json: SR-D3-4 — allow contains SQ MARK_STEP ==="
+echo "=== settings.json: SR-D3-4 — allow contains MARK_STEP (underscore format) ==="
 
 if node -e "
 const s=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
 const allow=s.permissions&&s.permissions.allow||[];
-// Single-quote MARK_STEP: Bash(echo '<<WORKFLOW_MARK_STEP:*')
-const hasSQ = allow.some(e => e.includes('WORKFLOW_MARK_STEP') && e.includes(\"'\"));
-process.exit(hasSQ ? 0 : 1);
+// Underscore format: Bash(echo '<<WORKFLOW_MARK_STEP_*>>')
+const has = allow.some(e => e.includes('WORKFLOW_MARK_STEP'));
+process.exit(has ? 0 : 1);
 " -- "$SETTINGS" 2>/dev/null; then
-    pass "SR-D3-4. permissions.allow contains single-quote WORKFLOW_MARK_STEP entry"
+    pass "SR-D3-4. permissions.allow contains WORKFLOW_MARK_STEP entry"
 else
-    fail "SR-D3-4. permissions.allow does NOT contain single-quote WORKFLOW_MARK_STEP entry"
+    fail "SR-D3-4. permissions.allow does NOT contain WORKFLOW_MARK_STEP entry"
 fi
 
 # ---------------------------------------------------------------------------
-# SR-D3-5: permissions.allow contains single-quote RESET_FROM entry
-# Expected FAIL before settings.json is updated
+# SR-D3-5: permissions.allow does NOT contain RESET_FROM entry (moved to ask)
 # ---------------------------------------------------------------------------
 
 echo ""
-echo "=== settings.json: SR-D3-5 — allow contains SQ RESET_FROM ==="
+echo "=== settings.json: SR-D3-5 — allow does NOT contain RESET_FROM ==="
 
 if node -e "
 const s=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
 const allow=s.permissions&&s.permissions.allow||[];
-// Single-quote RESET_FROM: Bash(echo '<<WORKFLOW_RESET_FROM:*')
-const hasSQ = allow.some(e => e.includes('WORKFLOW_RESET_FROM') && e.includes(\"'\"));
-process.exit(hasSQ ? 0 : 1);
+// RESET_FROM should be in ask, not allow
+const hasResetFrom = allow.some(e => e.includes('WORKFLOW_RESET_FROM'));
+process.exit(hasResetFrom ? 1 : 0);
 " -- "$SETTINGS" 2>/dev/null; then
-    pass "SR-D3-5. permissions.allow contains single-quote WORKFLOW_RESET_FROM entry"
+    pass "SR-D3-5. permissions.allow does NOT contain WORKFLOW_RESET_FROM entry (correctly in ask)"
 else
-    fail "SR-D3-5. permissions.allow does NOT contain single-quote WORKFLOW_RESET_FROM entry"
+    fail "SR-D3-5. permissions.allow still contains WORKFLOW_RESET_FROM entry (should be in ask)"
+fi
+
+# ---------------------------------------------------------------------------
+# SR-D3-6: permissions.ask contains RESET_FROM entry (underscore format)
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== settings.json: SR-D3-6 — ask contains RESET_FROM (underscore format) ==="
+
+if node -e "
+const s=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
+const ask=s.permissions&&s.permissions.ask||[];
+process.exit(ask.some(e => e.includes('WORKFLOW_RESET_FROM_') && e.includes('>>')) ? 0 : 1);
+" -- "$SETTINGS" 2>/dev/null; then
+    pass "SR-D3-6. permissions.ask contains WORKFLOW_RESET_FROM_ (underscore format) entry"
+else
+    fail "SR-D3-6. permissions.ask does NOT contain WORKFLOW_RESET_FROM_ (underscore format) entry"
 fi
 
 # ---------------------------------------------------------------------------
