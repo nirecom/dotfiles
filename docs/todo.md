@@ -28,13 +28,13 @@
 
 ### Workflow State Machine — WSL 環境動作確認
 
-- [ ] 正常系1: セッション開始 → CLAUDE_SESSION_ID が CLAUDE_ENV_FILE に書き込まれるか確認
-- [ ] 正常系2: スキル完了後 `WORKFLOW_MARK_STEP_*` マーカーがステップを記録するか確認
-- [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされるか確認
-- [ ] 正常系4: 全ステップ完了後に git commit が通るか確認
-- [ ] 正常系5: PostToolUse hook 実発火・state file 記録を確認（`RUN_E2E=1`）
-- [ ] 異常系1: 旧形式マーカー（`: `区切り）が hook に無視される
-- [ ] 異常系2: `WORKFLOW_RESET_FROM_*` ask ダイアログが出る
+- [x] 正常系1: セッション開始 → CLAUDE_SESSION_ID が CLAUDE_ENV_FILE に書き込まれるか確認
+- [x] 正常系2: スキル完了後 `WORKFLOW_MARK_STEP_*` マーカーがステップを記録するか確認
+- [x] 正常系3: 未完了ステップがある状態で git commit がブロックされるか確認
+- [x] 正常系4: 全ステップ完了後に git commit が通るか確認
+- [x] 正常系5: PostToolUse hook 実発火・state file 記録を確認（`RUN_E2E=1`）
+- [x] 異常系1: 旧形式マーカー（`: `区切り）が hook に無視される
+- [x] 異常系2: `WORKFLOW_RESET_FROM_*` ask ダイアログが出る
 
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
