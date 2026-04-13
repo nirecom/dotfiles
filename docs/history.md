@@ -638,3 +638,7 @@ Changes: E1 E2E test (`claude -p --setting-sources project --session-id`) passed
 ### Workflow State Machine: Robust Improvements — Windows verification (2026-04-13)
 Background: User verification of three robustness improvements on Windows (VSCode extension).
 Changes: (1) `echo "<<WORKFLOW_USER_VERIFIED>>"` ask dialog confirmed — permissions.ask rule fires and PostToolUse hook records user_verification as complete. (2) SessionStart creates UUID-format state file at session start (.git/workflow/<session-id>.json confirmed). (3) isPrivateRepo bypass removal confirmed via git diff — a6ad6ab had `if (isPrivateRepo(repoDir)) approve()`, current code imports only resolveRepoDir.
+
+### Workflow State Machine: .git/workflow deny rule verified (2026-04-13)
+Background: New session (VSCode extension, Windows) で deny ルールが機能するか確認。settings.json の `Edit(**/.git/workflow/**)` / `Write(**/.git/workflow/**)` deny ルールは Claude Code 再起動後に有効になる。
+Changes: Write(**/.git/workflow/**) と Edit(**/.git/workflow/**) の両ルールが Claude Code のパーミッションシステムにより自動ブロックされることを確認。Windows での全動作確認完了。
