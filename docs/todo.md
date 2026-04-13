@@ -15,12 +15,11 @@
 - [ ] 動作確認 Windows 正常系: スキル完了 → `echo` marker → state file に記録される (`正常系1-4` 相当、commit log 89ba3d7 参照)
 - [ ] 動作確認 macOS/Linux 正常系: 同上
 
-### HOOK_CWD 依存の整理 — 検討中
+### HOOK_CWD 依存の整理 — Verifying
 
-`workflow-gate.js` と `mark-step.js` が `process.env.HOOK_CWD` を参照しているが、これは undocumented な env var。
-実際には `extractRepoDirFromCommand + toNativePath` の経路で動いており、HOOK_CWD は利用されていない可能性が高い。
-`workflow-mark.js` は `CLAUDE_PROJECT_DIR` (公式・全 hook 対応) に統一済み。
-- [ ] `workflow-gate.js` / `mark-step.js` の `HOOK_CWD` 参照を `CLAUDE_PROJECT_DIR` ベースに整理
+`is-private-repo.js` (resolveRepoDir), `mark-step.js`, `session-start.js` の `HOOK_CWD` 参照を `CLAUDE_PROJECT_DIR` に統一。全 107 テスト通過。
+- [x] `HOOK_CWD` → `CLAUDE_PROJECT_DIR` 置換（is-private-repo.js, mark-step.js, session-start.js）
+- [ ] Verify: 次スレ Windows E2E 正常系確認と合わせて動作確認
 
 ### Workflow Step Gate (mid-workflow) — 検討中
 
@@ -31,7 +30,7 @@ PostToolUse marker interception 安定後に着手する。
 
 ### Workflow State Machine — macOS/Linux 動作確認
 
-Windows での E2E 確認は完了済み。macOS または Linux 環境（mbp-m4pro-nire 等）で同等の確認が必要。
+macOS または Linux 環境（mbp-m4pro-nire 等）で同等の確認が必要。
 
 - [ ] 正常系1: セッション開始 → `~/.claude/session-env/<session-id>/sessionstart-hook-0.sh` に `CLAUDE_SESSION_ID=<id>` が書き込まれるか確認
 - [ ] 正常系2: スキル完了後 mark-step.js が実際にステップを記録するか確認
