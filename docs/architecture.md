@@ -116,8 +116,11 @@
 | [claude-global/settings.json](https://github.com/nirecom/dotfiles/blob/main/claude-global/settings.json) | Security allow/deny rules, hooks | Symlinked to `~/.claude/settings.json` |
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 | [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
-| [claude-global/hooks/check-docs-updated.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-docs-updated.js) | PreToolUse hook for docs update enforcement | Blocks commit without docs/ changes |
-| [claude-global/hooks/check-tests-updated.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-tests-updated.js) | PreToolUse hook for test coverage enforcement | Two-stage gate: tests existence + review marker |
+| [claude-global/hooks/workflow-gate.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-gate.js) | PreToolUse commit gate: enforces all 7 workflow steps | Fail-safe: blocks on missing/corrupted state. Replaces check-docs-updated.js and check-tests-updated.js |
+| [claude-global/hooks/workflow-mark.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-mark.js) | PostToolUse step marker hook | Intercepts `echo "<<WORKFLOW_MARK_STEP:step:status>>"` via strict regex on `tool_input.command`; marks step using `session_id` from hook stdin. Uses `CLAUDE_PROJECT_DIR` for repo resolution |
+| [claude-global/hooks/mark-step.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/mark-step.js) | Workflow step completion CLI | `node mark-step.js <step> <status>` or `--reset-from <step>`. Required for `user_verification` (triggers ask-rule) |
+| [claude-global/hooks/session-start.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/session-start.js) | SessionStart hook | Sets CLAUDE_SESSION_ID via CLAUDE_ENV_FILE; runs zombie state file cleanup |
+| [claude-global/hooks/lib/workflow-state.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/lib/workflow-state.js) | Shared state module for workflow hooks | Reads/writes `.git/workflow/<session-id>.json` |
 
 ### Tests
 
@@ -128,6 +131,7 @@
 | [tests/main-block-dotenv.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-block-dotenv.sh) | block-dotenv.js hook tests | 59 test cases: Bash/Read/Grep/Glob blocking, false-positive prevention |
 | [tests/main-keychain-ssh-agent.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-keychain-ssh-agent.sh) | keychain SSH agent tests | install.sh inclusion + .profile_common auto-detection |
 | [tests/main-claude-tabs.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-claude-tabs.sh) | claude-tabs.ps1 installer tests | Structure validation (19 test cases) |
+| [tests/feature-robust-workflow.sh](https://github.com/nirecom/dotfiles/blob/main/tests/feature-robust-workflow.sh) | Workflow state machine tests | workflow-gate.js, mark-step.js, session-start.js |
 
 ### Git Configuration
 
@@ -308,13 +312,8 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 **Hooks**:
 - `check-private-info.js` (matcher: `Bash`) — scans Bash commands for private info patterns
 - `block-dotenv.js` (matcher: `Bash|Read|Grep|Glob`) — blocks `.env` file access. Sanitizes git commit messages to avoid false positives
-- `check-docs-updated.js` (matcher: `Bash`) — blocks `git commit` when source code is staged but `docs/` has no changes. Block message directs to `/update-docs`
-  - Search order: (1) `docs/` or any `.md` staged in the same repo, (2) sibling `../ai-specs/` directory matching repo name
-  - Custom mapping: if ai-specs dir name differs from repo name, place `docs/.ai-specs` containing the logical project name
-- `check-tests-updated.js` (matcher: `Bash`) — two-stage gate on `git commit`:
-  1. Blocks if source code is staged but `tests/` has no changes
-  2. Blocks if `tests/` changes are staged but no review marker exists (`.git/.test-reviewed`)
-  Review marker is created by `/review-tests` skill and contains the 7-char HEAD hash. New commits automatically invalidate old markers (hash mismatch). Exempt dirs: `docs/`, `.claude/`, `claude-global/`
+- `workflow-gate.js` (matcher: `Bash`) — enforces all 7 workflow steps before `git commit`. Reads state from `.git/workflow/<session-id>.json`. Fail-safe: missing session_id, missing state file, or corrupted JSON → block. Block message lists incomplete steps with remediation commands. `research` and `plan` can be `skipped`; all other steps must be `complete`. Replaces `check-docs-updated.js` and `check-tests-updated.js`
+- `session-start.js` (SessionStart event) — appends `CLAUDE_SESSION_ID=<sid>` to `CLAUDE_ENV_FILE`; creates `.git/workflow/<session-id>.json` with all steps `pending` if it does not already exist (idempotent, fail-open for non-git dirs); runs zombie cleanup (deletes state files with all timestamps older than 7 days)
 - `check-cross-platform.js` (matcher: `Bash`) — blocks `git commit` when platform-specific files (install/win/ ↔ install/linux/) are staged without counterpart changes
   - Skip mechanisms: `.cross-platform-skiplist` (permanent, base tool names) and `.git/.cross-platform-reviewed` (one-time, HEAD hash)
 
@@ -325,6 +324,89 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - Hook format must be nested format. Flat format (matcher/command/timeout at the same level) causes the entire settings.json to be skipped.
 - VSCode extension's "Ask before edits" mode only covers Edit/Write. Bash commands do not trigger the ask dialog. "Ask permissions" (ask for all tools) mode does not exist in VSCode.
 - Hot-reloading of settings.json hook changes is unreliable. Restart Claude Code after changes.
+
+### Workflow State Machine
+
+All 7 workflow steps are tracked in a per-session JSON state file and enforced at `git commit` time by a PreToolUse hook.
+
+#### State file
+
+Path: `.git/workflow/<session-id>.json` (auto-gitignored — never committed)
+
+```json
+{
+  "version": 1,
+  "session_id": "abc123",
+  "created_at": "2026-04-12T10:00:00.000Z",
+  "steps": {
+    "research":          { "status": "complete", "updated_at": "..." },
+    "plan":              { "status": "complete", "updated_at": "..." },
+    "write_tests":       { "status": "complete", "updated_at": "..." },
+    "code":              { "status": "complete", "updated_at": "..." },
+    "verify":            { "status": "complete", "updated_at": "..." },
+    "docs":              { "status": "complete", "updated_at": "..." },
+    "user_verification": { "status": "complete", "updated_at": "..." }
+  }
+}
+```
+
+Statuses: `pending` | `in_progress` | `complete` | `skipped`
+- `skipped`: allowed only for `research` and `plan` (CLAUDE.md skip conditions)
+- `user_verification`: cannot be `skipped` — enforced at CLI and permission level
+
+#### Steps and owners
+
+| Step | How completed |
+|---|---|
+| `research` | `/survey-code` or `/deep-research` skill (emits `WORKFLOW_MARK_STEP` marker) |
+| `plan` | `/make-plan` skill (emits marker) |
+| `write_tests` | `/write-tests` skill (emits marker) |
+| `code` | `node mark-step.js code complete` |
+| `verify` | `node mark-step.js verify complete` |
+| `docs` | `/update-docs` skill (emits marker) |
+| `user_verification` | `echo "<<WORKFLOW_USER_VERIFIED>>"` — triggers `ask` permission dialog; user must approve; PostToolUse hook marks step complete |
+
+Each skill's `## Completion` section runs `echo "<<WORKFLOW_MARK_STEP:<step>:complete>>"` as the sole Bash command (no pipes, no `&&`, no redirection). The PostToolUse hook (`workflow-mark.js`) intercepts this via strict anchored regex on `tool_input.command` and calls `markStep()` directly using `session_id` from the hook's stdin JSON. This bypasses the `CLAUDE_ENV_FILE` propagation issue in Bash tool subprocesses (Anthropic bug #27987).
+
+`user_verification` uses a dedicated marker `echo "<<WORKFLOW_USER_VERIFIED>>"` (DQ only, single space, no SQ variant). This command is in the `ask` permission category — Claude must request user approval via dialog before the echo runs. The PostToolUse hook intercepts it identically to `WORKFLOW_MARK_STEP`.
+
+#### Session ID flow
+
+```
+Session start → session-start.js (SessionStart hook)
+  appends CLAUDE_SESSION_ID=<sid> to CLAUDE_ENV_FILE
+  creates .git/workflow/<sid>.json with all steps pending (if not exists)
+  runs zombie cleanup
+
+Skill runs (/make-plan, /write-tests, etc.)
+  → Completion section emits: echo "<<WORKFLOW_MARK_STEP:<step>:complete>>"
+  → workflow-mark.js (PostToolUse hook) intercepts command
+     reads session_id from hook stdin JSON (not CLAUDE_ENV_FILE)
+     calls markStep(CLAUDE_PROJECT_DIR, session_id, step, status)
+
+git commit attempt → workflow-gate.js (PreToolUse hook)
+  reads session_id from hook stdin JSON
+  loads .git/workflow/<session_id>.json
+  approves if all steps complete/skipped; blocks with remediation message otherwise
+```
+
+#### Fail-safe behavior
+
+| Condition | Result |
+|---|---|
+| `session_id` missing from hook stdin | block |
+| State file not found | block |
+| State file corrupted (bad JSON) | block |
+| Step `pending` or `in_progress` | block |
+| Non-skippable step marked `skipped` | block |
+
+To reset from a specific step (e.g., re-running code phase):
+```
+node "$DOTFILES_DIR/claude-global/hooks/mark-step.js" --reset-from <step>
+```
+Marks all prior steps `complete`, resets target step and after to `pending`.
+
+---
 
 ### Test Iteration Workflow
 
