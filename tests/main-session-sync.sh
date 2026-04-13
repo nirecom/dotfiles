@@ -560,6 +560,44 @@ else
 fi
 
 echo ""
+echo "=== quiet push stdout/stderr separation tests ==="
+
+# --- quiet push success: no "Pushed session data" on stdout ---
+echo "[quiet-push] Quiet push success does not print 'Pushed session data' on stdout"
+echo '{"test":"quiet-stdout-success"}' > "$FAKE_PROJECTS/quiet-stdout-success.jsonl"
+stdout=$("$DOTFILES_DIR/bin/session-sync.sh" push --quiet --claude-dir "$FAKE_CLAUDE" 2>"$TMPDIR_BASE/stderr_tmp")
+quiet_exit=$?
+stderr=$(cat "$TMPDIR_BASE/stderr_tmp")
+if echo "$stdout" | grep -qi "Pushed session data"; then
+    fail "quiet push success: 'Pushed session data' appeared on stdout"
+else
+    pass "quiet push success: 'Pushed session data' not on stdout"
+fi
+if [ "$quiet_exit" -eq 0 ]; then
+    pass "quiet push success: exit code is 0"
+else
+    fail "quiet push success: exit code is $quiet_exit (expected 0)"
+fi
+
+# --- quiet push failure: completely silent (no stdout, no stderr) ---
+echo "[quiet-push] Quiet push failure is completely silent (stdout and stderr both empty)"
+git -C "$FAKE_PROJECTS" remote set-url origin /nonexistent/path
+echo '{"test":"quiet-stdout-failure"}' > "$FAKE_PROJECTS/quiet-stdout-failure.jsonl"
+stdout=$("$DOTFILES_DIR/bin/session-sync.sh" push --quiet --claude-dir "$FAKE_CLAUDE" 2>"$TMPDIR_BASE/stderr_tmp") || true
+stderr=$(cat "$TMPDIR_BASE/stderr_tmp")
+git -C "$FAKE_PROJECTS" remote set-url origin "$FAKE_REMOTE"
+if [ -z "$stdout" ]; then
+    pass "quiet push failure: stdout is empty"
+else
+    fail "quiet push failure: stdout is not empty (got: $stdout)"
+fi
+if [ -z "$stderr" ]; then
+    pass "quiet push failure: stderr is empty (quiet mode suppresses error output)"
+else
+    fail "quiet push failure: stderr is not empty (got: $stderr)"
+fi
+
+echo ""
 echo "=== Results ==="
 echo "PASS: $PASS  FAIL: $FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
