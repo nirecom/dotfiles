@@ -117,7 +117,7 @@
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 | [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
 | [claude-global/hooks/workflow-gate.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-gate.js) | PreToolUse commit gate: enforces all 7 workflow steps | Fail-safe: blocks on missing/corrupted state. Replaces check-docs-updated.js and check-tests-updated.js |
-| [claude-global/hooks/mark-step.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/mark-step.js) | Workflow step completion CLI | `node mark-step.js <session-id> <step> <status>` or `--reset-from <step>` |
+| [claude-global/hooks/mark-step.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/mark-step.js) | Workflow step completion CLI | `node mark-step.js <step> <status>` or `--reset-from <step>` |
 | [claude-global/hooks/session-start.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/session-start.js) | SessionStart hook | Sets CLAUDE_SESSION_ID via CLAUDE_ENV_FILE; runs zombie state file cleanup |
 | [claude-global/hooks/lib/workflow-state.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/lib/workflow-state.js) | Shared state module for workflow hooks | Reads/writes `.git/workflow/<session-id>.json` |
 
@@ -130,7 +130,7 @@
 | [tests/main-block-dotenv.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-block-dotenv.sh) | block-dotenv.js hook tests | 59 test cases: Bash/Read/Grep/Glob blocking, false-positive prevention |
 | [tests/main-keychain-ssh-agent.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-keychain-ssh-agent.sh) | keychain SSH agent tests | install.sh inclusion + .profile_common auto-detection |
 | [tests/main-claude-tabs.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-claude-tabs.sh) | claude-tabs.ps1 installer tests | Structure validation (19 test cases) |
-| [tests/feature-robust-workflow.sh](https://github.com/nirecom/dotfiles/blob/main/tests/feature-robust-workflow.sh) | Workflow state machine tests | 36 test cases: workflow-gate.js, mark-step.js, session-start.js |
+| [tests/feature-robust-workflow.sh](https://github.com/nirecom/dotfiles/blob/main/tests/feature-robust-workflow.sh) | Workflow state machine tests | workflow-gate.js, mark-step.js, session-start.js |
 
 ### Git Configuration
 
@@ -312,7 +312,7 @@ The `claude-global/` directory manages global Claude Code settings centrally. Th
 - `check-private-info.js` (matcher: `Bash`) — scans Bash commands for private info patterns
 - `block-dotenv.js` (matcher: `Bash|Read|Grep|Glob`) — blocks `.env` file access. Sanitizes git commit messages to avoid false positives
 - `workflow-gate.js` (matcher: `Bash`) — enforces all 7 workflow steps before `git commit`. Reads state from `.git/workflow/<session-id>.json`. Fail-safe: missing session_id, missing state file, or corrupted JSON → block. Block message lists incomplete steps with remediation commands. `research` and `plan` can be `skipped`; all other steps must be `complete`. Replaces `check-docs-updated.js` and `check-tests-updated.js`
-- `session-start.js` (SessionStart event) — appends `CLAUDE_SESSION_ID=<sid>` to `CLAUDE_ENV_FILE` (makes session ID available to all subsequent tool calls); runs zombie cleanup (deletes state files with all timestamps older than 7 days)
+- `session-start.js` (SessionStart event) — appends `CLAUDE_SESSION_ID=<sid>` to `CLAUDE_ENV_FILE` (available in hook contexts only — NOT propagated to Bash tool subprocesses); runs zombie cleanup (deletes state files with all timestamps older than 7 days)
 - `check-cross-platform.js` (matcher: `Bash`) — blocks `git commit` when platform-specific files (install/win/ ↔ install/linux/) are staged without counterpart changes
   - Skip mechanisms: `.cross-platform-skiplist` (permanent, base tool names) and `.git/.cross-platform-reviewed` (one-time, HEAD hash)
 
@@ -360,12 +360,12 @@ Statuses: `pending` | `in_progress` | `complete` | `skipped`
 | `research` | `/survey-code` or `/deep-research` skill (calls `mark-step.js` on completion) |
 | `plan` | `/make-plan` skill |
 | `write_tests` | `/write-tests` skill |
-| `code` | `node mark-step.js <sid> code complete` |
-| `verify` | `node mark-step.js <sid> verify complete` |
+| `code` | `node mark-step.js code complete` |
+| `verify` | `node mark-step.js verify complete` |
 | `docs` | `/update-docs` skill |
-| `user_verification` | `node mark-step.js <sid> user_verification complete` (ask-gated: Claude must get user approval) |
+| `user_verification` | `node mark-step.js user_verification complete` (ask-gated: Claude must get user approval) |
 
-Each skill appends `node "$DOTFILES_DIR/claude-global/hooks/mark-step.js" $CLAUDE_SESSION_ID <step> complete` at its `## Completion` section.
+Each skill appends `node "$DOTFILES_DIR/claude-global/hooks/mark-step.js" <step> complete` at its `## Completion` section.
 
 #### Session ID flow
 
@@ -395,7 +395,7 @@ git commit attempt → workflow-gate.js (PreToolUse hook)
 
 To reset from a specific step (e.g., re-running code phase):
 ```
-node "$DOTFILES_DIR/claude-global/hooks/mark-step.js" <session-id> --reset-from <step>
+node "$DOTFILES_DIR/claude-global/hooks/mark-step.js" --reset-from <step>
 ```
 Marks all prior steps `complete`, resets target step and after to `pending`.
 
