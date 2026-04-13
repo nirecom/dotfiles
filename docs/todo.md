@@ -3,6 +3,24 @@
 ## Current Work
 
 
+### PostToolUse Marker Interception — 実装
+
+`mark-step.js` が Bash サブプロセスから `CLAUDE_ENV_FILE` にアクセスできない問題 (Anthropic bug #27987) の根本対処。
+スキルの Completion section が `echo "<<WORKFLOW_MARK_STEP:step:status>>"` を出力し、PostToolUse hook がそれを検出して mark-step.js を呼ぶ。
+
+- [ ] `/make-plan` で設計確定 (PostToolUse hook 実装方針)
+- [ ] テスト先行: PostToolUse hook の marker 検出・ステップ更新テスト
+- [ ] `claude-global/hooks/` に PostToolUse hook 追加 (matcher: Bash, marker: `WORKFLOW_MARK_STEP`)
+- [ ] 各スキルの Completion section を `echo "<<WORKFLOW_MARK_STEP:step:complete>>"` に変更
+- [ ] 動作確認 (Windows + macOS/Linux)
+
+### Workflow Step Gate (mid-workflow) — 検討中
+
+PreToolUse hook で前提ステップ未完了なら Write/Edit をブロックし Claude を前のステップに戻す仕組み。
+research 結果: `ai-specs/projects/engineering/research-results/claude-code-workflow-step-enforcement.md` 参照。
+PostToolUse marker interception 安定後に着手する。
+既知バグ (#37210, #18312) への対処が必要。
+
 ### Workflow State Machine — macOS/Linux 動作確認
 
 Windows での E2E 確認は完了済み。macOS または Linux 環境（mbp-m4pro-nire 等）で同等の確認が必要。
