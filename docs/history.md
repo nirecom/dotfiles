@@ -646,3 +646,7 @@ Changes: Write(**/.git/workflow/**) と Edit(**/.git/workflow/**) の両ルー�
 ### starship: increase command_timeout to 2000ms (2026-04-13)
 Background: starship prompt showed timeout warnings when changing into the dotfiles directory. Root cause: git fsmonitor daemon was not yet running, and daemon startup exceeded starship's default 500ms command_timeout.
 Changes: Set `command_timeout = 2000` in `.config/starship.toml`.
+
+### Fix wait-vscode-window.sh: add WSL2 window detection (2026-04-13, pending)
+Background: In WSL2, VS Code runs as a Windows process so xdotool/wmctrl (X11 tools) are unavailable. The `codes` function called wait-vscode-window.sh which fell through to the "No window detection tool found" warning and skipped session sync.
+Changes: Added WSL2 branch to bin/wait-vscode-window.sh that uses powershell.exe to enumerate Code.exe MainWindowTitle values via [System.Diagnostics.Process]::GetProcessesByName. Detects WSL via WSL_DISTRO_NAME env var. Updated tests/main-wait-vscode-window.sh to cover WSL_DISTRO_NAME detection. Updated docs/architecture.md.
