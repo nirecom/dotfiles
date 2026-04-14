@@ -1,11 +1,12 @@
 #!/bin/bash
-# TDD integration tests: PB-gate-removed, PB-mark-removed, INT-1
+# TDD integration tests: PB-gate-removed, PB-mark-removed, INT-1, INT-REGR-1
 # Features NOT YET IMPLEMENTED — some tests are expected to FAIL.
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 GATE_HOOK="$DOTFILES_DIR/claude-global/hooks/workflow-gate.js"
 MARK_HOOK="$DOTFILES_DIR/claude-global/hooks/workflow-mark.js"
+MARK_STEP="$DOTFILES_DIR/claude-global/hooks/mark-step.js"
 SESSION_START="$DOTFILES_DIR/claude-global/hooks/session-start.js"
 ERRORS=0
 
@@ -13,6 +14,9 @@ fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
 pass() { echo "PASS: $1"; }
 
 TMPDIR_BASE=$(mktemp -d)
+WORKFLOW_DIR="$TMPDIR_BASE/workflow-state"
+mkdir -p "$WORKFLOW_DIR"
+export CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR"
 trap 'rm -rf "$TMPDIR_BASE"' EXIT
 
 setup_repo() {
@@ -28,18 +32,14 @@ setup_repo() {
 }
 
 write_state() {
-    local repo="$1" sid="$2" json="$3"
-    local gitdir
-    gitdir=$(git -C "$repo" rev-parse --git-dir)
-    mkdir -p "$repo/$gitdir/workflow"
-    printf '%s' "$json" > "$repo/$gitdir/workflow/${sid}.json"
+    local sid="$1" json="$2"
+    mkdir -p "$WORKFLOW_DIR"
+    printf '%s' "$json" > "$WORKFLOW_DIR/${sid}.json"
 }
 
 read_state_status() {
-    local repo="$1" sid="$2" step="$3"
-    local gitdir
-    gitdir=$(git -C "$repo" rev-parse --git-dir 2>/dev/null || echo ".git")
-    local state_file="$repo/$gitdir/workflow/${sid}.json"
+    local sid="$1" step="$2"
+    local state_file="$WORKFLOW_DIR/${sid}.json"
     if [ ! -f "$state_file" ]; then echo "MISSING"; return; fi
     node -e "
       try {
@@ -93,11 +93,11 @@ SID="int1-$(printf '%04x%04x' $RANDOM $RANDOM)"
 ENV_FILE="$TMPDIR_BASE/int1.env"
 
 # Step 1: Run session-start to (eventually) create the state file
-echo "{\"session_id\":\"$SID\"}" | CLAUDE_PROJECT_DIR="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" node "$SESSION_START" 2>/dev/null || true
+echo "{\"session_id\":\"$SID\"}" | CLAUDE_PROJECT_DIR="$REPO" CLAUDE_ENV_FILE="$ENV_FILE" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$SESSION_START" 2>/dev/null || true
 
 # Step 2: Run workflow-gate with a git commit command and the same session_id
 COMMIT_JSON="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git commit -m test\"},\"session_id\":\"$SID\"}"
-RESULT=$(echo "$COMMIT_JSON" | CLAUDE_PROJECT_DIR="$REPO" node "$GATE_HOOK" 2>/dev/null || true)
+RESULT=$(echo "$COMMIT_JSON" | CLAUDE_PROJECT_DIR="$REPO" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$GATE_HOOK" 2>/dev/null || true)
 
 # INT-1a: decision must be "block"
 INT1A_OK=$(node -e "
@@ -136,6 +136,62 @@ if [ "$INT1C_OK" = "0" ]; then
     pass "INT-1c. gate reason does NOT contain 'no workflow state'"
 else
     fail "INT-1c. gate reason contains 'no workflow state' — session-start did not pre-create state (got: $RESULT)"
+fi
+
+# ---------------------------------------------------------------------------
+# INT-REGR-1: インシデント回帰テスト
+# workflow-mark が CLAUDE_PROJECT_DIR=/repo-A で state を書き、
+# workflow-gate が git -C /repo-B commit コマンドで同じ state を読む
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== integration: INT-REGR-1 — cross-repo repoDir divergence regression ==="
+
+REPO_A=$(setup_repo)
+REPO_B=$(setup_repo)
+REGR_SID="regr-$(printf '%04x%04x' $RANDOM $RANDOM)"
+REGR_ENV="$TMPDIR_BASE/regr.env"
+
+# Step 1: session-start creates initial state (anchored to WORKFLOW_DIR via CLAUDE_WORKFLOW_DIR)
+echo "{\"session_id\":\"$REGR_SID\"}" \
+  | CLAUDE_PROJECT_DIR="$REPO_A" CLAUDE_ENV_FILE="$REGR_ENV" \
+    CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$SESSION_START" 2>/dev/null || true
+
+# Step 2: mark-step marks all steps complete (writing to WORKFLOW_DIR via CLAUDE_WORKFLOW_DIR)
+echo "CLAUDE_SESSION_ID=$REGR_SID" >> "$REGR_ENV"
+for step in research plan write_tests code verify docs user_verification; do
+    CLAUDE_ENV_FILE="$REGR_ENV" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" \
+      node "$MARK_STEP" "$step" complete 2>/dev/null || true
+done
+
+# Step 3: workflow-gate checks commit to REPO_B (different -C path) with REPO_A as CLAUDE_PROJECT_DIR
+# Key: gate must read state from WORKFLOW_DIR (not REPO_B's .git/workflow/)
+REGR_COMMIT_JSON="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git -C $REPO_B commit -m test\"},\"session_id\":\"$REGR_SID\"}"
+
+REGR_RESULT=$(echo "$REGR_COMMIT_JSON" \
+  | CLAUDE_PROJECT_DIR="$REPO_A" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" \
+    node "$GATE_HOOK" 2>/dev/null || true)
+
+# INT-REGR-1a: gate should APPROVE (all steps complete, state in WORKFLOW_DIR)
+INT_REGR1A=$(node -e "
+try {
+  const r = JSON.parse(process.argv[1]);
+  process.exit(r.decision === 'approve' ? 0 : 1);
+} catch(e) { process.exit(1); }
+" "$REGR_RESULT" 2>/dev/null; echo $?)
+
+if [ "$INT_REGR1A" = "0" ]; then
+    pass "INT-REGR-1a. cross-repo commit: gate approves (reads WORKFLOW_DIR state)"
+else
+    fail "INT-REGR-1a. cross-repo commit: gate did NOT approve — got: $REGR_RESULT (regression!)"
+fi
+
+# INT-REGR-1b: verify REPO_B has NO .git/workflow/ dir (state is in WORKFLOW_DIR only)
+REPO_B_GITDIR=$(git -C "$REPO_B" rev-parse --git-dir)
+if [ ! -d "$REPO_B/$REPO_B_GITDIR/workflow" ]; then
+    pass "INT-REGR-1b. REPO_B has no .git/workflow/ dir (state is session-global)"
+else
+    fail "INT-REGR-1b. REPO_B unexpectedly has .git/workflow/ dir"
 fi
 
 # ---------------------------------------------------------------------------

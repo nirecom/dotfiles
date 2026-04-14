@@ -2,6 +2,39 @@
 
 ## Current Work
 
+### Workflow State Machine — 3環境 E2E 動作確認（session-scoped state 移行後）
+
+state 保存先が `{repo}/.git/workflow/` → `~/.claude/projects/workflow/` に変わったため、
+旧実装で完了した E2E 確認を全環境で再実施する。
+確認ポイント: SessionStart が新パスに state ファイルを作成するか、PostToolUse hook が新パスに書き込むか、
+workflow-gate が新パスの state を読んで正しくブロック／通過するか。
+
+### Windows
+
+- [ ] 正常系1: セッション開始 → `~/.claude/projects/workflow/<session-id>.json` が作成される
+- [ ] 正常系2: スキル完了後 `echo "<<WORKFLOW_MARK_STEP_research_complete>>"` → PostToolUse hook がステップを記録する
+- [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされる
+- [ ] 正常系4: 全ステップ完了後に git commit が通る
+- [ ] 異常系1: `git -C <別リポジトリ> commit` でも同一 session state を参照してブロック／通過する（#24 再現なし確認）
+- [ ] 異常系2: `WORKFLOW_RESET_FROM_*` → ask ダイアログが出る + hook が巻き戻す
+
+### macOS
+
+- [ ] 正常系1: セッション開始 → `~/.claude/projects/workflow/<session-id>.json` が作成される
+- [ ] 正常系2: スキル完了後 `WORKFLOW_MARK_STEP_*` マーカーがステップを記録する
+- [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされる
+- [ ] 正常系4: 全ステップ完了後に git commit が通る
+- [ ] 正常系5: PostToolUse hook 実発火・state file 記録を確認（`RUN_E2E=1`）
+- [ ] 異常系1: `WORKFLOW_RESET_FROM_*` ask ダイアログが出る
+
+### WSL
+
+- [ ] 正常系1: セッション開始 → `~/.claude/projects/workflow/<session-id>.json` が作成される
+- [ ] 正常系2: スキル完了後 `WORKFLOW_MARK_STEP_*` マーカーがステップを記録する
+- [ ] 正常系3: 未完了ステップがある状態で git commit がブロックされる
+- [ ] 正常系4: 全ステップ完了後に git commit が通る
+- [ ] 正常系5: PostToolUse hook 実発火・state file 記録を確認（`RUN_E2E=1`）
+- [ ] 異常系1: `WORKFLOW_RESET_FROM_*` ask ダイアログが出る
 
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
@@ -12,6 +45,21 @@ Skill naming follows existing `verb-noun` (kebab-case) convention.
 - [ ] Phase 2: Security Test Cases (`test.md` edit)
 - [ ] Phase 3: Security Patterns Reference (`/scan-security` skill)
 - [ ] Phase 4: Prompt Injection Defense
+
+### Workflow State Machine — Session-scoped state migration Verifying
+
+セッション単位の state 管理に移行（`{repo}/.git/workflow/` → `~/.claude/projects/workflow/`）。
+インシデント #24（マルチリポジトリ state 乖離）の根本修正。
+
+- [x] workflow-state.js: repoDir 引数削除、`~/.claude/projects/workflow/` 固定 + `CLAUDE_WORKFLOW_DIR` テスト用 override
+- [x] workflow-gate.js / workflow-mark.js / mark-step.js: repoDir 参照削除
+- [x] session-start.js: migration block 追加（旧 `.git/workflow/` ファイルを削除）
+- [x] session-sync-init.ps1 / .sh: `/workflow/*.tmp` を `.gitignore` に追加
+- [x] settings.json: deny ルール `Edit(**/.git/workflow/**)` → `Edit(~/.claude/projects/workflow/**)`
+- [x] テスト全 pass（feature-robust-workflow*.sh）
+- [ ] User verification
+
+---
 
 ### SSOT 参照ルールの設計 — 検討中
 ポート・URL・ホスト名を推測せず SSOT を確認させる仕組みの設計:
