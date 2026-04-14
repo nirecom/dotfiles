@@ -658,3 +658,34 @@ Changes: Added mkdir -p /tmp/config before mounting. Wrapped mount in an if bloc
 ### Workflow State Machine: marker format `:` → `_` (2026-04-13)
 Background: Claude Code's permission glob parser treats `:` as a named-parameter separator inside `Bash(...)` rules, causing silent match failure (confirmed via anthropics/claude-code#33601). `WORKFLOW_RESET_FROM` ask rule was not triggering a dialog; investigation showed `Bash(echo "<<WORKFLOW_USER_VERIFIED>>")` (no colon) worked while any pattern containing `:` silently failed to match. Same issue applied to `WORKFLOW_MARK_STEP` allow rules. Default behavior when no rule matches is auto-allow, masking the problem.
 Changes: Changed both marker formats to use `_` as separator: `<<WORKFLOW_MARK_STEP:step:status>>` → `<<WORKFLOW_MARK_STEP_step_status>>`, `<<WORKFLOW_RESET_FROM:step>>` → `<<WORKFLOW_RESET_FROM_step>>`. Updated workflow-mark.js regexes, settings.json allow/ask rules (RESET_FROM single-quote variant removed — DQ only), workflow-gate.js block message, 5 skill Completion sections, and test suite. Windows re-verification confirmed: normal cases 1–4 and error cases 1–2 all pass.
+
+### Workflow State Machine: cross-platform verification complete (2026-04-14, 60aa84c)
+Background: Windows・WSL・macOS の全プラットフォームで正常系・異常系の動作確認を完了。macOS は初のネイティブ E2E 実行。
+Changes: 正常系（セッション開始・ステップ記録・commit ブロック・commit 通過・PostToolUse 実発火）と異常系（ステートファイル破損 → fail-safe ブロック → --reset-from リカバリ、部分リセット）をすべて確認。macOS E2E で3つの移植性バグを発見・修正：(1) `timeout` 非対応 → `run_with_timeout()` perl フォールバック、(2) `CLAUDECODE` 継承によるネストセッションエラー → `unset CLAUDECODE`、(3) `disableBypassPermissionsMode: disable` が `--dangerously-skip-permissions` を無効化 → minimal settings.json 使用。WSL は Windows ブリッジ経由のため3つとも顕在化しなかった（`CLAUDECODE` 非伝播・Windows 側プロファイル参照）。test.md に `run_with_timeout` パターンと `claude -p` E2E 注意点を追記、Installer Testing を test-installer.md に分離。
+
+### #23: workflow-gate block message as bypass attractor (2026-04-14)
+Cause: workflow-gate.js:113-117 included a literal `echo "<<WORKFLOW_RESET_FROM_<step>>>"` recipe
+in its "commit blocked" error message. When a skill's test setup ran `git commit` in a temp
+repository, workflow-gate blocked it and the model read the hint — triggering autonomous
+WORKFLOW_RESET_FROM calls to clear the gate. The model lacked holistic project context to judge
+whether a reset was warranted; from inside a skill the hint looked like a legitimate shortcut.
+Root cause is structural: the mechanism that should be a last resort was advertised in an error
+message visible to subagents that cannot evaluate the full situation.
+
+Fix: Removed the RESET_FROM hint from workflow-gate.js entirely (the block message now lists only
+incomplete steps and the skill to run for each). Added a "Workflow State Recovery" section to
+CLAUDE.md framing WORKFLOW_RESET_FROM as a last resort that "only the main conversation can use
+when it has enough holistic context to judge that a reset is genuinely warranted." The settings.json
+`ask` guard remains as a backstop. The RESET_FROM mechanism itself (workflow-mark.js PostToolUse
+interception, required because CLAUDE_ENV_FILE does not propagate to Bash subprocesses per
+Anthropic bug #27987) is unchanged.
+
+Discussion notes: Several alternative fixes were considered and rejected.
+(1) Obfuscating the hint — rejected because it merely makes bypass harder to find, not
+structurally prevented.
+(2) Moving documentation to ops.md only — would have required the user to manually run
+mark-step.js even in cases where the main conversation can judge correctly.
+(3) Manager subagent — rejected as overskill; the main conversation already has full context
+and IS the manager.
+The key insight: the right place for reset authority is the entity with holistic project context,
+which is the main conversation (or the user directly). Skills and subagents must not reset.
