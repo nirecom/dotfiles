@@ -59,3 +59,33 @@ foreach ($t in $migrationTargets) {
     }
 }
 # --- END temporary: ~/dotfiles,~/git → C:\git migration ---
+
+# --- BEGIN temporary: .git/workflow → ~/.claude/projects/workflow migration ---
+function Remove-OldGitWorkflow {
+    param(
+        [string]$OldDir,
+        [string]$NewDir,
+        [datetime]$Cutoff
+    )
+    if (-not (Test-Path $OldDir)) { return }
+    Write-Host "Found old workflow dir: $OldDir"
+    $n = 0
+    Get-ChildItem -Path $OldDir -Filter "*.json" -ErrorAction SilentlyContinue | ForEach-Object {
+        if ($_.LastWriteTime -ge $Cutoff) {
+            New-Item -ItemType Directory -Path $NewDir -Force | Out-Null
+            Copy-Item $_.FullName -Destination $NewDir -Force
+            Write-Host "  Salvaged: $($_.Name)"
+            $n++
+        }
+    }
+    Remove-Item $OldDir -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "  Removed: $OldDir (salvaged $n file(s))"
+}
+
+$wfNewDir = Join-Path $HOME ".claude\projects\workflow"
+$wfCutoff = (Get-Date).AddDays(-7)
+$gitRoot = Split-Path $DotfilesDir -Parent
+Get-ChildItem -Path $gitRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    Remove-OldGitWorkflow -OldDir (Join-Path $_.FullName ".git\workflow") -NewDir $wfNewDir -Cutoff $wfCutoff
+}
+# --- END temporary: .git/workflow → ~/.claude/projects/workflow migration ---
