@@ -49,15 +49,24 @@ case "$ACTION" in
         if [ "$_QUIET" = "0" ] && pgrep -x "claude" >/dev/null 2>&1; then
             echo "WARNING: Claude Code is running. Close all sessions before push to ensure latest data is saved." >&2
         fi
+        # Abort any interrupted rebase before proceeding
+        if [ -d "$PROJECTS_DIR/.git/rebase-merge" ] || [ -d "$PROJECTS_DIR/.git/rebase-apply" ]; then
+            git -C "$PROJECTS_DIR" rebase --abort 2>/dev/null || \
+                rm -rf "$PROJECTS_DIR/.git/rebase-merge" "$PROJECTS_DIR/.git/rebase-apply" 2>/dev/null || true
+        fi
         # Copy history.jsonl into sync area
         cp "$CLAUDE_DIR/history.jsonl" "$PROJECTS_DIR/.history.jsonl" 2>/dev/null || true
         git -C "$PROJECTS_DIR" add .
-        if [ -z "$(git -C "$PROJECTS_DIR" status --porcelain)" ]; then
+        _local_changes=$(git -C "$PROJECTS_DIR" status --porcelain)
+        _unpushed=$(git -C "$PROJECTS_DIR" log origin/main..HEAD --oneline 2>/dev/null || true)
+        if [ -z "$_local_changes" ] && [ -z "$_unpushed" ]; then
             echo "No changes to push."
             exit 0
         fi
-        timestamp=$(date "+%Y-%m-%d %H:%M")
-        git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $timestamp"
+        if [ -n "$_local_changes" ]; then
+            timestamp=$(date "+%Y-%m-%d %H:%M")
+            git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $timestamp"
+        fi
         # Retry loop: handles simultaneous push race (e.g. Windows + macOS committing at the same time)
         _push_ok=0
         for _retry in 1 2 3; do
@@ -67,7 +76,28 @@ case "$ACTION" in
                 _ts2=$(date "+%Y-%m-%d %H:%M")
                 git -C "$PROJECTS_DIR" commit -q -m "sync: $(hostname -s) $_ts2" 2>/dev/null || true
             fi
-            git -C "$PROJECTS_DIR" pull --rebase origin main >/dev/null 2>&1 || true
+            if ! git -C "$PROJECTS_DIR" pull --rebase origin main >/dev/null 2>&1; then
+                # Auto-resolve JSONL conflicts: strip conflict markers and dedup
+                _conflicts=$(git -C "$PROJECTS_DIR" diff --name-only --diff-filter=U 2>/dev/null || true)
+                _resolved=0
+                for _f in $_conflicts; do
+                    case "$_f" in
+                        *.jsonl)
+                            grep -v -e '^<<<<<<<' -e '^=======' -e '^>>>>>>>' \
+                                "$PROJECTS_DIR/$_f" | awk '!seen[$0]++' \
+                                > "$PROJECTS_DIR/$_f.tmp" && \
+                            mv "$PROJECTS_DIR/$_f.tmp" "$PROJECTS_DIR/$_f"
+                            git -C "$PROJECTS_DIR" add "$_f" 2>/dev/null || true
+                            _resolved=1
+                            ;;
+                    esac
+                done
+                if [ "$_resolved" = "1" ]; then
+                    GIT_EDITOR=true git -C "$PROJECTS_DIR" rebase --continue >/dev/null 2>&1 || true
+                else
+                    git -C "$PROJECTS_DIR" rebase --abort 2>/dev/null || true
+                fi
+            fi
             if git -C "$PROJECTS_DIR" push -u origin main 2>/dev/null; then
                 _push_ok=1
                 break

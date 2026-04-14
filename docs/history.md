@@ -663,6 +663,20 @@ Changes: Changed both marker formats to use `_` as separator: `<<WORKFLOW_MARK_S
 Background: Windows・WSL・macOS の全プラットフォームで正常系・異常系の動作確認を完了。macOS は初のネイティブ E2E 実行。
 Changes: 正常系（セッション開始・ステップ記録・commit ブロック・commit 通過・PostToolUse 実発火）と異常系（ステートファイル破損 → fail-safe ブロック → --reset-from リカバリ、部分リセット）をすべて確認。macOS E2E で3つの移植性バグを発見・修正：(1) `timeout` 非対応 → `run_with_timeout()` perl フォールバック、(2) `CLAUDECODE` 継承によるネストセッションエラー → `unset CLAUDECODE`、(3) `disableBypassPermissionsMode: disable` が `--dangerously-skip-permissions` を無効化 → minimal settings.json 使用。WSL は Windows ブリッジ経由のため3つとも顕在化しなかった（`CLAUDECODE` 非伝播・Windows 側プロファイル参照）。test.md に `run_with_timeout` パターンと `claude -p` E2E 注意点を追記、Installer Testing を test-installer.md に分離。
 
+### session-sync: push conflict auto-resolution (2026-04-14)
+Background: Session sync was silently failing with "push failed" toast when ~/.claude/projects
+received diverging commits from multiple machines (e.g. macOS and Windows both committing
+session files before either pushes). git pull --rebase inside the retry loop swallowed JSONL
+conflict errors via `|| true`, causing repeated push failures with no recovery.
+Changes: Two fixes to bin/session-sync.sh push action. (1) Interrupted rebase detection: at
+push entry, detect .git/rebase-merge or .git/rebase-apply and abort (rm -rf fallback for
+fake/corrupt state that git rebase --abort cannot clean). (2) JSONL conflict auto-resolution:
+when git pull --rebase fails, find conflicted *.jsonl files via git diff --diff-filter=U, strip
+conflict marker lines (^<<<<<<<, ^=======, ^>>>>>>>), dedup via awk, git add, then
+GIT_EDITOR=true git rebase --continue. Non-JSONL conflicts abort and retry. Also fixed the
+"No changes to push" early exit to additionally check git log origin/main..HEAD, so push
+proceeds when local branch is ahead of remote despite a clean working tree. 57 tests pass.
+
 ### #23: workflow-gate block message as bypass attractor (2026-04-14)
 Cause: workflow-gate.js:113-117 included a literal `echo "<<WORKFLOW_RESET_FROM_<step>>>"` recipe
 in its "commit blocked" error message. When a skill's test setup ran `git commit` in a temp
