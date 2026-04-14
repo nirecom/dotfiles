@@ -129,6 +129,44 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# SR-DENY-1: deny contains Edit(~/.claude/projects/workflow/**) (new path)
+# Expected FAIL until settings.json is updated
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== settings.json: SR-DENY-1 — deny contains new workflow path ==="
+
+if node -e "
+const s=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
+const deny=s.permissions&&s.permissions.deny||[];
+const hasNew = deny.some(e => e.includes('.claude/projects/workflow'));
+process.exit(hasNew ? 0 : 1);
+" -- "$SETTINGS" 2>/dev/null; then
+    pass "SR-DENY-1. deny contains ~/.claude/projects/workflow entry"
+else
+    fail "SR-DENY-1. deny does NOT contain ~/.claude/projects/workflow entry"
+fi
+
+# ---------------------------------------------------------------------------
+# SR-DENY-2: deny does NOT contain old path Edit(**/.git/workflow/**)
+# Expected FAIL until settings.json is updated
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== settings.json: SR-DENY-2 — deny does NOT contain old .git/workflow ==="
+
+if node -e "
+const s=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
+const deny=s.permissions&&s.permissions.deny||[];
+const hasOld = deny.some(e => e.includes('.git/workflow'));
+process.exit(hasOld ? 1 : 0);
+" -- "$SETTINGS" 2>/dev/null; then
+    pass "SR-DENY-2. deny does NOT contain old .git/workflow path"
+else
+    fail "SR-DENY-2. deny still contains old .git/workflow path (dead rule)"
+fi
+
+# ---------------------------------------------------------------------------
 # Results
 # ---------------------------------------------------------------------------
 
