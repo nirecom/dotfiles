@@ -1522,6 +1522,55 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# === mark-step.js: user_verification direct-completion block ===
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== mark-step: user_verification block ==="
+
+# WS-UV-BLOCK-1: `mark-step.js user_verification complete` → exit 1, stderr mentions WORKFLOW_USER_VERIFIED
+WS_UV1_SID="ws-uv-block-1"
+WS_UV1_ENV="$TMPDIR_BASE/ws-uv-block-1.env"
+printf 'CLAUDE_SESSION_ID=%s\n' "$WS_UV1_SID" > "$WS_UV1_ENV"
+write_state "$WS_UV1_SID" "$(ALL_PENDING_JSON "$WS_UV1_SID")"
+WS_UV1_EXIT=0
+WS_UV1_STDERR=$(CLAUDE_ENV_FILE="$WS_UV1_ENV" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$MARK_STEP" user_verification complete 2>&1 >/dev/null) || WS_UV1_EXIT=$?
+if [ "$WS_UV1_EXIT" != "0" ] && echo "$WS_UV1_STDERR" | grep -q "WORKFLOW_USER_VERIFIED"; then
+    pass "WS-UV-BLOCK-1. user_verification complete → blocked with WORKFLOW_USER_VERIFIED hint"
+else
+    fail "WS-UV-BLOCK-1. expected exit!=0 with WORKFLOW_USER_VERIFIED in stderr; exit=$WS_UV1_EXIT stderr=$WS_UV1_STDERR"
+fi
+
+# WS-UV-BLOCK-2: `mark-step.js user_verification skipped` → exit 1 (existing behavior preserved)
+WS_UV2_SID="ws-uv-block-2"
+WS_UV2_ENV="$TMPDIR_BASE/ws-uv-block-2.env"
+printf 'CLAUDE_SESSION_ID=%s\n' "$WS_UV2_SID" > "$WS_UV2_ENV"
+write_state "$WS_UV2_SID" "$(ALL_PENDING_JSON "$WS_UV2_SID")"
+WS_UV2_EXIT=0
+CLAUDE_ENV_FILE="$WS_UV2_ENV" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$MARK_STEP" user_verification skipped >/dev/null 2>&1 || WS_UV2_EXIT=$?
+if [ "$WS_UV2_EXIT" != "0" ]; then
+    pass "WS-UV-BLOCK-2. user_verification skipped → still blocked (existing behavior)"
+else
+    fail "WS-UV-BLOCK-2. expected exit!=0, got exit=$WS_UV2_EXIT"
+fi
+
+# WS-UV-BLOCK-3: `mark-step.js research complete` → exit 0 (sanity: other steps still work)
+WS_UV3_SID="ws-uv-block-3"
+WS_UV3_ENV="$TMPDIR_BASE/ws-uv-block-3.env"
+printf 'CLAUDE_SESSION_ID=%s\n' "$WS_UV3_SID" > "$WS_UV3_ENV"
+write_state "$WS_UV3_SID" "$(ALL_PENDING_JSON "$WS_UV3_SID")"
+WS_UV3_EXIT=0
+CLAUDE_ENV_FILE="$WS_UV3_ENV" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$MARK_STEP" research complete >/dev/null 2>&1 || WS_UV3_EXIT=$?
+if [ "$WS_UV3_EXIT" = "0" ] && [ "$(read_state_status "$WS_UV3_SID" research)" = "complete" ]; then
+    pass "WS-UV-BLOCK-3. research complete → still works (exit 0, state updated)"
+else
+    fail "WS-UV-BLOCK-3. expected exit 0 with research=complete; exit=$WS_UV3_EXIT state=$(read_state_status "$WS_UV3_SID" research)"
+fi
+
+# WS-UV-BLOCK-4: After WS-UV-BLOCK-1's blocked call, state remains pending (no side effect)
+expect_no_state_change "WS-UV-BLOCK-4. blocked user_verification complete leaves state pending" "$WS_UV1_SID" "user_verification" "pending"
+
+# ---------------------------------------------------------------------------
 # Results
 # ---------------------------------------------------------------------------
 
