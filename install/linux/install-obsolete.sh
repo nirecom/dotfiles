@@ -65,3 +65,29 @@ fi
 if command -v fnm &>/dev/null; then
     echo "[WARN] fnm binary still found on PATH after cleanup. Check shell configs."
 fi
+
+# --- BEGIN temporary: .git/workflow → ~/.claude/projects/workflow migration ---
+_wf_new_dir="$HOME/.claude/projects/workflow"
+
+_salvage_git_workflow() {
+    local old="$1"
+    [ -d "$old" ] || return
+    echo "Found old workflow dir: $old"
+    local n=0
+    for f in "$old"/*.json; do
+        [ -f "$f" ] || continue
+        if find "$f" -mtime -7 2>/dev/null | grep -q .; then
+            mkdir -p "$_wf_new_dir"
+            cp "$f" "$_wf_new_dir/"
+            echo "  Salvaged: $(basename "$f")"
+            n=$((n+1))
+        fi
+    done
+    rm -rf "$old"
+    echo "  Removed: $old (salvaged $n file(s))"
+}
+
+while IFS= read -r -d '' d; do
+    _salvage_git_workflow "$d"
+done < <(find "$HOME" -maxdepth 4 -name "workflow" -path "*/.git/workflow" -type d -print0 2>/dev/null)
+# --- END temporary: .git/workflow → ~/.claude/projects/workflow migration ---
