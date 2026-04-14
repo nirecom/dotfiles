@@ -47,6 +47,10 @@ $gitattributesContent = @"
 
 [System.IO.File]::WriteAllText((Join-Path $ProjectsDir ".gitattributes"), ($gitattributesContent -replace "`r`n", "`n") + "`n")
 
+# Create .gitignore (overwrite for idempotency)
+$gitignoreContent = "/workflow/*.tmp`n"
+[System.IO.File]::WriteAllText((Join-Path $ProjectsDir ".gitignore"), $gitignoreContent)
+
 # Set remote
 if (-not $NoRemote) {
     $existingRemotes = git -C $ProjectsDir remote 2>$null

@@ -11,6 +11,9 @@ fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
 pass() { echo "PASS: $1"; }
 
 TMPDIR_BASE=$(mktemp -d)
+WORKFLOW_DIR="$TMPDIR_BASE/workflow-state"
+mkdir -p "$WORKFLOW_DIR"
+export CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR"
 trap 'rm -rf "$TMPDIR_BASE"' EXIT
 
 setup_repo() {
@@ -26,18 +29,14 @@ setup_repo() {
 }
 
 write_state() {
-    local repo="$1" sid="$2" json="$3"
-    local gitdir
-    gitdir=$(git -C "$repo" rev-parse --git-dir)
-    mkdir -p "$repo/$gitdir/workflow"
-    printf '%s' "$json" > "$repo/$gitdir/workflow/${sid}.json"
+    local sid="$1" json="$2"
+    mkdir -p "$WORKFLOW_DIR"
+    printf '%s' "$json" > "$WORKFLOW_DIR/${sid}.json"
 }
 
 read_state_status() {
-    local repo="$1" sid="$2" step="$3"
-    local gitdir
-    gitdir=$(git -C "$repo" rev-parse --git-dir 2>/dev/null || echo ".git")
-    local state_file="$repo/$gitdir/workflow/${sid}.json"
+    local sid="$1" step="$2"
+    local state_file="$WORKFLOW_DIR/${sid}.json"
     if [ ! -f "$state_file" ]; then echo "MISSING"; return; fi
     node -e "
       try {
@@ -49,17 +48,17 @@ read_state_status() {
 }
 
 expect_state_step() {
-    local desc="$1" repo="$2" sid="$3" step="$4" expected="$5"
+    local desc="$1" sid="$2" step="$3" expected="$4"
     local actual
-    actual=$(read_state_status "$repo" "$sid" "$step")
+    actual=$(read_state_status "$sid" "$step")
     if [ "$actual" = "$expected" ]; then pass "$desc"
     else fail "$desc — expected steps.$step.status=$expected, got: $actual"; fi
 }
 
 expect_no_state_change() {
-    local desc="$1" repo="$2" sid="$3" step="$4" expected_unchanged="$5"
+    local desc="$1" sid="$2" step="$3" expected_unchanged="$4"
     local actual
-    actual=$(read_state_status "$repo" "$sid" "$step")
+    actual=$(read_state_status "$sid" "$step")
     if [ "$actual" = "$expected_unchanged" ]; then pass "$desc"
     else fail "$desc — expected steps.$step.status to remain $expected_unchanged, got: $actual"; fi
 }
@@ -86,7 +85,7 @@ EOF
 
 run_mark_hook() {
     local repo="$1" json="$2"
-    echo "$json" | CLAUDE_PROJECT_DIR="$repo" node "$MARK_HOOK" 2>/dev/null || true
+    echo "$json" | CLAUDE_PROJECT_DIR="$repo" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$MARK_HOOK" 2>/dev/null || true
 }
 
 # Build hook input JSON for a Bash tool invocation
@@ -107,11 +106,11 @@ echo ""
 echo "=== workflow-mark: UV-N1 — WORKFLOW_USER_VERIFIED normal case ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_N1_JSON=$(build_uv_json 'echo "<<WORKFLOW_USER_VERIFIED>>"')
 run_mark_hook "$REPO" "$UV_N1_JSON" >/dev/null
 expect_state_step "UV-N1. echo \"<<WORKFLOW_USER_VERIFIED>>\" → user_verification=complete" \
-    "$REPO" "test-session" "user_verification" "complete"
+    "test-session" "user_verification" "complete"
 
 # ---------------------------------------------------------------------------
 # UV-F1: two spaces → no match
@@ -122,11 +121,11 @@ echo ""
 echo "=== workflow-mark: UV-F1 — two spaces → no match ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_F1_JSON=$(build_uv_json 'echo  "<<WORKFLOW_USER_VERIFIED>>"')
 run_mark_hook "$REPO" "$UV_F1_JSON" >/dev/null
 expect_no_state_change "UV-F1. echo  (two spaces) → user_verification stays pending" \
-    "$REPO" "test-session" "user_verification" "pending"
+    "test-session" "user_verification" "pending"
 
 # ---------------------------------------------------------------------------
 # UV-F2: prefix chain → no match
@@ -137,11 +136,11 @@ echo ""
 echo "=== workflow-mark: UV-F2 — prefix chain → no match ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_F2_JSON=$(build_uv_json 'cd /tmp && echo "<<WORKFLOW_USER_VERIFIED>>"')
 run_mark_hook "$REPO" "$UV_F2_JSON" >/dev/null
 expect_no_state_change "UV-F2. cd /tmp && echo → user_verification stays pending" \
-    "$REPO" "test-session" "user_verification" "pending"
+    "test-session" "user_verification" "pending"
 
 # ---------------------------------------------------------------------------
 # UV-F3: redirect → no match
@@ -152,11 +151,11 @@ echo ""
 echo "=== workflow-mark: UV-F3 — redirect → no match ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_F3_JSON=$(build_uv_json 'echo "<<WORKFLOW_USER_VERIFIED>>" > /tmp/out')
 run_mark_hook "$REPO" "$UV_F3_JSON" >/dev/null
 expect_no_state_change "UV-F3. redirect → user_verification stays pending" \
-    "$REPO" "test-session" "user_verification" "pending"
+    "test-session" "user_verification" "pending"
 
 # ---------------------------------------------------------------------------
 # UV-F4: unrelated command → no match
@@ -167,11 +166,11 @@ echo ""
 echo "=== workflow-mark: UV-F4 — unrelated command → no match ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_F4_JSON=$(build_uv_json 'cat /tmp/verified.txt')
 run_mark_hook "$REPO" "$UV_F4_JSON" >/dev/null
 expect_no_state_change "UV-F4. cat command → user_verification stays pending" \
-    "$REPO" "test-session" "user_verification" "pending"
+    "test-session" "user_verification" "pending"
 
 # ---------------------------------------------------------------------------
 # UV-F5: single-quoted → no match (DQ only)
@@ -182,11 +181,11 @@ echo ""
 echo "=== workflow-mark: UV-F5 — single-quoted → no match ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_F5_JSON='{"tool_name":"Bash","tool_input":{"command":"echo '"'"'<<WORKFLOW_USER_VERIFIED>>'"'"'"},"tool_response":{"exit_code":0,"stdout":"<<WORKFLOW_USER_VERIFIED>>\n","stderr":""},"session_id":"test-session"}'
 run_mark_hook "$REPO" "$UV_F5_JSON" >/dev/null
 expect_no_state_change "UV-F5. single-quoted → user_verification stays pending (DQ only)" \
-    "$REPO" "test-session" "user_verification" "pending"
+    "test-session" "user_verification" "pending"
 
 # ---------------------------------------------------------------------------
 # UV-E1: exit_code=1 → no change
@@ -197,11 +196,11 @@ echo ""
 echo "=== workflow-mark: UV-E1 — exit_code=1 → no change ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_E1_JSON=$(build_uv_json 'echo "<<WORKFLOW_USER_VERIFIED>>"' "test-session" "1")
 run_mark_hook "$REPO" "$UV_E1_JSON" >/dev/null
 expect_no_state_change "UV-E1. exit_code=1 → user_verification stays pending" \
-    "$REPO" "test-session" "user_verification" "pending"
+    "test-session" "user_verification" "pending"
 
 # ---------------------------------------------------------------------------
 # UV-E2: no session_id → no change AND stdout contains "additionalContext"
@@ -213,16 +212,16 @@ echo ""
 echo "=== workflow-mark: UV-E2 — no session_id ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 
 UV_E2_CMD='echo "<<WORKFLOW_USER_VERIFIED>>"'
 UV_E2_ESC=${UV_E2_CMD//\"/\\\"}
 UV_E2_JSON=$(printf '{"tool_name":"Bash","tool_input":{"command":"%s"},"tool_response":{"exit_code":0,"stdout":"%s\\n","stderr":""}}' "$UV_E2_ESC" "$UV_E2_ESC")
 
-UV_E2_OUT=$(echo "$UV_E2_JSON" | CLAUDE_PROJECT_DIR="$REPO" env -u CLAUDE_ENV_FILE node "$MARK_HOOK" 2>/dev/null || true)
+UV_E2_OUT=$(echo "$UV_E2_JSON" | CLAUDE_PROJECT_DIR="$REPO" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" env -u CLAUDE_ENV_FILE node "$MARK_HOOK" 2>/dev/null || true)
 
 # UV-E2a: user_verification stays pending (no session_id means no write)
-UV_E2A_STATUS=$(read_state_status "$REPO" "test-session" "user_verification")
+UV_E2A_STATUS=$(read_state_status "test-session" "user_verification")
 if [ "$UV_E2A_STATUS" = "pending" ]; then
     pass "UV-E2a. no session_id → user_verification stays pending"
 else
@@ -245,11 +244,11 @@ echo ""
 echo "=== workflow-mark: UV-E3 — tool_name=Write → no change ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_E3_JSON='{"tool_name":"Write","tool_input":{"file_path":"/tmp/foo","content":"<<WORKFLOW_USER_VERIFIED>>"},"tool_response":{"success":true},"session_id":"test-session"}'
 run_mark_hook "$REPO" "$UV_E3_JSON" >/dev/null
 expect_no_state_change "UV-E3. tool_name=Write → user_verification stays pending" \
-    "$REPO" "test-session" "user_verification" "pending"
+    "test-session" "user_verification" "pending"
 
 # ---------------------------------------------------------------------------
 # UV-I1: applied twice → user_verification=complete (idempotent)
@@ -260,12 +259,12 @@ echo ""
 echo "=== workflow-mark: UV-I1 — idempotent (applied twice) ==="
 
 REPO=$(setup_repo)
-write_state "$REPO" "test-session" "$(ALL_PENDING_JSON test-session)"
+write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 UV_I1_JSON=$(build_uv_json 'echo "<<WORKFLOW_USER_VERIFIED>>"')
 run_mark_hook "$REPO" "$UV_I1_JSON" >/dev/null
 run_mark_hook "$REPO" "$UV_I1_JSON" >/dev/null
 expect_state_step "UV-I1. applied twice → user_verification=complete (idempotent)" \
-    "$REPO" "test-session" "user_verification" "complete"
+    "test-session" "user_verification" "complete"
 
 # ---------------------------------------------------------------------------
 # Results
