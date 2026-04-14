@@ -1363,7 +1363,7 @@ if [ "${RUN_E2E:-0}" = "1" ]; then
 }
 SETTINGS_EOF
 
-    E1_STATE_FILE="$E1_REPO/.git/workflow/$E1_SESSION_ID.json"
+    E1_STATE_FILE="$WORKFLOW_DIR/$E1_SESSION_ID.json"
 
     # Run claude -p with a prompt that emits the workflow marker.
     # DOTFILES_DIR is exported so the hook command (node "$DOTFILES_DIR/...") resolves correctly.
