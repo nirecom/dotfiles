@@ -2,6 +2,11 @@
 
 ## Current Work
 
+### install-obsolete: .git/workflow クリーンアップ — Verifying
+- [ ] Verify: `install-obsolete.sh` / `install-obsolete.ps1` の `.git/workflow` サルベージ・削除処理が正常動作することを確認
+
+
+
 
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
