@@ -79,8 +79,11 @@ Write-Host "--- Disabling Snipping Tool notifications ---"
 Write-Host ""
 Write-Host "--- Disabling input language hotkeys ---"
 $toggleKey = 'HKCU:\Keyboard Layout\Toggle'
-$current = Get-ItemProperty $toggleKey
-if ($current.'Language Hotkey' -ne '3' -or $current.'Layout Hotkey' -ne '3' -or $current.Hotkey -ne '3') {
+$keyItem        = Get-Item -Path $toggleKey -ErrorAction SilentlyContinue
+$languageHotkey = if ($keyItem) { $keyItem.GetValue('Language Hotkey') } else { $null }
+$layoutHotkey   = if ($keyItem) { $keyItem.GetValue('Layout Hotkey') } else { $null }
+$hotkeyValue    = if ($keyItem) { $keyItem.GetValue('Hotkey') } else { $null }
+if ($languageHotkey -ne '3' -or $layoutHotkey -ne '3' -or $hotkeyValue -ne '3') {
     Set-ItemProperty $toggleKey -Name 'Language Hotkey' -Value '3'
     Set-ItemProperty $toggleKey -Name 'Layout Hotkey' -Value '3'
     Set-ItemProperty $toggleKey -Name 'Hotkey' -Value '3'
