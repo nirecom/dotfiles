@@ -723,3 +723,7 @@ Changes: mark-step.js: extended user_verification guard to also block status "co
 ### install-obsolete: .git/workflow → ~/.claude/projects/workflow cleanup (2026-04-15, (pending))
 Background: Workflow state was migrated from {repo}/.git/workflow/ to ~/.claude/projects/workflow/ (commit 738cb1c, incident #24). The session-start.js migration block handles new sessions automatically, but old .git/workflow/ directories left on disk before the migration remained unhandled.
 Changes: install-obsolete.sh and install-obsolete.ps1 each received a BEGIN/END temporary migration block: searches $HOME (maxdepth 4) / C:\git repos for .git/workflow/ directories, salvages JSON files newer than 7 days to ~/.claude/projects/workflow/, then removes the old directory. Tests: main-install-obsolete-workflow-migration.sh (T1–T9, all pass).
+
+### Fix install.ps1: missing registry values crash on keyboard hotkey setup (2026-04-15)
+Background: On Windows machines where Keyboard Layout\Toggle registry key values (Language Hotkey, Layout Hotkey, Hotkey) have never been set, Get-ItemProperty threw a terminating error that -ErrorAction SilentlyContinue could not suppress.
+Changes: Replaced Get-ItemProperty with Get-Item + RegistryKey.GetValue(), which returns $null for missing values without throwing.
