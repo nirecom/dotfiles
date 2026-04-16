@@ -6,7 +6,6 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 GATE_HOOK="$DOTFILES_DIR/claude-global/hooks/workflow-gate.js"
 MARK_HOOK="$DOTFILES_DIR/claude-global/hooks/workflow-mark.js"
-MARK_STEP="$DOTFILES_DIR/claude-global/hooks/mark-step.js"
 SESSION_START="$DOTFILES_DIR/claude-global/hooks/session-start.js"
 ERRORS=0
 
@@ -157,12 +156,14 @@ echo "{\"session_id\":\"$REGR_SID\"}" \
   | CLAUDE_PROJECT_DIR="$REPO_A" CLAUDE_ENV_FILE="$REGR_ENV" \
     CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$SESSION_START" 2>/dev/null || true
 
-# Step 2: mark-step marks all steps complete (writing to WORKFLOW_DIR via CLAUDE_WORKFLOW_DIR)
-echo "CLAUDE_SESSION_ID=$REGR_SID" >> "$REGR_ENV"
-for step in research plan write_tests code verify docs user_verification; do
-    CLAUDE_ENV_FILE="$REGR_ENV" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" \
-      node "$MARK_STEP" "$step" complete 2>/dev/null || true
-done
+# Step 2: mark all steps complete (writing state directly to WORKFLOW_DIR)
+(cd "$DOTFILES_DIR" && CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node -e "
+const {writeState, createInitialState, VALID_STEPS} = require('./claude-global/hooks/lib/workflow-state');
+const state = createInitialState('$REGR_SID');
+const now = new Date().toISOString();
+for (const s of VALID_STEPS) { state.steps[s] = { status: 'complete', updated_at: now }; }
+writeState('$REGR_SID', state);
+" 2>/dev/null) || true
 
 # Step 3: workflow-gate checks commit to REPO_B (different -C path) with REPO_A as CLAUDE_PROJECT_DIR
 # Key: gate must read state from WORKFLOW_DIR (not REPO_B's .git/workflow/)

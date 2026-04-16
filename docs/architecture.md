@@ -117,10 +117,9 @@
 | [claude-global/hooks/check-private-info.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/check-private-info.js) | PreToolUse hook for private info scanning | Scans Edit/Write content |
 | [claude-global/hooks/block-dotenv.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/block-dotenv.js) | PreToolUse hook for dotenv file access blocking | Blocks Read/Grep/Glob/Bash access to .env files |
 | [claude-global/hooks/workflow-gate.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-gate.js) | PreToolUse commit gate: enforces all 7 workflow steps | Fail-safe: blocks on missing/corrupted state. Replaces check-docs-updated.js and check-tests-updated.js |
-| [claude-global/hooks/workflow-mark.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-mark.js) | PostToolUse step marker hook | Intercepts `echo "<<WORKFLOW_MARK_STEP_step_status>>"` via strict regex on `tool_input.command`; marks step using `session_id` from hook stdin. Uses `CLAUDE_PROJECT_DIR` for repo resolution |
-| [claude-global/hooks/mark-step.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/mark-step.js) | Workflow step completion CLI | `node mark-step.js <step> <status>` or `--reset-from <step>`. Required for `user_verification` (triggers ask-rule) |
+| [claude-global/hooks/workflow-mark.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-mark.js) | PostToolUse step marker hook | Intercepts `echo "<<WORKFLOW_MARK_STEP_step_status>>"` and `echo "<<WORKFLOW_RESET_FROM_step>>"` via strict regex on `tool_input.command`; marks step using `session_id` from hook stdin |
 | [claude-global/hooks/session-start.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/session-start.js) | SessionStart hook | Sets CLAUDE_SESSION_ID via CLAUDE_ENV_FILE; runs zombie state file cleanup |
-| [claude-global/hooks/lib/workflow-state.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/lib/workflow-state.js) | Shared state module for workflow hooks | Reads/writes `.git/workflow/<session-id>.json` |
+| [claude-global/hooks/lib/workflow-state.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/lib/workflow-state.js) | Shared state module for workflow hooks | Reads/writes `~/.claude/projects/workflow/<session-id>.json` (session-scoped) |
 
 ### Tests
 
@@ -131,7 +130,7 @@
 | [tests/main-block-dotenv.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-block-dotenv.sh) | block-dotenv.js hook tests | 59 test cases: Bash/Read/Grep/Glob blocking, false-positive prevention |
 | [tests/main-keychain-ssh-agent.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-keychain-ssh-agent.sh) | keychain SSH agent tests | install.sh inclusion + .profile_common auto-detection |
 | [tests/main-claude-tabs.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-claude-tabs.sh) | claude-tabs.ps1 installer tests | Structure validation (19 test cases) |
-| [tests/feature-robust-workflow.sh](https://github.com/nirecom/dotfiles/blob/main/tests/feature-robust-workflow.sh) | Workflow state machine tests | workflow-gate.js, mark-step.js, session-start.js |
+| [tests/feature-robust-workflow.sh](https://github.com/nirecom/dotfiles/blob/main/tests/feature-robust-workflow.sh) | Workflow state machine tests | workflow-gate.js, workflow-mark.js, session-start.js |
 
 ### Git Configuration
 
@@ -361,8 +360,8 @@ Statuses: `pending` | `in_progress` | `complete` | `skipped`
 | `research` | `/survey-code` or `/deep-research` skill (emits `WORKFLOW_MARK_STEP` marker) |
 | `plan` | `/make-plan` skill (emits marker) |
 | `write_tests` | `/write-tests` skill (emits marker) |
-| `code` | `node mark-step.js code complete` |
-| `verify` | `node mark-step.js verify complete` |
+| `code` | `echo "<<WORKFLOW_MARK_STEP_code_complete>>"` |
+| `verify` | `echo "<<WORKFLOW_MARK_STEP_verify_complete>>"` |
 | `docs` | `/update-docs` skill (emits marker) |
 | `user_verification` | `echo "<<WORKFLOW_USER_VERIFIED>>"` — triggers `ask` permission dialog; user must approve; PostToolUse hook marks step complete |
 
@@ -377,18 +376,18 @@ Note: marker format uses `_` as separator (not `:`). Claude Code's permission gl
 ```
 Session start → session-start.js (SessionStart hook)
   appends CLAUDE_SESSION_ID=<sid> to CLAUDE_ENV_FILE
-  creates .git/workflow/<sid>.json with all steps pending (if not exists)
+  creates ~/.claude/projects/workflow/<sid>.json with all steps pending (if not exists)
   runs zombie cleanup
 
 Skill runs (/make-plan, /write-tests, etc.)
   → Completion section emits: echo "<<WORKFLOW_MARK_STEP_<step>_complete>>"
   → workflow-mark.js (PostToolUse hook) intercepts command
      reads session_id from hook stdin JSON (not CLAUDE_ENV_FILE)
-     calls markStep(CLAUDE_PROJECT_DIR, session_id, step, status)
+     calls markStep(session_id, step, status)
 
 git commit attempt → workflow-gate.js (PreToolUse hook)
   reads session_id from hook stdin JSON
-  loads .git/workflow/<session_id>.json
+  loads ~/.claude/projects/workflow/<session_id>.json
   approves if all steps complete/skipped; blocks with remediation message otherwise
 ```
 
@@ -404,7 +403,7 @@ git commit attempt → workflow-gate.js (PreToolUse hook)
 
 To reset from a specific step (e.g., re-running code phase):
 ```
-node "$DOTFILES_DIR/claude-global/hooks/mark-step.js" --reset-from <step>
+echo "<<WORKFLOW_RESET_FROM_<step>>>"
 ```
 Marks all prior steps `complete`, resets target step and after to `pending`.
 
