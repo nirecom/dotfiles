@@ -5,6 +5,23 @@
 ### install-obsolete: .git/workflow クリーンアップ — Verifying
 - [ ] Verify: `install-obsolete.sh` / `install-obsolete.ps1` の `.git/workflow` サルベージ・削除処理が正常動作することを確認
 
+### mark-step.js 削除・workflow-gate/mark メッセージ修正 — Verifying
+
+Windows / WSL / macOS それぞれで以下を確認:
+
+**1. ブロックメッセージが echo マーカー形式になっている**
+- 未完了状態で `git commit` を実行 → block メッセージに `node mark-step.js` が含まれないこと
+- code / verify ステップ未完了時: `echo "<<WORKFLOW_MARK_STEP_code_complete>>"` が表示される
+- state ファイル不在時: `echo "<<WORKFLOW_RESET_FROM_research>>"` が表示される
+
+**2. echo マーカーが実際に機能する**
+- `echo "<<WORKFLOW_MARK_STEP_code_complete>>"` → state ファイルに code=complete が記録される
+- `echo "<<WORKFLOW_RESET_FROM_research>>"` → ask ダイアログが出て、承認後に全ステップが pending に戻る
+
+- [ ] Windows
+- [ ] WSL
+- [ ] macOS
+
 
 
 
