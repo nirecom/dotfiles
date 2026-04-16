@@ -164,4 +164,6 @@ Background: doc-rotate.py archived entries based on a 365-day hardcoded cutoff, 
 
 Changes: Replaced date-based cutoff with floor-based archiving: keep last --floor entries (default 20), archive the rest. threshold-warn gate (default 0 = always run) skips rotation when file is under the threshold. Undated entries treated as oldest and archived to history/legacy.md. Date regex made comma-optional to correctly parse entries without commit hashes. Removed --max-age-days. Tests: T-THRESH-1..5 added to feature-doc-tools.py (29 total, all pass).
 
-
+### Fix workflow-gate: Unix-style drive path normalization in resolveRepoDir (2026-04-17, pending)
+Background: On Windows with Git Bash, `git -C /<drive>/path commit` passed a Unix-style drive path (e.g. `/<drive>/git/dotfiles`) to workflow-gate.js. Windows Node.js does not accept Unix-style paths as `cwd` in `execSync`, causing `hasStagedTestChanges` and `hasStagedDocChanges` to silently return `false` even when tests/ or docs/ were staged — blocking commits with a spurious "write_tests not complete" error.
+Changes: `resolveRepoDir` now normalizes `/<drive>/path` → `C:\path` patterns (single drive letter followed by `/`). `hasStagedTestChanges` and `hasStagedDocChanges` catch blocks now write a warning to `process.stderr` instead of silently swallowing the error. Main execution wrapped in `require.main === module` guard; `resolveRepoDir`, `hasStagedTestChanges`, `hasStagedDocChanges` exported for testability. 13 tests added in `tests/fix-workflow-gate-unix-path.sh`.
