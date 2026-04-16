@@ -2,6 +2,9 @@
 
 ## Current Work
 
+### doc-append/doc-rotate + architecture.md split — Verifying
+- [ ] Verify: `bin/doc-append.py` / `bin/doc-rotate.py` が動作する、`docs/architecture/` 分割後のドキュメントが読める、`settings.json` の permission が正しい
+
 ### install-obsolete: .git/workflow クリーンアップ — Verifying
 - [ ] Verify: `install-obsolete.sh` / `install-obsolete.ps1` の `.git/workflow` サルベージ・削除処理が正常動作することを確認
 
