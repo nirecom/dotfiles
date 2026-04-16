@@ -1,0 +1,167 @@
+# History Index
+
+## 2026
+- **2026-04-17** [Fix: commit-push skill model directive removed](history/2026.md#fix-commit-push-skill-model-directive-removed) — commit-push SKILL.
+- **2026-04-17** [doc-rotate.py: line-count trigger and floor-based archiving](history/2026.md#doc-rotatepy-line-count-trigger-and-floor-based-archiving) — doc-rotate.
+- **2026-04-16** [Workflow State Machine: mark-step.js removal](history/2026.md#workflow-state-machine-mark-stepjs-removal) — mark-step.
+- **2026-04-16** [Workflow State Machine: evidence-based write_tests/docs enforcement](history/2026.md#workflow-state-machine-evidence-based-writetestsdocs-enforcement) — write_tests and docs steps could be bypassed by running echo "<<WORKFLOW_MARK_STEP_*_complete>>" directly, without actua
+- **2026-04-16** [doc-append/doc-rotate tools + architecture.md split](history/2026.md#doc-appenddoc-rotate-tools-architecturemd-split) — history.
+- **2026-04-15** [Workflow State Machine: session-scoped state migration](history/2026.md#workflow-state-machine-session-scoped-state-migration) — Incident #24 root cause: per-repo state storage caused permanent blocking when committing across repos.
+- **2026-04-15** [Workflow State Machine — E2E verification across all 3 environments](history/2026.md#workflow-state-machine-e2e-verification-across-all-3-environments) — After migrating state storage from {repo}/.
+- **2026-04-15** [Workflow State Machine — block user_verification direct bypass in mark-step.js](history/2026.md#workflow-state-machine-block-userverification-direct-bypass-in-mark-stepjs) — mark-step.
+- **2026-04-15** [install-obsolete: .git/workflow → ~/.claude/projects/workflow cleanup](history/2026.md#install-obsolete-gitworkflow-claudeprojectsworkflow-cleanup) — Workflow state was migrated from {repo}/.
+- **2026-04-15** [Fix install.ps1: missing registry values crash on keyboard hotkey setup](history/2026.md#fix-installps1-missing-registry-values-crash-on-keyboard-hotkey-setup) — On Windows machines where Keyboard Layout\Toggle registry key values (Language Hotkey, Layout Hotkey, Hotkey) have never
+- **2026-04-14** [Workflow State Machine: cross-platform verification complete](history/2026.md#workflow-state-machine-cross-platform-verification-complete) — Windows・WSL・macOS の全プラットフォームで正常系・異常系の動作確認を完了。macOS は初のネイティブ E2E 実行。
+- **2026-04-14** [session-sync: push conflict auto-resolution](history/2026.md#session-sync-push-conflict-auto-resolution) — Session sync was silently failing with "push failed" toast when ~/.
+- **2026-04-14** [workflow-gate block message as bypass attractor](history/2026.md#workflow-gate-block-message-as-bypass-attractor) — workflow-gate.
+- **2026-04-14** [Workflow State Machine — multi-repo state mismatch](history/2026.md#workflow-state-machine-multi-repo-state-mismatch) — echo markers resolved repoDir from CLAUDE_PROJECT_DIR (primary project), while workflow-gate resolved repoDir from the g
+- **2026-04-13** [Workflow State Machine: E2E verification + WSL path bug fix](history/2026.md#workflow-state-machine-e2e-verification-wsl-path-bug-fix) — Manual E2E verification of the workflow state machine in a real Claude Code session after implementation was complete.
+- **2026-04-13** [PostToolUse marker interception: fix mark-step.js in Bash subprocess context](history/2026.md#posttooluse-marker-interception-fix-mark-stepjs-in-bash-subprocess-context) — CLAUDE_ENV_FILE is not propagated to Bash tool subprocesses (Anthropic bug #27987).
+- **2026-04-13** [settings.json PostToolUse misplacement](history/2026.md#settingsjson-posttooluse-misplacement) — commit 01a9110 placed the PostToolUse hook inside the `permissions` block instead of the `hooks` block.
+- **2026-04-13** [Workflow State Machine: PostToolUse Windows E2E verified + CLAUDE_PROJECT_DIR migration confirmed](history/2026.md#workflow-state-machine-posttooluse-windows-e2e-verified-claudeprojectdir-migration-confirmed) — Windows E2E smoke test for the PostToolUse hook and simultaneous verification that the HOOK_CWD → CLAUDE_PROJECT_DIR mig
+- **2026-04-13** [Workflow State Machine: Robust Improvements — Windows verification](history/2026.md#workflow-state-machine-robust-improvements-windows-verification) — User verification of three robustness improvements on Windows (VSCode extension).
+- **2026-04-13** [Workflow State Machine: .git/workflow deny rule verified](history/2026.md#workflow-state-machine-gitworkflow-deny-rule-verified) — New session (VSCode extension, Windows) で deny ルールが機能するか確認。settings.
+- **2026-04-13** [starship: increase command_timeout to 2000ms](history/2026.md#starship-increase-commandtimeout-to-2000ms) — starship prompt showed timeout warnings when changing into the dotfiles directory.
+- **2026-04-13** [Fix wait-vscode-window.sh: add WSL2 window detection](history/2026.md#fix-wait-vscode-windowsh-add-wsl2-window-detection) — In WSL2, VS Code runs as a Windows process so xdotool/wmctrl (X11 tools) are unavailable.
+- **2026-04-13** [Fix QNAP dotfileslink.sh: guard autorun.sh install against mount failure](history/2026.md#fix-qnap-dotfileslinksh-guard-autorunsh-install-against-mount-failure) — On QNAP, the first run of install.
+- **2026-04-13** [Workflow State Machine: marker format `:` → `_`](history/2026.md#workflow-state-machine-marker-format-) — Claude Code's permission glob parser treats `:` as a named-parameter separator inside `Bash(.
+- **2026-04-12** [Workflow state machine: deterministic 8-step enforcement](history/2026.md#workflow-state-machine-deterministic-8-step-enforcement) — CLAUDE.
+- **2026-04-12** [Hook integration path untested — CLAUDE_ENV_FILE format bug](history/2026.md#hook-integration-path-untested-claudeenvfile-format-bug) — session-start.
+- **2026-04-12** [Workflow State Machine: mark-step.js session ID resolution redesign](history/2026.md#workflow-state-machine-mark-stepjs-session-id-resolution-redesign) — Empirical testing (Windows) showed that both CLAUDE_ENV_FILE path and CLAUDE_SESSION_ID are absent from Bash tool subpro
+- **2026-04-11** [check-private-info: allow Docker internal network and Node.js base image paths](history/2026.md#check-private-info-allow-docker-internal-network-and-nodejs-base-image-paths) — judgeclaw's docker-compose.
+- **2026-04-11** [write-tests subagent: mode acceptEdits → default](history/2026.md#write-tests-subagent-mode-acceptedits-default) — write-tests subagent was launched with mode: "acceptEdits" to bypass VSCode's "Ask before edits" dialogs for tests/ file
+- **2026-04-11** [session-sync push: retry loop for simultaneous-commit race condition](history/2026.md#session-sync-push-retry-loop-for-simultaneous-commit-race-condition) — When Windows (PENPEN-11H) and macOS (mbp-m4pro-nire) push at the same time, both machines commit session data independen
+- **2026-04-11** [make-plan token optimization: reviewer checklist and loop limit](history/2026.md#make-plan-token-optimization-reviewer-checklist-and-loop-limit) — make-plan planner/reviewer loop consumed excessive tokens.
+- **2026-04-11** [Explicit model pinning for quality-critical skills and agents](history/2026.md#explicit-model-pinning-for-quality-critical-skills-and-agents) — Preparing to set CLI default model to haiku for cost reduction.
+- **2026-04-11** [save-research skill](history/2026.md#save-research-skill) — Useful research findings from conversations were lost after the session ended, requiring re-investigation on the same to
+- **2026-04-11** [check-private-info.sh: external allowlist and glob file-scope support](history/2026.md#check-private-infosh-external-allowlist-and-glob-file-scope-support) — Test-file allowlist entries were listed individually per file, making it verbose to add new test files.
+- **2026-04-11** [git config: work email isolation via dotfiles-private](history/2026.md#git-config-work-email-isolation-via-dotfiles-private) — Work email and company GitLab URL need to be kept out of the public dotfiles repo.
+- **2026-04-11** [git: remove private emails from history and guard against ~/.gitconfig override](history/2026.md#git-remove-private-emails-from-history-and-guard-against-gitconfig-override) — Private email addresses (personal and old work accounts, plus local-hostname-based addresses) were present in ~600 commi
+- **2026-04-11** [README.md added to doc management framework](history/2026.md#readmemd-added-to-doc-management-framework) — docs-convention.
+- **2026-04-11** [Language policy: move rules to dotfiles-private](history/2026.md#language-policy-move-rules-to-dotfiles-private) — Language-related rules (code comments in English, public docs in English, private docs in Japanese) were hardcoded in th
+- **2026-04-11** [Rize installer: move to dotfiles-private](history/2026.md#rize-installer-move-to-dotfiles-private) — Rize is a personal preference app, not a general dotfiles tool.
+- **2026-04-11** [commit-push: delegate missing-test case to write-tests skill](history/2026.md#commit-push-delegate-missing-test-case-to-write-tests-skill) — When /commit-push detected missing tests, Claude was writing test files directly in the main conversation instead of via
+- **2026-04-11** [session-sync reset: pipefail early-exit fix](history/2026.md#session-sync-reset-pipefail-early-exit-fix) — `reset` (and `pull`) exited before "Reset to remote state.
+- **2026-04-11** [session-sync: macOS toast notification](history/2026.md#session-sync-macos-toast-notification) — Toast notification on push/pull completion existed for Windows (PowerShell) and Linux (notify-send) but not macOS.
+- **2026-04-11** [dotfiles-private: startup fetch in .profile_common](history/2026.md#dotfiles-private-startup-fetch-in-profilecommon) — dotfiles-private is a sibling git repo managed alongside dotfiles, but had no automatic pull on shell startup.
+- **2026-04-11** [pre-commit: auto-unstage model field in settings.json](history/2026.md#pre-commit-auto-unstage-model-field-in-settingsjson) — Claude Code writes "model" to settings.
+- **2026-04-11** [session-sync: notification timing and quiet-mode suppression](history/2026.md#session-sync-notification-timing-and-quiet-mode-suppression) — Two notification issues in session-sync: (1) WARNING message was printed even in --quiet mode (auto-runs), polluting ter
+- **2026-04-10** [VS Code installer: extension existence check bugfix](history/2026.md#vs-code-installer-extension-existence-check-bugfix) — During verification of the VS Code installer, every `install.
+- **2026-04-10** [Session sync: filter create/delete mode from pull output](history/2026.md#session-sync-filter-createdelete-mode-from-pull-output) — Previous output cleanup (22fed74) added `git commit -q` to suppress `create mode` / `delete mode` lines during push.
+- **2026-04-10** [Optimize skill token usage with model and effort tuning](history/2026.md#optimize-skill-token-usage-with-model-and-effort-tuning) — Total token usage was frequently hitting limits.
+- **2026-04-09** [todo.md completion cleanup rule](history/2026.md#todomd-completion-cleanup-rule) — After verification passed, completed phases/steps were sometimes left behind in todo.
+- **2026-04-09** [make-plan: planner/reviewer discussion loop](history/2026.md#make-plan-plannerreviewer-discussion-loop) — The Plan phase used a single `/make-plan` skill drafting the plan in the main conversation.
+- **2026-04-09** [Session sync: consolidate toast to single completion notification](history/2026.md#session-sync-consolidate-toast-to-single-completion-notification) — Quiet-mode push showed two toast banners per push — "pushing.
+- **2026-04-09** [write-tests subagent mode: auto → acceptEdits](history/2026.md#write-tests-subagent-mode-auto-acceptedits) — `/write-tests` was designed to run test iteration inside a subagent to avoid Edit confirmation dialogs, but dialogs for 
+- **2026-04-09** [commit-push: restore permission dialog as single gate](history/2026.md#commit-push-restore-permission-dialog-as-single-gate) — Prior fix (4223e09, 5b0ceed) moved `Bash(git commit *)` and `Bash(git -C * commit *)` from ask to allow, expecting the s
+- **2026-04-08** [Consolidate subagent instructions to skill definitions](history/2026.md#consolidate-subagent-instructions-to-skill-definitions) — rules/test.
+- **2026-04-08** [Session sync: silent push failure notification](history/2026.md#session-sync-silent-push-failure-notification) — `codes` function ran session-sync push in a hidden process (Windows: `-WindowStyle Hidden`, Linux: `>/dev/null 2>&1`).
+- **2026-04-08** [Enforce workflow via TodoWrite checklist](history/2026.md#enforce-workflow-via-todowrite-checklist) — CLAUDE.
+- **2026-04-08** [Commit confirmation reduced from 2 to 1](history/2026.md#commit-confirmation-reduced-from-2-to-1) — Committing required two approvals — skill chat confirmation and settings.
+- **2026-04-08** [Session sync: toast notifications and output cleanup](history/2026.md#session-sync-toast-notifications-and-output-cleanup) — Quiet-mode push showed no indication of sync start/end, making it impossible to know when it was safe to shut down the l
+- **2026-04-07** [history.md unified chronological format](history/2026.md#historymd-unified-chronological-format) — history.
+- **2026-04-07** [history.md Japanese translation tool](history/2026.md#historymd-japanese-translation-tool) — Public repo history.
+
+## (undated)
+- [Initial setup (a112597–7419e8d)](../history.md#initial-setup)
+- [Zsh migration (cdcd088–f2e7309)](../history.md#zsh-migration)
+- [Git config relocation (ce8aa0a–f16c281)](../history.md#git-config-relocation)
+- [Emacs enhancement (f835f5a–d45bdd8)](../history.md#emacs-enhancement)
+- [OS detection refactor (acb488b–e6aa321)](../history.md#os-detection-refactor)
+- [Apple Silicon support (1ff488d–d72a3b5)](../history.md#apple-silicon-support)
+- [Repository merge (b436d88–7abe347)](../history.md#repository-merge)
+- [Windows support (8281602–e51b61b)](../history.md#windows-support)
+- [#1: `dotfileslink.sh` aborts with `set -e` (b3ea03f)](../history.md#dotfileslinksh-aborts-with-set--e)
+- [#2: Symlink creation fails on PowerShell 5 (06f6640, be85569)](../history.md#symlink-creation-fails-on-powershell-5)
+- [Starship introduction (f43b6d9, 25b7147)](../history.md#starship-introduction)
+- [Claude Code management (664d7ce–2e96bbf)](../history.md#claude-code-management)
+- [PowerShell curl issue (60c48fb, eb9d164)](../history.md#powershell-curl-issue)
+- [Claude Code commands (8418c36)](../history.md#claude-code-commands)
+- [QNAP vim plugins (c3754ce)](../history.md#qnap-vim-plugins)
+- [QNAP support (19f488d–f2d62a5)](../history.md#qnap-support)
+- [#3: Claude Code installed on QNAP (89e9e98)](../history.md#claude-code-installed-on-qnap)
+- [#4: `arch: command not found` on QNAP (ed56971)](../history.md#arch-command-not-found-on-qnap)
+- [#5: No colored prompt on QNAP SSH (7e780cc)](../history.md#no-colored-prompt-on-qnap-ssh)
+- [#6: `.profile_qnap` exec fails (d38ee0a)](../history.md#profileqnap-exec-fails)
+- [#7: `git: command not found` on QNAP (584e6dc)](../history.md#git-command-not-found-on-qnap)
+- [#8: Cursor position misaligned on QNAP (f2d62a5)](../history.md#cursor-position-misaligned-on-qnap)
+- [QNAP Entware fix (7533ba7–401097e)](../history.md#qnap-entware-fix)
+- [QNAP prompt wrapping fix (107b3a6–1ae045e)](../history.md#qnap-prompt-wrapping-fix)
+- [#9: git disappears after QNAP reboot (7533ba7, 401097e)](../history.md#git-disappears-after-qnap-reboot)
+- [#10: Long input overwrites prompt on QNAP bash (107b3a6–1ae045e)](../history.md#long-input-overwrites-prompt-on-qnap-bash)
+- [#11: `E117: Unknown function: pathogen#infect` on QNAP vim (c3754ce)](../history.md#e117-unknown-function-pathogeninfect-on-qnap-vim)
+- [Claude Code skill management (9ec0c0b, 359d929, e442685)](../history.md#claude-code-skill-management)
+- [Claude Code security hardening (6e9eeb1, 18b0fd7)](../history.md#claude-code-security-hardening)
+- [Stale symlink detection (Windows) (0c83762)](../history.md#stale-symlink-detection)
+- [#12: No colored prompt on Windows PowerShell (one PC only) (0c83762)](../history.md#no-colored-prompt-on-windows-powershell)
+- [Claude Code deny rule false-positive fix (c8095dc)](../history.md#claude-code-deny-rule-false-positive-fix)
+- [#13: `git add CLAUDE.md` auto-denied by Claude Code (c8095dc)](../history.md#git-add-claudemd-auto-denied-by-claude-code)
+- [AutoHotkey integration (3ca2dcf, 1c905ec)](../history.md#autohotkey-integration)
+- [Starship install guard (c7f02ea, 1766674)](../history.md#starship-install-guard)
+- [#14: `.config/git/config` always dirty after shell startup (dd787a4)](../history.md#configgitconfig-always-dirty-after-shell-startup)
+- [fnm install script (267d793, d2dadcc)](../history.md#fnm-install-script)
+- [Starship git timeout fix (4024b77)](../history.md#starship-git-timeout-fix)
+- [uv install scripts (85f3d7f)](../history.md#uv-install-scripts)
+- [Claude Code PreToolUse hook investigation ()](../history.md#claude-code-pretooluse-hook-investigation)
+- [Windows notification muting (45ca237)](../history.md#windows-notification-muting)
+- [Claude Code git write permissions (e94a2b5)](../history.md#claude-code-git-write-permissions)
+- [Claude Code permissions refinement (99e2d4f, d9d691b, 99858f4, 98ae129)](../history.md#claude-code-permissions-refinement)
+- [claude-code → claude-global rename (597bf88–f83e98c)](../history.md#claude-code-claude-global-rename)
+- [uv install PATH fix (d82c026)](../history.md#uv-install-path-fix)
+- [#15: `uv --version` fails after fresh install (d82c026)](../history.md#uv---version-fails-after-fresh-install)
+- [Profile hardening (Windows) (a64aca9)](../history.md#profile-hardening)
+- [Claude Code rules reorganization ()](../history.md#claude-code-rules-reorganization)
+- [Claude Code commands → skills migration ()](../history.md#claude-code-commands-skills-migration)
+- [#16: `New-Item -ItemType SymbolicLink` error on PS5 startup (a64aca9)](../history.md#new-item--itemtype-symboliclink-error-on-ps5-startup)
+- [Windows symlink auto-repair (08141cf, 9ab6b54)](../history.md#windows-symlink-auto-repair)
+- [Docs enforcement via hook ((pending))](../history.md#docs-enforcement-via-hook)
+- [Docs convention rule ((pending))](../history.md#docs-convention-rule)
+- [Claude Code PermissionRequest hook (feature/permission-hook2) (41f092c, (pending))](../history.md#claude-code-permissionrequest-hook)
+- [Private info leak prevention ()](../history.md#private-info-leak-prevention)
+- [master → main cleanup (07045be)](../history.md#master-main-cleanup)
+- [PowerToys Keyboard Manager (b453ee8)](../history.md#powertoys-keyboard-manager)
+- [VS 2022 C++ dev tools (1982d8e)](../history.md#vs-2022-c-dev-tools)
+- [Dotenv access blocking (76b61ca)](../history.md#dotenv-access-blocking)
+- [claude-code migration cleanup ((pending))](../history.md#claude-code-migration-cleanup)
+- [Markdown exempt from code detection in hooks ((pending))](../history.md#markdown-exempt-from-code-detection-in-hooks)
+- [Unified Edit confirmation flow ((pending))](../history.md#unified-edit-confirmation-flow)
+- [Private repo detection: non-GitHub hosts skip scanning](../history.md#private-repo-detection-non-github-hosts-skip-scanning)
+- [#17: Test execution hangs indefinitely (9b2e88f)](../history.md#test-execution-hangs-indefinitely)
+- [#18: install.sh doesn't reach Rize / Claude Usage Widget steps](../history.md#installsh-doesnt-reach-rize-claude-usage-widget-steps)
+- [#19: Session sync init deletes other machines' sessions (a8b8e5b)](../history.md#session-sync-init-deletes-other-machines-sessions)
+- [#20: Session sync propagates Claude Code format migration deletions (28f343b)](../history.md#session-sync-propagates-claude-code-format-migration-deletions)
+- [Private repo detection: static list → dynamic gh API (ab6820b)](../history.md#private-repo-detection-static-list-dynamic-gh-api)
+- [commands → skills migration cleanup (ab6820b)](../history.md#commands-skills-migration-cleanup)
+- [Claude Code branch/push delete deny rules ((pending))](../history.md#claude-code-branchpush-delete-deny-rules)
+- [dotfiles clone recovery after git rebase ()](../history.md#dotfiles-clone-recovery-after-git-rebase)
+- [Claude Tabs installer ((pending))](../history.md#claude-tabs-installer)
+- [Node.js version manager: platform split (fnm → nvm on Unix) (1b74132, (pending))](../history.md#nodejs-version-manager-platform-split)
+- [Keychain SSH key auto-detect (6b39058)](../history.md#keychain-ssh-key-auto-detect)
+- [Claude Code session sync (513e3a4, (pending))](../history.md#claude-code-session-sync)
+- [Cross-platform check hook (5c7714e)](../history.md#cross-platform-check-hook)
+- [~/dotfiles → C:\git\dotfiles path unification ((pending))](../history.md#dotfiles-cgitdotfiles-path-unification)
+- [Session sync git root relocation (dbd003a)](../history.md#session-sync-git-root-relocation)
+- [AutoHotkey per-user path fallback (1a15c1f, 29bfd8a)](../history.md#autohotkey-per-user-path-fallback)
+- [Session sync: terminal startup fetch + codes function (d3c3a38, 7d7a98e, 4f8e4c3, 20ebb49)](../history.md#session-sync-terminal-startup-fetch-codes-function)
+- [Session sync: cross-platform support (d50203c, (pending))](../history.md#session-sync-cross-platform-support)
+- [Session sync: init/push reliability fix (efbd047)](../history.md#session-sync-initpush-reliability-fix)
+- [Session sync: separate init from sync, add reset action (fc71b9e)](../history.md#session-sync-separate-init-from-sync-add-reset-action)
+- [Session sync: history.jsonl sync and mtime restore (d214411, 77d00e4)](../history.md#session-sync-historyjsonl-sync-and-mtime-restore)
+- [Session sync: Claude Code format migration causes bulk deletion (28f343b)](../history.md#session-sync-claude-code-format-migration-causes-bulk-deletion)
+- [Notification hook for permission_prompt (f447e11, 7ef7776)](../history.md#notification-hook-for-permissionprompt)
+- [Add VS Code and extensions installer (aa3f295)](../history.md#add-vs-code-and-extensions-installer)
+- [Auto-unstage effortLevel-only changes in settings.json (84db276)](../history.md#auto-unstage-effortlevel-only-changes-in-settingsjson)
+- [Add research phase to workflow](../history.md#add-research-phase-to-workflow)
+- [Fix update-docs skill to detect uncommitted changes](../history.md#fix-update-docs-skill-to-detect-uncommitted-changes)
+- [Workflow rules reorganization](../history.md#workflow-rules-reorganization)
+- [Add write-tests and make-plan skills with effort: high (23e4eba, 72f4168)](../history.md#add-write-tests-and-make-plan-skills-with-effort-high)
+- [Force push divergence detection on shell startup (257958a)](../history.md#force-push-divergence-detection-on-shell-startup)
+- [Add -Toolchain option and AWS CLI installer for Windows](../history.md#add--toolchain-option-and-aws-cli-installer-for-windows)
+- [Fix codes function to survive terminal close (781f512)](../history.md#fix-codes-function-to-survive-terminal-close)
+- [Fix codes session sync not firing per-window](../history.md#fix-codes-session-sync-not-firing-per-window)
+- [Fix codes multi-instance support](../history.md#fix-codes-multi-instance-support)
+- [Remove container extensions from VS Code auto-install (0a3ba69)](../history.md#remove-container-extensions-from-vs-code-auto-install)
+- [Security enhancement research and planning (uncommitted)](../history.md#security-enhancement-research-and-planning)
+- [Installer robustness and option hierarchy fix (uncommitted)](../history.md#installer-robustness-and-option-hierarchy-fix)
+- [Reduce WebSearch/WebFetch permission prompts (uncommitted)](../history.md#reduce-websearchwebfetch-permission-prompts)
+- [Restructure /update-docs skill for ai-specs project coverage (uncommitted)](../history.md#restructure-update-docs-skill-for-ai-specs-project-coverage)

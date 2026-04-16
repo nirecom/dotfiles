@@ -355,9 +355,9 @@ TWO_YEAR_HISTORY = OLD_ENTRIES + RECENT_ENTRIES
 
 class TestDocRotateNormal:
     def test_n1_old_archived_recent_kept(self, tmp_path):
-        """N1: 2-year span, older > 365d → archived, recent kept."""
+        """N1: floor=2 keeps 2 most recent, archives 2 oldest."""
         p = make_history(tmp_path, TWO_YEAR_HISTORY)
-        result = run_rotate(p)
+        result = run_rotate(p, "--floor", "2")
         assert result.returncode == 0, result.stderr
         body = p.read_text(encoding="utf-8")
         # Recent entries must remain in body
@@ -381,7 +381,7 @@ class TestDocRotateNormal:
         """N2: --dry-run → no files written, stdout shows plan."""
         p = make_history(tmp_path, TWO_YEAR_HISTORY)
         original = p.read_bytes()
-        result = run_rotate(p, "--dry-run")
+        result = run_rotate(p, "--floor", "2", "--dry-run")
         assert result.returncode == 0, result.stderr
         assert p.read_bytes() == original  # file unchanged
         archive_dir = tmp_path / "history"
@@ -391,13 +391,13 @@ class TestDocRotateNormal:
     def test_n3_idempotent_on_already_rotated(self, tmp_path):
         """N3: Re-run on already-rotated file → no change (idempotent)."""
         p = make_history(tmp_path, TWO_YEAR_HISTORY)
-        r1 = run_rotate(p)
+        r1 = run_rotate(p, "--floor", "2")
         assert r1.returncode == 0, r1.stderr
         body_after_first = p.read_text(encoding="utf-8")
         archive_dir = tmp_path / "history"
         archive_2024_after_first = (archive_dir / "2024.md").read_bytes()
 
-        r2 = run_rotate(p)
+        r2 = run_rotate(p, "--floor", "2")
         assert r2.returncode == 0, r2.stderr
         body_after_second = p.read_text(encoding="utf-8")
         archive_2024_after_second = (archive_dir / "2024.md").read_bytes()
@@ -435,8 +435,8 @@ Changes: bad date
 
 
 class TestDocRotateEdge:
-    def test_g1_all_entries_within_365d(self, tmp_path):
-        """G1: All entries within 365d → no rotation, body unchanged."""
+    def test_g1_all_entries_fit_in_floor(self, tmp_path):
+        """G1: All entries fit within floor (2 entries < floor=20) → no rotation."""
         content = """\
 ### Entry A (2026-01-01, aaa0001)
 Background: a
@@ -490,29 +490,25 @@ Changes: only
         body = p.read_text(encoding="utf-8")
         assert "### Only entry" in body
 
-    def test_g4_ai_specs_path_japanese_headings(self, tmp_path):
-        """G4: Path contains 'ai-specs' → Japanese headings."""
-        # Create a subdirectory named to include ai-specs in its path
+    def test_g4_ai_specs_path_rotates_correctly(self, tmp_path):
+        """G4: Path contains 'ai-specs' → rotation works with English headers."""
         ai_specs_dir = tmp_path / "ai-specs" / "project"
         ai_specs_dir.mkdir(parents=True)
         p = ai_specs_dir / "history.md"
         p.write_text(TWO_YEAR_HISTORY, encoding="utf-8")
-        result = run_rotate(p)
+        result = run_rotate(p, "--floor", "2")
         assert result.returncode == 0, result.stderr
         body = p.read_text(encoding="utf-8")
-        assert "## アーカイブ" in body
-        # index.md undated section should use Japanese
-        index_path = ai_specs_dir / "history" / "index.md"
-        if index_path.exists():
-            index_text = index_path.read_text(encoding="utf-8")
-            assert "## (日付なし)" in index_text or "アーカイブ" in index_text
+        assert "## Archived" in body
+        assert "### Old entry one" not in body
+        assert "### Recent entry one" in body
 
 
 class TestDocRotateIdempotency:
     def test_i1_rotate_twice_same_result(self, tmp_path):
         """I1: rotate twice → same result as once."""
         p = make_history(tmp_path, TWO_YEAR_HISTORY)
-        r1 = run_rotate(p)
+        r1 = run_rotate(p, "--floor", "2")
         assert r1.returncode == 0, r1.stderr
         snapshot_body = p.read_text(encoding="utf-8")
         archive_dir = tmp_path / "history"
@@ -520,8 +516,107 @@ class TestDocRotateIdempotency:
             f.name: f.read_bytes() for f in archive_dir.iterdir() if f.is_file()
         }
 
-        r2 = run_rotate(p)
+        r2 = run_rotate(p, "--floor", "2")
         assert r2.returncode == 0, r2.stderr
         assert p.read_text(encoding="utf-8") == snapshot_body
         for name, data in snapshot_archive.items():
             assert (archive_dir / name).read_bytes() == data
+
+
+# ===========================================================================
+# doc-rotate: line-count threshold and --max-age-days tests
+# ===========================================================================
+
+
+def make_long_history(tmp_path, n_entries: int, days_old: int) -> Path:
+    """Generate history.md with n_entries all dated days_old days ago."""
+    from datetime import date, timedelta
+
+    entry_date = (date.today() - timedelta(days=days_old)).isoformat()
+    lines = []
+    for i in range(n_entries):
+        lines.append(f"### Entry {i} ({entry_date}, abc{i:04d})")
+        lines.append("Background: filler")
+        lines.append("Changes: filler")
+        lines.append("")
+    p = tmp_path / "history.md"
+    p.write_text("\n".join(lines), encoding="utf-8")
+    return p
+
+
+UNDATED_HISTORY = """\
+### Old feature (abc0001)
+Background: pre-dating convention
+Changes: initial work
+
+### Another old feature (abc0002)
+Background: also undated
+Changes: more old work
+
+"""
+
+
+class TestDocRotateThreshold:
+    def test_t1_under_threshold_no_rotation(self, tmp_path):
+        """T-THRESH-1: file under threshold-warn → no rotation."""
+        # 5 entries = small file, well under default warn=500
+        p = make_long_history(tmp_path, n_entries=5, days_old=400)
+        original = p.read_bytes()
+        result = run_rotate(p, "--threshold-warn", "500")
+        assert result.returncode == 0, result.stderr
+        assert p.read_bytes() == original, "File must not change when under threshold"
+        archive_dir = tmp_path / "history"
+        assert not archive_dir.exists(), "No archive dir must be created when under threshold"
+
+    def test_t2_over_threshold_triggers_rotation(self, tmp_path):
+        """T-THRESH-2: file over threshold-warn → old entries archived."""
+        # 20 entries, threshold-warn=10, floor=5 → 15 entries archived
+        p = make_long_history(tmp_path, n_entries=20, days_old=400)
+        result = run_rotate(p, "--threshold-warn", "10", "--floor", "5")
+        assert result.returncode == 0, result.stderr
+        body = p.read_text(encoding="utf-8")
+        assert "## Archived" in body
+        archive_dir = tmp_path / "history"
+        assert archive_dir.exists(), "Archive dir must be created when over threshold"
+
+    def test_t3_floor_controls_what_is_kept(self, tmp_path):
+        """T-THRESH-3: --floor keeps N most recent entries, archives the rest."""
+        from datetime import date, timedelta
+
+        today = date.today()
+        entries = ""
+        for i, days in enumerate([400, 300, 200]):
+            d = (today - timedelta(days=days)).isoformat()
+            entries += f"### Entry {i} ({d}, abc{i:04d})\nBackground: b\nChanges: c\n\n"
+        p = tmp_path / "history.md"
+        p.write_text(entries, encoding="utf-8")
+        # floor=1 → keep most recent (200d ago), archive 2 older ones
+        result = run_rotate(p, "--floor", "1")
+        assert result.returncode == 0, result.stderr
+        body = p.read_text(encoding="utf-8")
+        assert "### Entry 2" in body, "Most recent entry must be kept"
+        assert "### Entry 0" not in body, "Oldest entry must be archived"
+        assert "### Entry 1" not in body, "Middle entry must be archived"
+
+    def test_t4_undated_entries_archived_when_threshold_exceeded(self, tmp_path):
+        """T-THRESH-4: undated entries archived when line-count threshold exceeded."""
+        p = tmp_path / "history.md"
+        p.write_text(UNDATED_HISTORY, encoding="utf-8")
+        # floor=1 → archive first undated entry, keep second
+        result = run_rotate(p, "--threshold-warn", "1", "--floor", "1")
+        assert result.returncode == 0, result.stderr
+        body = p.read_text(encoding="utf-8")
+        assert "### Old feature" not in body, "First undated entry must be archived"
+        archive_dir = tmp_path / "history"
+        assert archive_dir.exists(), "Archive dir must be created for undated entries"
+        legacy = archive_dir / "legacy.md"
+        assert legacy.exists(), "Undated entries must go to legacy.md"
+        assert "Old feature" in legacy.read_text(encoding="utf-8")
+
+    def test_t5_dry_run_reports_threshold_status(self, tmp_path):
+        """T-THRESH-5: --dry-run reports whether threshold is exceeded."""
+        p = make_long_history(tmp_path, n_entries=20, days_old=400)
+        result = run_rotate(p, "--dry-run", "--threshold-warn", "10", "--floor", "5")
+        assert result.returncode == 0, result.stderr
+        assert result.stdout, "dry-run must print something when threshold exceeded"
+        assert "threshold-warn" in result.stdout, "dry-run must report threshold info"
