@@ -727,3 +727,7 @@ Changes: install-obsolete.sh and install-obsolete.ps1 each received a BEGIN/END 
 ### Fix install.ps1: missing registry values crash on keyboard hotkey setup (2026-04-15)
 Background: On Windows machines where Keyboard Layout\Toggle registry key values (Language Hotkey, Layout Hotkey, Hotkey) have never been set, Get-ItemProperty threw a terminating error that -ErrorAction SilentlyContinue could not suppress.
 Changes: Replaced Get-ItemProperty with Get-Item + RegistryKey.GetValue(), which returns $null for missing values without throwing.
+
+### Workflow State Machine: mark-step.js removal (2026-04-16, (pending))
+Background: mark-step.js was designed as a CLI tool to mark workflow steps, but relied on CLAUDE_ENV_FILE which is not propagated to Bash tool subprocesses (Anthropic bug #27987). All functionality was already covered by the echo marker mechanism in workflow-mark.js (PostToolUse hook), making mark-step.js dead code.
+Changes: Deleted mark-step.js. workflow-gate.js block messages updated from `node mark-step.js` to `echo "<<WORKFLOW_RESET_FROM_research>>"` / `echo "<<WORKFLOW_MARK_STEP_<step>_complete>>"`. workflow-mark.js fallback error messages likewise updated. settings.json: removed allow rule for mark-step.js and ask rule for mark-step.js user_verification bypass (now moot). Tests: removed all mark-step.js-specific test sections from feature-robust-workflow.sh (tests 17–34, WS-UV-BLOCK-1~4); replaced mark-step.js state setup in integration test with direct workflow-state.js call. All remaining tests pass.
