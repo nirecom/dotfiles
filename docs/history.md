@@ -211,4 +211,12 @@ Changes: Added resolveRepoDir() function that converts MSYS2 paths to Windows pa
 
 ### workflow-gate: fix commit regex false-positive on argument text (2026-04-18, pending)
 Background: /git\s+(?:-C\s+\S+\s+)?commit\s/ had no line-anchor, so a Bash command whose arguments contained 'git commit' as text (e.g. doc-append.py --background '... git commit ...') triggered the commit block even though no git commit was being run.
-Changes: Added ^ anchor to the regex (/^git\s+(?:-C\s+\S+\s+)?commit\s/). Regression test tests/main-workflow-gate-regex.sh added (7 cases: normal x4, bug-regression x2, edge x1), all PASS.
+Changes: Added ^ anchor to the regex (/^git\s+(?:-C\s+\S+\s+)?commit\s/). Regression test tests/main-workflow-gate-regex.sh added (7 cases: normal x4, bug-regression x2, edge x1), all PASS.
+
+### Workflow State Inheritance across VS Code Restarts (2026-04-18, c6159ea)
+Background: Implemented session state inheritance so that workflow steps (research/plan completion state) carry over to new sessions after VS Code restarts. findLatestStateForContext scans transcript JSONL files to find the most recently used session state for the current cwd+branch.
+Changes: Manual smoke tests all passed: (1) steps inherited after VS Code restart, (2) most-recently-used session selected when multiple parallel sessions exist, (3) session_id preserved after /compact via SessionStart:compact hook.
+
+### Enforce doc-append for history.md; block Japanese in public-repo doc-append (2026-04-18, pending)
+Background: Claude was occasionally using the Edit tool directly on history.md instead of doc-append.py, violating the append-only convention. Japanese text was also leaking into history.md in public repos despite the language policy.
+Changes: Added Edit(**/history.md) and Write(**/history.md) to the deny list in settings.json to hard-block direct edits. Added check-japanese-in-docs.js PreToolUse hook that blocks doc-append.py calls containing Japanese characters when the target repo is public. Tests: tests/main-check-japanese-in-docs.sh (10 cases, all PASS).
