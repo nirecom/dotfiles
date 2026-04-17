@@ -2,13 +2,6 @@
 
 ## Current Work
 
-### Workflow State Inheritance across VS Code Restarts — Verifying
-
-実装完了。以下の手動 Smoke 確認が残り:
-- [ ] hook 変更 → VS Code 再起動 → 旧 session の steps が引き継がれることを確認
-- [ ] 並行セッション2つ起動 → 最後に使った方が再起動後に選ばれることを確認
-- [ ] `/compact` 実行後に session_id が維持されることを確認（PostCompact hook）
-
 
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
