@@ -219,4 +219,8 @@ Changes: Manual smoke tests all passed: (1) steps inherited after VS Code restar
 
 ### Enforce doc-append for history.md; block Japanese in public-repo doc-append (2026-04-18, pending)
 Background: Claude was occasionally using the Edit tool directly on history.md instead of doc-append.py, violating the append-only convention. Japanese text was also leaking into history.md in public repos despite the language policy.
-Changes: Added Edit(**/history.md) and Write(**/history.md) to the deny list in settings.json to hard-block direct edits. Added check-japanese-in-docs.js PreToolUse hook that blocks doc-append.py calls containing Japanese characters when the target repo is public. Tests: tests/main-check-japanese-in-docs.sh (10 cases, all PASS).
+Changes: Added Edit(**/history.md) and Write(**/history.md) to the deny list in settings.json to hard-block direct edits. Added check-japanese-in-docs.js PreToolUse hook that blocks doc-append.py calls containing Japanese characters when the target repo is public. Tests: tests/main-check-japanese-in-docs.sh (10 cases, all PASS).
+
+### Workflow State Inheritance across VS Code Restarts (2026-04-18, 2852d03)
+Background: Workflow steps (research/plan completion state) were lost on VS Code restart because each new session started fresh. findLatestStateForContext was added to scan transcript JSONL files and inherit state from the most recently used session with matching cwd+branch.
+Changes: Manual smoke tests all passed: steps inherited after restart, most-recent session wins among parallel sessions, session_id preserved after /compact via SessionStart:compact hook. Also fixed a bug where Windows cwd was not lowercased before encoding, causing transcript directory lookup to fail (C--git-dotfiles vs c--git-dotfiles).
