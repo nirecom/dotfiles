@@ -2,6 +2,11 @@
 
 ## Current Work
 
+### WORKFLOW_DOCS_NOT_NEEDED reason enforcement — Verifying
+- [ ] Verify: `echo "<<WORKFLOW_DOCS_NOT_NEEDED: <reason>>"` が docs=complete + skip_reason 記録されること
+- [ ] Verify: 旧形式 (bare form) が rejected されること
+
+
 ### Workflow State Inheritance across VS Code Restarts — Verifying
 
 実装完了。以下の手動 Smoke 確認が残り:
@@ -9,22 +14,6 @@
 - [ ] 並行セッション2つ起動 → 最後に使った方が再起動後に選ばれることを確認
 - [ ] `/compact` 実行後に session_id が維持されることを確認（PostCompact hook）
 
-### mark-step.js 削除・workflow-gate/mark メッセージ修正 — Verifying
-
-Windows / WSL / macOS それぞれで以下を確認:
-
-**1. ブロックメッセージが echo マーカー形式になっている**
-- 未完了状態で `git commit` を実行 → block メッセージに `node mark-step.js` が含まれないこと
-- code / verify ステップ未完了時: `echo "<<WORKFLOW_MARK_STEP_code_complete>>"` が表示される
-- state ファイル不在時: `echo "<<WORKFLOW_RESET_FROM_research>>"` が表示される
-
-**2. echo マーカーが実際に機能する**
-- `echo "<<WORKFLOW_MARK_STEP_code_complete>>"` → state ファイルに code=complete が記録される
-- `echo "<<WORKFLOW_RESET_FROM_research>>"` → ask ダイアログが出て、承認後に全ステップが pending に戻る
-
-- [ ] Windows
-- [ ] WSL
-- [x] macOS
 
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
