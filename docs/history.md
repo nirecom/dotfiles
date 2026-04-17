@@ -179,3 +179,7 @@ Changes: bin/doc-append.py, bin/doc-rotate.py 追加。docs/architecture/ に cl
 ### install-obsolete: .git/workflow クリーンアップ (2026-04-17, 5b3bf91)
 Background: .git/workflow ディレクトリが旧 workflow state の保存場所だったが、~/.claude/projects/workflow に移行済み。install-obsolete でサルベージ・削除する処理を追加。
 Changes: install-obsolete.sh / install-obsolete.ps1 に .git/workflow → ~/.claude/projects/workflow サルベージ処理追加。7日以内に更新された JSON ファイルを新パスにコピーし、旧ディレクトリを削除。
+
+### profile.ps1: suppress create/delete mode output in startup git pull (2026-04-18, pending)
+Background: On pwsh startup, the auto-pull's `git merge --ff-only` emitted the full summary (dozens to hundreds of `create mode` / `delete mode` lines, especially for the session sync repo) after the diffstat. The Fast-forward signal and change-size indicator (`++++`) are desired, but the summary is noise.
+Changes: Added `--no-summary` to both `git merge --ff-only` invocations in `install/win/profile.ps1` (dotfiles auto-pull and session sync). Keeps the `Fast-forward` line and diffstat; suppresses `create mode` / `delete mode` lines only.

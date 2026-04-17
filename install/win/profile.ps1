@@ -26,7 +26,7 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDi
         $fetchProcess.Kill()
         Write-Warning "git fetch timed out after 3s — skipped"
     } elseif ($fetchProcess.ExitCode -eq 0) {
-        git -C $DotfilesDir merge --ff-only FETCH_HEAD 2>$null
+        git -C $DotfilesDir merge --ff-only --no-summary FETCH_HEAD 2>$null
         if ($LASTEXITCODE -ne 0) {
             # ff-only failed — check if diverged (force push scenario)
             git -C $DotfilesDir merge-base --is-ancestor HEAD FETCH_HEAD 2>$null
@@ -60,7 +60,7 @@ if ((Test-Path "$SessionDir\.git") -and (Get-Command git -ErrorAction SilentlyCo
     if (-not $fetchProc.WaitForExit(3000)) {
         $fetchProc.Kill()
     } elseif ($fetchProc.ExitCode -eq 0) {
-        git -C $SessionDir merge --ff-only FETCH_HEAD 2>$null
+        git -C $SessionDir merge --ff-only --no-summary FETCH_HEAD 2>$null
     }
 }
 
