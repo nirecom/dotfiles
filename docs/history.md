@@ -207,4 +207,8 @@ Changes: All 18 test cases passed. No code changes needed.
 
 ### workflow-gate: fix hasStagedTestChanges for Unix-style Git Bash paths (2026-04-18, 876d12e)
 Background: Git Bash passes MSYS2-style paths (/<letter>/rest) to workflow-gate when using git -C. hasStagedTestChanges used this path as cwd for execSync, but Node.js on Windows cannot resolve MSYS2 drive paths, causing the function to throw and return false — the test-evidence override never triggered even when tests/ files were staged.
-Changes: Added resolveRepoDir() function that converts MSYS2 paths to Windows paths. Called from the main hook entrypoint to normalize repoDir before passing to hasStagedTestChanges/hasStagedDocChanges. Both functions now accept an explicit repoDir parameter. Exported all three functions for unit testing. Tests: fix-workflow-gate-unix-path.sh — 13 cases (A: resolveRepoDir unit x7, B: staged-file integration x4, C: error handling x2), all PASS.
+Changes: Added resolveRepoDir() function that converts MSYS2 paths to Windows paths. Called from the main hook entrypoint to normalize repoDir before passing to hasStagedTestChanges/hasStagedDocChanges. Both functions now accept an explicit repoDir parameter. Exported all three functions for unit testing. Tests: fix-workflow-gate-unix-path.sh — 13 cases (A: resolveRepoDir unit x7, B: staged-file integration x4, C: error handling x2), all PASS.
+
+### workflow-gate: fix commit regex false-positive on argument text (2026-04-18, pending)
+Background: /git\s+(?:-C\s+\S+\s+)?commit\s/ had no line-anchor, so a Bash command whose arguments contained 'git commit' as text (e.g. doc-append.py --background '... git commit ...') triggered the commit block even though no git commit was being run.
+Changes: Added ^ anchor to the regex (/^git\s+(?:-C\s+\S+\s+)?commit\s/). Regression test tests/main-workflow-gate-regex.sh added (7 cases: normal x4, bug-regression x2, edge x1), all PASS.
