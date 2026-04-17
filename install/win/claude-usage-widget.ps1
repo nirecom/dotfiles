@@ -15,41 +15,55 @@ $candidates = @(
 )
 $ExePath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
+# Fetch latest release info up-front (needed for both install and update-check paths)
+Write-Host "Fetching latest release info..."
+$releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/SlavomirDurej/claude-usage-widget/releases/latest"
+$latestVersion = $releaseInfo.tag_name.TrimStart('v')
+
 if ($ExePath) {
-    Write-Host "$AppName is already installed." -ForegroundColor DarkGray
+    $installedVersion = (Get-Item $ExePath).VersionInfo.ProductVersion
+    if ($installedVersion -eq $latestVersion) {
+        Write-Host "$AppName is up to date (v$installedVersion)." -ForegroundColor DarkGray
+        return
+    }
+    Write-Host "$AppName update available: v$installedVersion -> v$latestVersion" -ForegroundColor Yellow
 } else {
-    # Get latest release download URL from GitHub API
-    Write-Host "Fetching latest release info..."
-    $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/SlavomirDurej/claude-usage-widget/releases/latest"
-    $setupAsset = $releaseInfo.assets | Where-Object { $_.name -match "win-Setup\.exe$" } | Select-Object -First 1
-    if (-not $setupAsset) {
-        Write-Warning "Could not find Windows Setup exe in latest release."
-        return
-    }
+    Write-Host "Installing $AppName v$latestVersion..."
+}
 
-    $downloadUrl = $setupAsset.browser_download_url
-    $tmpFile = Join-Path $env:TEMP "claude-usage-widget-setup.exe"
+$setupAsset = $releaseInfo.assets | Where-Object { $_.name -match "win-Setup\.exe$" } | Select-Object -First 1
+if (-not $setupAsset) {
+    Write-Warning "Could not find Windows Setup exe in latest release."
+    return
+}
 
-    Write-Host "Downloading $AppName from $downloadUrl ..."
-    Invoke-WebRequest -Uri $downloadUrl -OutFile $tmpFile -UseBasicParsing
+$downloadUrl = $setupAsset.browser_download_url
+$tmpFile = Join-Path $env:TEMP "claude-usage-widget-setup.exe"
 
-    Write-Host "Installing $AppName (silent, per-user)..."
-    Start-Process -FilePath $tmpFile -ArgumentList "/S" -Wait
+Write-Host "Downloading $AppName from $downloadUrl ..."
+Invoke-WebRequest -Uri $downloadUrl -OutFile $tmpFile -UseBasicParsing
 
-    Remove-Item $tmpFile -Force -ErrorAction SilentlyContinue
+Write-Host "Installing $AppName (silent, per-user)..."
+Start-Process -FilePath $tmpFile -ArgumentList "/S" -Wait
 
-    # Installer spawns a child process; poll until exe appears or timeout
-    $timeout = 90
-    for ($i = 0; $i -lt $timeout; $i += 5) {
-        $ExePath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-        if ($ExePath) { break }
-        Write-Host "  Waiting for install to complete... ($i s)" -ForegroundColor DarkGray
-        Start-Sleep -Seconds 5
-    }
+Remove-Item $tmpFile -Force -ErrorAction SilentlyContinue
+
+# Installer spawns a child process; poll until version matches latest or timeout.
+# On update, the old exe already exists, so we must check version equality — not just existence.
+$timeout = 90
+$success = $false
+for ($i = 0; $i -lt $timeout; $i += 5) {
+    $ExePath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
     if ($ExePath) {
-        Write-Host "$AppName installed." -ForegroundColor Green
-    } else {
-        Write-Warning "$AppName install may have failed. Exe not found in expected locations."
-        return
+        $currentVersion = (Get-Item $ExePath).VersionInfo.ProductVersion
+        if ($currentVersion -eq $latestVersion) { $success = $true; break }
     }
+    Write-Host "  Waiting for install to complete... ($i s)" -ForegroundColor DarkGray
+    Start-Sleep -Seconds 5
+}
+if ($success) {
+    Write-Host "$AppName installed (v$latestVersion)." -ForegroundColor Green
+} else {
+    Write-Warning "$AppName install may have failed. Exe not found or version mismatch."
+    return
 }

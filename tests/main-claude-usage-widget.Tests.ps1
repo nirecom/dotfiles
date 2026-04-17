@@ -60,8 +60,8 @@ Describe "claude-usage-widget install script (Windows)" {
     }
 
     Context "Edge cases" {
-        It "skips download when already installed (idempotent)" {
-            $ScriptContent | Should -Match "already installed"
+        It "skips download when up to date (idempotent)" {
+            $ScriptContent | Should -Match "up to date"
         }
 
 
@@ -73,6 +73,28 @@ Describe "claude-usage-widget install script (Windows)" {
 
         It "cleans up temp file after download" {
             $ScriptContent | Should -Match "Remove-Item \`$tmpFile"
+        }
+    }
+
+    Context "Update cases" {
+        It "references tag_name from GitHub API response" {
+            $ScriptContent | Should -Match 'tag_name'
+        }
+
+        It "reads installed ProductVersion" {
+            $ScriptContent | Should -Match 'ProductVersion'
+        }
+
+        It "reinstalls when newer version available (version check precedes reinstall)" {
+            $ScriptContent | Should -Match '(?s)ProductVersion.*Invoke-WebRequest'
+        }
+
+        It "skips with 'up to date' message when same version" {
+            $ScriptContent | Should -Match 'up to date'
+        }
+
+        It "strips 'v' prefix from tag_name" {
+            $ScriptContent | Should -Match "TrimStart\('v'\)|-replace '\^v'"
         }
     }
 }
