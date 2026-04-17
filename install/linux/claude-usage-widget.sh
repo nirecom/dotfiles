@@ -3,20 +3,31 @@
 # Source: https://github.com/SlavomirDurej/claude-usage-widget
 source ~/dotfiles/bin/detectos.sh
 
-# Get latest release tag from GitHub API
+# Get latest release tag from GitHub API (strips leading 'v' so output is a bare version)
 get_latest_version() {
-    curl -fsSL "https://api.github.com/repos/SlavomirDurej/claude-usage-widget/releases/latest" | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/'
+    curl -fsSL "https://api.github.com/repos/SlavomirDurej/claude-usage-widget/releases/latest" | grep '"tag_name"' | sed 's/.*"tag_name": *"\(.*\)".*/\1/' | sed 's/^v//'
 }
 
 case "$OSDIST" in
     "macos" )
         APP_PATH="/Applications/Claude Usage Widget.app"
+        LATEST_VERSION=$(get_latest_version)
         if [ -d "$APP_PATH" ]; then
-            echo "Claude Usage Widget is already installed."
-            exit 0
+            INSTALLED_VERSION=$(defaults read "$APP_PATH/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || echo "")
+            if [ -n "$INSTALLED_VERSION" ] && [ "$INSTALLED_VERSION" = "$LATEST_VERSION" ]; then
+                echo "Claude Usage Widget is up to date (v$INSTALLED_VERSION)."
+                exit 0
+            fi
+            if [ -z "$INSTALLED_VERSION" ]; then
+                echo "Claude Usage Widget installed but version unknown. Reinstalling v$LATEST_VERSION..."
+            else
+                echo "Updating Claude Usage Widget: v$INSTALLED_VERSION -> v$LATEST_VERSION"
+            fi
+            rm -rf "$APP_PATH"
+        else
+            echo "Installing Claude Usage Widget v$LATEST_VERSION..."
         fi
-        echo "Installing Claude Usage Widget..."
-        VERSION=$(get_latest_version)
+        VERSION="$LATEST_VERSION"
         if [ "$ISM1" = "1" ]; then
             DOWNLOAD_URL="https://github.com/SlavomirDurej/claude-usage-widget/releases/download/v${VERSION}/Claude-Usage-Widget-${VERSION}-macOS-arm64.dmg"
         else
@@ -34,7 +45,7 @@ case "$OSDIST" in
         fi
         cp -R "$APP_SRC" "$APP_PATH"
         hdiutil detach "$MOUNT_DIR" -quiet
-        echo "Claude Usage Widget installed."
+        echo "Claude Usage Widget installed (v$VERSION)."
 
         # Configure login item for autostart
         if ! osascript -e 'tell application "System Events" to get the name of every login item' 2>/dev/null | grep -q "Claude Usage Widget"; then
@@ -51,12 +62,24 @@ case "$OSDIST" in
         fi
         INSTALL_DIR="$HOME/.local/bin"
         APPIMAGE_PATH="$INSTALL_DIR/claude-usage-widget.AppImage"
+        VERSION_FILE="$APPIMAGE_PATH.version"
+        LATEST_VERSION=$(get_latest_version)
         if [ -f "$APPIMAGE_PATH" ]; then
-            echo "Claude Usage Widget is already installed."
-            exit 0
+            INSTALLED_VERSION=""
+            [ -f "$VERSION_FILE" ] && INSTALLED_VERSION=$(cat "$VERSION_FILE")
+            if [ -n "$INSTALLED_VERSION" ] && [ "$INSTALLED_VERSION" = "$LATEST_VERSION" ]; then
+                echo "Claude Usage Widget is up to date (v$INSTALLED_VERSION)."
+                exit 0
+            fi
+            if [ -z "$INSTALLED_VERSION" ]; then
+                echo "Claude Usage Widget installed but version unknown. Reinstalling v$LATEST_VERSION..."
+            else
+                echo "Updating Claude Usage Widget: v$INSTALLED_VERSION -> v$LATEST_VERSION"
+            fi
+        else
+            echo "Installing Claude Usage Widget v$LATEST_VERSION..."
         fi
-        echo "Installing Claude Usage Widget..."
-        VERSION=$(get_latest_version)
+        VERSION="$LATEST_VERSION"
         ARCH=$(uname -m)
         if [ "$ARCH" = "aarch64" ]; then
             DOWNLOAD_URL="https://github.com/SlavomirDurej/claude-usage-widget/releases/download/v${VERSION}/Claude-Usage-Widget-${VERSION}-linux-arm64.AppImage"
@@ -66,7 +89,8 @@ case "$OSDIST" in
         mkdir -p "$INSTALL_DIR"
         curl -fSL -o "$APPIMAGE_PATH" "$DOWNLOAD_URL"
         chmod +x "$APPIMAGE_PATH"
-        echo "Claude Usage Widget installed to $APPIMAGE_PATH"
+        echo "$LATEST_VERSION" > "$APPIMAGE_PATH.version"
+        echo "Claude Usage Widget installed to $APPIMAGE_PATH (v$VERSION)"
 
         # Create autostart desktop entry
         AUTOSTART_DIR="$HOME/.config/autostart"
