@@ -2,11 +2,6 @@
 
 ## Current Work
 
-### WORKFLOW_DOCS_NOT_NEEDED reason enforcement — Verifying
-- [ ] Verify: `echo "<<WORKFLOW_DOCS_NOT_NEEDED: <reason>>"` が docs=complete + skip_reason 記録されること
-- [ ] Verify: 旧形式 (bare form) が rejected されること
-
-
 ### Workflow State Inheritance across VS Code Restarts — Verifying
 
 実装完了。以下の手動 Smoke 確認が残り:
