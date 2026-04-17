@@ -180,20 +180,20 @@ Changes: bin/doc-append.py, bin/doc-rotate.py 追加。docs/architecture/ に cl
 Background: .git/workflow ディレクトリが旧 workflow state の保存場所だったが、~/.claude/projects/workflow に移行済み。install-obsolete でサルベージ・削除する処理を追加。
 Changes: install-obsolete.sh / install-obsolete.ps1 に .git/workflow → ~/.claude/projects/workflow サルベージ処理追加。7日以内に更新された JSON ファイルを新パスにコピーし、旧ディレクトリを削除。
 
-### profile.ps1: suppress create/delete mode output in startup git pull (2026-04-18, pending)
-Background: On pwsh startup, the auto-pull's `git merge --ff-only` emitted the full summary (dozens to hundreds of `create mode` / `delete mode` lines, especially for the session sync repo) after the diffstat. The Fast-forward signal and change-size indicator (`++++`) are desired, but the summary is noise.
-Changes: Added `--no-summary` to both `git merge --ff-only` invocations in `install/win/profile.ps1` (dotfiles auto-pull and session sync). Keeps the `Fast-forward` line and diffstat; suppresses `create mode` / `delete mode` lines only.
+### profile.ps1: suppress create/delete mode output in startup git pull (2026-04-18, pending)
+Background: On pwsh startup, the auto-pull's `git merge --ff-only` emitted the full summary (dozens to hundreds of `create mode` / `delete mode` lines, especially for the session sync repo) after the diffstat. The Fast-forward signal and change-size indicator (`++++`) are desired, but the summary is noise.
+Changes: Added `--no-summary` to both `git merge --ff-only` invocations in `install/win/profile.ps1` (dotfiles auto-pull and session sync). Keeps the `Fast-forward` line and diffstat; suppresses `create mode` / `delete mode` lines only.
 ### Workflow State Machine: session ID injection and state inheritance across VS Code restarts (2026-04-18, (pending))
 Background: VS Code 再起動時（hook 変更・シャットダウン等）に新 session_id が発行され、旧 session の workflow state file が孤立する。workflow-gate がすべてのステップを pending と判定してコミットをブロックする問題を解消する。
 Changes: 3つの変更を組み合わせて解消。(1) session-start.js: 引き継ぎロジック追加 — 新セッション開始時、~/.claude/projects/<encoded-cwd>/<session_id>.jsonl をmtime降順(最大10件)スキャンし、SessionStart/PostCompact attachment エントリの stdout から「Current workflow session_id: <uuid>」を検索。同一 cwd+branch かつ all-pending でない state があれば steps をコピー引き継ぎ。(2) session-start.js: 出力を {} から additionalContext JSON (session_id + state path) に変更し、transcript に記録して将来のセッションが参照できるようにする。(3) post-compact.js (新規 PostCompact hook): compaction 後に session_id を再注入し transcript のマーカーを保持。workflow-state.js: getCurrentContext()・findLatestStateForContext(ctx) 追加、createInitialState() に optional ctx (cwd/git_branch) 引数追加。settings.json: PostCompact hook 登録追加。テスト: tests/feature-workflow-inherit-state.sh (A1–A12, T-C1–T-C3, 15 ケース) と tests/feature-workflow-post-compact.sh (B1–B3, 3 ケース)、計 18 ケース全 PASS。
 
-### mark-step.js 削除・workflow-gate/mark メッセージ修正 検証完了 (2026-04-18, 9340267)
-Background: workflow-gate/mark のブロックメッセージを node mark-step.js 呼び出し形式から echo マーカー形式に移行。mark-step.js を削除し workflow-mark.js に統合済み。
+### mark-step.js 削除・workflow-gate/mark メッセージ修正 検証完了 (2026-04-18, 9340267)
+Background: workflow-gate/mark のブロックメッセージを node mark-step.js 呼び出し形式から echo マーカー形式に移行。mark-step.js を削除し workflow-mark.js に統合済み。
 Changes: Windows / WSL / macOS 全環境で動作確認完了。ブロックメッセージに node mark-step.js が含まれないこと、WORKFLOW_MARK_STEP / WORKFLOW_RESET_FROM echo マーカーが state ファイルに正しく反映されることを確認。
 
-### workflow-mark: require reason argument for WORKFLOW_DOCS_NOT_NEEDED sentinel (2026-04-18, (pending))
-Background: The bare <<WORKFLOW_DOCS_NOT_NEEDED>> sentinel allowed reflexive skipping of the docs step without the model articulating why. Several sessions skipped docs when a history.md entry was warranted.
-Changes: Sentinel extended to <<WORKFLOW_DOCS_NOT_NEEDED: REASON>> where REASON is validated (>=3 non-space chars, no '>', not a bilingual placeholder). Reason stored as state.steps.docs.skip_reason via new extraFields parameter on markStep(). settings.json ask glob updated. workflow-mark.js looks-like fallback rejects legacy bare form and reason-with->. WRITE_TESTS_NOT_NEEDED mirror change deferred (inline TODO). Tests WS-EV-9 through WS-EV-17 added to tests/main-workflow-evidence.sh.
+### workflow-mark: require reason argument for WORKFLOW_DOCS_NOT_NEEDED sentinel (2026-04-18, (pending))
+Background: The bare <<WORKFLOW_DOCS_NOT_NEEDED>> sentinel allowed reflexive skipping of the docs step without the model articulating why. Several sessions skipped docs when a history.md entry was warranted.
+Changes: Sentinel extended to <<WORKFLOW_DOCS_NOT_NEEDED: REASON>> where REASON is validated (>=3 non-space chars, no '>', not a bilingual placeholder). Reason stored as state.steps.docs.skip_reason via new extraFields parameter on markStep(). settings.json ask glob updated. workflow-mark.js looks-like fallback rejects legacy bare form and reason-with->. WRITE_TESTS_NOT_NEEDED mirror change deferred (inline TODO). Tests WS-EV-9 through WS-EV-17 added to tests/main-workflow-evidence.sh.
 
 ### claude-usage-widget: auto update support (2026-04-18, pending)
 Background: When running install.ps1 / install.sh, claude-usage-widget was always skipped if already installed with no version check. User wanted install.ps1 to update to the latest version automatically. Scope intentionally limited to claude-usage-widget only (other installers not changed due to effort).
@@ -204,3 +204,7 @@ Follow-up: two issues surfaced on first run — (a) running widget locks its exe
 ### WORKFLOW_DOCS_NOT_NEEDED reason enforcement verification (2026-04-18, d5544f2)
 Background: WORKFLOW_DOCS_NOT_NEEDED sentinel now requires a meaningful reason string (>=3 non-space chars, not a placeholder). Bare form is rejected. Verified via WS-EV-9 through WS-EV-18 in tests/main-workflow-evidence.sh.
 Changes: All 18 test cases passed. No code changes needed.
+
+### workflow-gate: fix hasStagedTestChanges for Unix-style Git Bash paths (2026-04-18, 876d12e)
+Background: Git Bash passes MSYS2-style paths (/<letter>/rest) to workflow-gate when using git -C. hasStagedTestChanges used this path as cwd for execSync, but Node.js on Windows cannot resolve MSYS2 drive paths, causing the function to throw and return false — the test-evidence override never triggered even when tests/ files were staged.
+Changes: Added resolveRepoDir() function that converts MSYS2 paths to Windows paths. Called from the main hook entrypoint to normalize repoDir before passing to hasStagedTestChanges/hasStagedDocChanges. Both functions now accept an explicit repoDir parameter. Exported all three functions for unit testing. Tests: fix-workflow-gate-unix-path.sh — 13 cases (A: resolveRepoDir unit x7, B: staged-file integration x4, C: error handling x2), all PASS.
