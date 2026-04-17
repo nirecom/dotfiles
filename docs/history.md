@@ -171,3 +171,11 @@ Changes: `resolveRepoDir` now normalizes `/<drive>/path` → `C:\path` patterns 
 ### fix: install.sh に uv 呼び出し追加・--develop の包含関係を Windows と統一 (2026-04-17, pending)
 Background: install/linux/uv.sh が存在するにもかかわらず install.sh のどこからも呼び出されていなかった。また --develop フラグが base パッケージブロックを実行しない実装になっており、Windows の install.ps1 (-Develop ⊇ -Base) と直交性が欠如していた。
 Changes: install.sh の base ブロックに uv.sh 呼び出しを追加。base ブロックの条件を --base || --develop || --full に変更し、Windows の包含関係 (Full ⊇ Develop ⊇ Base) と揃えた。
+
+### doc-append/doc-rotate + architecture.md split (2026-04-17, 28fa673)
+Background: docs/history.md の肥大化対策として doc-append.py / doc-rotate.py を追加。docs/architecture.md も 300 行超に備えて architecture/ サブディレクトリへ分割。
+Changes: bin/doc-append.py, bin/doc-rotate.py 追加。docs/architecture/ に claude-code.md, file-tree.md, shell-startup.md を分割。settings.json に uv run 権限追加。
+
+### install-obsolete: .git/workflow クリーンアップ (2026-04-17, 5b3bf91)
+Background: .git/workflow ディレクトリが旧 workflow state の保存場所だったが、~/.claude/projects/workflow に移行済み。install-obsolete でサルベージ・削除する処理を追加。
+Changes: install-obsolete.sh / install-obsolete.ps1 に .git/workflow → ~/.claude/projects/workflow サルベージ処理追加。7日以内に更新された JSON ファイルを新パスにコピーし、旧ディレクトリを削除。
