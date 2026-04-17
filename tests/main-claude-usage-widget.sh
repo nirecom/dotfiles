@@ -33,8 +33,8 @@ grep -q "macos" "$SCRIPT" && pass "handles macOS" || fail "missing macOS handlin
 # Test: script downloads from GitHub releases
 grep -q "github.com/SlavomirDurej/claude-usage-widget/releases" "$SCRIPT" && pass "downloads from GitHub releases" || fail "missing GitHub releases URL"
 
-# Test: script checks for existing installation
-grep -q "already installed" "$SCRIPT" && pass "checks for existing installation" || fail "missing installation check"
+# Test: script has idempotent up-to-date skip (checks version against latest)
+grep -q "up to date" "$SCRIPT" && pass "has idempotent up-to-date skip" || fail "missing up-to-date skip"
 
 # Test: macOS configures login item for autostart
 grep -q "osascript.*login item" "$SCRIPT" && pass "macOS: configures login item" || fail "missing macOS login item setup"
@@ -83,6 +83,30 @@ grep -q '\-print -quit' "$SCRIPT" && pass "macOS: -print -quit for deterministic
 
 # Test: ubuntu sets executable permission on AppImage
 grep -q 'chmod +x.*APPIMAGE_PATH' "$SCRIPT" && pass "ubuntu: chmod +x on AppImage" || fail "missing chmod +x on AppImage"
+
+echo ""
+echo "=== Update cases ==="
+
+# Test: macOS reads CFBundleShortVersionString from installed .app
+grep -q 'CFBundleShortVersionString' "$SCRIPT" && pass "macOS: reads CFBundleShortVersionString" || fail "missing CFBundleShortVersionString read"
+
+# Test: macOS removes old .app before reinstall on update
+grep -qE 'rm -rf.*APP_PATH|rm -rf.*\.app' "$SCRIPT" && pass "macOS: removes old .app before reinstall" || fail "missing rm -rf of old .app on update"
+
+# Test: Linux reads .version sidecar file
+grep -q '\.version' "$SCRIPT" && pass "linux: reads .version sidecar file" || fail "missing .version sidecar read"
+
+# Test: Linux writes version to .version sidecar after install
+grep -qE 'echo.*>.*\.version|> .*\.version' "$SCRIPT" && pass "linux: writes .version sidecar after install" || fail "missing .version sidecar write"
+
+# Test: up-to-date skip message
+grep -q 'up to date' "$SCRIPT" && pass "shows 'up to date' skip message" || fail "missing 'up to date' skip message"
+
+# Test: strips v prefix from tag
+grep -qE "sed.*s/\^v|#v" "$SCRIPT" && pass "strips 'v' prefix from tag_name" || fail "missing 'v' prefix strip"
+
+# Test: missing .version file falls back to reinstall
+grep -qE 'if \[ ! -f.*\.version|\[ -z.*VERSION' "$SCRIPT" && pass "handles missing .version file (fallback to reinstall)" || fail "missing .version fallback handling"
 
 echo ""
 if [ "$ERRORS" -eq 0 ]; then
