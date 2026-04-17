@@ -8,6 +8,12 @@ $ErrorActionPreference = "Stop"
 $AppName = "Claude Usage Widget"
 $ExeName = "Claude-Usage-Widget.exe"
 
+# Normalize version for comparison: strip trailing .0 components so
+# ProductVersion (4-part "1.7.2.0") and tag_name (3-part "1.7.2") compare equal.
+function ConvertTo-NormalizedWidgetVersion([string]$v) {
+    return ($v -replace '(\.0)+$', '')
+}
+
 # Check both per-user and per-machine install paths
 $candidates = @(
     Join-Path $env:LOCALAPPDATA "Programs\Claude-Usage-Widget\$ExeName"
@@ -22,7 +28,7 @@ $latestVersion = $releaseInfo.tag_name.TrimStart('v')
 
 if ($ExePath) {
     $installedVersion = (Get-Item $ExePath).VersionInfo.ProductVersion
-    if ($installedVersion -eq $latestVersion) {
+    if ((ConvertTo-NormalizedWidgetVersion $installedVersion) -eq (ConvertTo-NormalizedWidgetVersion $latestVersion)) {
         Write-Host "$AppName is up to date (v$installedVersion)." -ForegroundColor DarkGray
         return
     }
@@ -43,6 +49,14 @@ $tmpFile = Join-Path $env:TEMP "claude-usage-widget-setup.exe"
 Write-Host "Downloading $AppName from $downloadUrl ..."
 Invoke-WebRequest -Uri $downloadUrl -OutFile $tmpFile -UseBasicParsing
 
+# Widget locks its exe while running; stop it before install so the installer can overwrite.
+$widgetProcs = Get-Process -Name "Claude-Usage-Widget" -ErrorAction SilentlyContinue
+if ($widgetProcs) {
+    Write-Host "Stopping running $AppName to allow update..." -ForegroundColor DarkGray
+    $widgetProcs | Stop-Process -Force
+    Start-Sleep -Seconds 2
+}
+
 Write-Host "Installing $AppName (silent, per-user)..."
 Start-Process -FilePath $tmpFile -ArgumentList "/S" -Wait
 
@@ -56,7 +70,7 @@ for ($i = 0; $i -lt $timeout; $i += 5) {
     $ExePath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
     if ($ExePath) {
         $currentVersion = (Get-Item $ExePath).VersionInfo.ProductVersion
-        if ($currentVersion -eq $latestVersion) { $success = $true; break }
+        if ((ConvertTo-NormalizedWidgetVersion $currentVersion) -eq (ConvertTo-NormalizedWidgetVersion $latestVersion)) { $success = $true; break }
     }
     Write-Host "  Waiting for install to complete... ($i s)" -ForegroundColor DarkGray
     Start-Sleep -Seconds 5
