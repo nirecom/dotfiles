@@ -167,3 +167,7 @@ Changes: Replaced date-based cutoff with floor-based archiving: keep last --floo
 ### Fix workflow-gate: Unix-style drive path normalization in resolveRepoDir (2026-04-17, pending)
 Background: On Windows with Git Bash, `git -C /<drive>/path commit` passed a Unix-style drive path (e.g. `/<drive>/git/dotfiles`) to workflow-gate.js. Windows Node.js does not accept Unix-style paths as `cwd` in `execSync`, causing `hasStagedTestChanges` and `hasStagedDocChanges` to silently return `false` even when tests/ or docs/ were staged — blocking commits with a spurious "write_tests not complete" error.
 Changes: `resolveRepoDir` now normalizes `/<drive>/path` → `C:\path` patterns (single drive letter followed by `/`). `hasStagedTestChanges` and `hasStagedDocChanges` catch blocks now write a warning to `process.stderr` instead of silently swallowing the error. Main execution wrapped in `require.main === module` guard; `resolveRepoDir`, `hasStagedTestChanges`, `hasStagedDocChanges` exported for testability. 13 tests added in `tests/fix-workflow-gate-unix-path.sh`.
+
+### fix: install.sh に uv 呼び出し追加・--develop の包含関係を Windows と統一 (2026-04-17, pending)
+Background: install/linux/uv.sh が存在するにもかかわらず install.sh のどこからも呼び出されていなかった。また --develop フラグが base パッケージブロックを実行しない実装になっており、Windows の install.ps1 (-Develop ⊇ -Base) と直交性が欠如していた。
+Changes: install.sh の base ブロックに uv.sh 呼び出しを追加。base ブロックの条件を --base || --develop || --full に変更し、Windows の包含関係 (Full ⊇ Develop ⊇ Base) と揃えた。
