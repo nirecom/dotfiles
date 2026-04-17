@@ -56,13 +56,18 @@ echo ""
 echo "--- Cleaning up obsolete files ---"
 ~/dotfiles/install/linux/install-obsolete.sh
 
-if [ "$1" = "--base" ] || [ "$1" = "--full" ]; then
+if [ "$1" = "--base" ] || [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
     # Step 6: Install base packages
     echo ""
     echo "--- Installing base packages ---"
     ~/dotfiles/install/linux/install-base.sh
 
-    # Step 7: Install Claude Usage Widget
+    # Step 7: Install uv (Python package manager)
+    echo ""
+    echo "--- Installing uv ---"
+    ~/dotfiles/install/linux/uv.sh
+
+    # Step 8: Install Claude Usage Widget
     echo ""
     echo "--- Installing Claude Usage Widget ---"
     ~/dotfiles/install/linux/claude-usage-widget.sh
