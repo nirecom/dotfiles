@@ -13,6 +13,8 @@ Path: `~/.claude/projects/workflow/<session-id>.json` (never committed — outsi
 {
   "version": 1,
   "session_id": "abc123",
+  "cwd": "/path/to/project",
+  "git_branch": "main",
   "created_at": "2026-04-12T10:00:00.000Z",
   "steps": {
     "research":          { "status": "complete", "updated_at": "..." },
@@ -25,6 +27,9 @@ Path: `~/.claude/projects/workflow/<session-id>.json` (never committed — outsi
   }
 }
 ```
+
+`cwd` and `git_branch` are optional (absent in states created before the inheritance feature).
+`git_branch` is `null` for non-git directories and detached HEAD.
 
 Statuses: `pending` | `in_progress` | `complete` | `skipped`
 - `skipped`: allowed only for `research` and `plan` (CLAUDE.md skip conditions)
@@ -70,8 +75,23 @@ request user approval via dialog before the echo runs.
 ```
 Session start → session-start.js (SessionStart hook)
   appends CLAUDE_SESSION_ID=<sid> to CLAUDE_ENV_FILE
-  creates ~/.claude/projects/workflow/<sid>.json with all steps pending (if not exists)
+  if state file does not exist:
+    resolves cwd (CLAUDE_PROJECT_DIR or process.cwd()) and git_branch
+    scans ~/.claude/projects/<encoded-cwd>/<session_id>.jsonl (mtime desc, up to 10)
+    for each transcript: finds "Current workflow session_id: <prior-sid>" in
+      SessionStart/PostCompact attachment entries
+    if found with matching cwd+git_branch and at least one non-pending step:
+      copies prior session's steps (state inheritance)
+    else: creates fresh state with all steps pending
+  writes ~/.claude/projects/workflow/<sid>.json (includes cwd, git_branch)
+  outputs additionalContext: "Current workflow session_id: <sid>\nState file: ..."
+    (→ recorded in transcript for future sessions to find via the scan above)
   runs zombie cleanup (deletes state files older than 7 days)
+
+Compaction → post-compact.js (PostCompact hook)
+  reads session_id from hook stdin JSON
+  outputs additionalContext: "Current workflow session_id: <sid>\nState file: ..."
+  (re-injects session_id so transcript retains the marker after compaction)
 
 Skill runs (/make-plan, /write-tests, etc.)
   → Completion section emits: echo "<<WORKFLOW_MARK_STEP_<step>_complete>>"
@@ -86,6 +106,11 @@ git commit attempt → workflow-gate.js (PreToolUse hook)
   for docs: also checks staged docs/*.md / *.md files (evidence override)
   approves if all steps complete/skipped; blocks with remediation message otherwise
 ```
+
+State inheritance is cwd+branch scoped. The practical inheritance window is 7 days (zombie
+cleanup limit). Parallel sessions: transcript mtime ordering ensures the most-recently-used
+session wins. Non-git directories and detached HEAD both use `git_branch: null` — they match
+each other but not named branches.
 
 ### Fail-safe behavior
 
@@ -215,7 +240,11 @@ bulk-deleted; most had directory versions with no data loss. One-time event.
 - `workflow-mark.js` (PostToolUse) — intercepts `echo "<<WORKFLOW_MARK_STEP_step_status>>"` and
   `echo "<<WORKFLOW_RESET_FROM_step>>"` via strict regex on `tool_input.command`
 - `session-start.js` (SessionStart) — appends `CLAUDE_SESSION_ID=<sid>` to `CLAUDE_ENV_FILE`;
-  creates state file with all steps `pending` if not exists; runs zombie cleanup
+  inherits prior session's workflow steps if cwd+branch match found in transcript (see Session
+  ID flow); otherwise creates fresh state; outputs additionalContext with session_id; runs
+  zombie cleanup
+- `post-compact.js` (PostCompact) — re-injects session_id into conversation context after
+  compaction so the transcript retains the marker for future inheritance lookups
 - `check-cross-platform.js` (PreToolUse, matcher: `Bash`) — blocks `git commit` when
   platform-specific files (`install/win/` ↔ `install/linux/`) are staged without counterpart
   changes. Skip mechanisms: `.cross-platform-skiplist` (permanent, base tool names) and
