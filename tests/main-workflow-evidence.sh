@@ -514,6 +514,27 @@ else
     fail "WS-EV-17b. expected 'reason' or 'malformed' hint, got: $MARK_OUT"
 fi
 
+echo ""
+echo "=== WS-EV-18: WORKFLOW_DOCS_NOT_NEEDED boundary: exactly 3 non-space chars → accepted ==="
+
+REPO=$(setup_repo)
+SID="ev18-$$"
+write_state "$SID" "$(ALL_COMPLETE_EXCEPT docs "$SID")"
+
+# "typ" is exactly 3 non-space chars, not in dud set, not repeated — should pass
+MARK_JSON=$(build_mark_json 'echo "<<WORKFLOW_DOCS_NOT_NEEDED: typ>>"' "$SID")
+MARK_OUT=$(run_mark "$MARK_JSON")
+
+expect_state_step "WS-EV-18a. 3-char boundary reason → docs=complete" \
+    "$SID" "docs" "complete"
+
+EV18_REASON=$(read_state_field "$SID" "docs" "skip_reason")
+if [ "$EV18_REASON" = "typ" ]; then
+    pass "WS-EV-18b. 3-char skip_reason recorded verbatim"
+else
+    fail "WS-EV-18b. expected skip_reason='typ', got: $EV18_REASON"
+fi
+
 # ===========================================================================
 # Results
 # ===========================================================================
