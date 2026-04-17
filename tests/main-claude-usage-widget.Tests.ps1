@@ -96,5 +96,21 @@ Describe "claude-usage-widget install script (Windows)" {
         It "strips 'v' prefix from tag_name" {
             $ScriptContent | Should -Match "TrimStart\('v'\)|-replace '\^v'"
         }
+
+        It "stops running widget process before install (to avoid exe lock)" {
+            $ScriptContent | Should -Match 'Stop-Process'
+        }
+
+        It "detects running widget process before stopping" {
+            $ScriptContent | Should -Match 'Get-Process[^|]*Claude-Usage-Widget'
+        }
+
+        It "normalizes 4-part ProductVersion against 3-part tag_name for equality" {
+            $ScriptContent | Should -Match '\(\\\.0\)\+\$|-replace.*\\\.0'
+        }
+
+        It "documents 4-part vs 3-part normalization intent" {
+            $ScriptContent | Should -Match '[Nn]ormalize|4-part|3-part|trailing\s+\.0'
+        }
     }
 }
