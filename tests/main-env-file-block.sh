@@ -31,7 +31,7 @@ trap 'rm -rf "$TMPBASE"' EXIT
 # Init a git repo with the pre-commit hook installed and a HEAD commit.
 # The hook references DOTFILES_DIR=$(cd hook-dir/../.. && pwd), so we stage
 # it inside <repo>/claude-global/hooks/pre-commit and let the script also
-# find a real bin/check-private-info.sh sibling for safety.
+# find a real bin/scan-outbound.sh sibling for safety.
 init_repo() {
     local repo="$1"
     rm -rf "$repo"
@@ -43,8 +43,8 @@ init_repo() {
     chmod +x "$repo/claude-global/hooks/pre-commit"
 
     # Copy the scanner so the hook can invoke it
-    cp "$DOTFILES_DIR/bin/check-private-info.sh" "$repo/bin/check-private-info.sh"
-    chmod +x "$repo/bin/check-private-info.sh"
+    cp "$DOTFILES_DIR/bin/scan-outbound.sh" "$repo/bin/scan-outbound.sh"
+    chmod +x "$repo/bin/scan-outbound.sh"
 
     # Empty local allowlist (scanner expects it)
     : > "$repo/.private-info-allowlist"
@@ -66,7 +66,7 @@ init_repo() {
     # exec-perm check passes (Windows git doesn't preserve +x from `cp`).
     : > "$repo/README.md"
     git -C "$repo" add README.md .private-info-allowlist
-    git -C "$repo" add --chmod=+x bin/check-private-info.sh
+    git -C "$repo" add --chmod=+x bin/scan-outbound.sh
     git -C "$repo" add --chmod=+x claude-global/hooks/pre-commit
     git -C "$repo" commit -q -m "init"
 }

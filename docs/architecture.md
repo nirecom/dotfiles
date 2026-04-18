@@ -130,9 +130,9 @@ Two checkpoints prevent private information from being committed:
 | Git commit | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Scans staged file content |
 | Git commit (effortLevel/model) | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Auto-unstages settings.json if only effortLevel and/or model changed |
 | Git commit (.sh perms) | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Blocks commit if `.sh` files lack execute permission (`100644`) |
-| Claude Code edit | `claude-global/hooks/check-private-info.js` (PreToolUse) | Scans Edit/Write content |
+| Claude Code edit | `claude-global/hooks/scan-outbound.js` (PreToolUse) | Scans Edit/Write content |
 
-Both call `bin/check-private-info.sh` (single source of truth for detection patterns).
+Both call `bin/scan-outbound.sh` (single source of truth for detection patterns).
 
 **Detection patterns**: RFC 1918 IPv4 (`10.x`, `172.16-31.x`, `192.168.x`), email addresses, MAC addresses, absolute local paths (`/Users/`, `/home/`, `C:\Users\`). Additional patterns via `.private-info-blocklist`.
 
@@ -142,7 +142,7 @@ Both call `bin/check-private-info.sh` (single source of truth for detection patt
 
 **Additional patterns** (personal information, hardware model numbers, hostnames, etc.) can be detected by adding regex patterns to `.private-info-blocklist`.
 
-For detailed usage, see [private-info-scanning.md](private-info-scanning.md).
+For detailed usage, see [scan-outbound.md](scan-outbound.md).
 
 ---
 

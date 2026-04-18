@@ -9,7 +9,7 @@ fail() { echo "  FAIL: $1"; FAIL=$((FAIL + 1)); }
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SKILL="$DOTFILES_DIR/claude-global/skills/review-code-security/SKILL.md"
-PRIVATE_INFO_DOC="$DOTFILES_DIR/docs/private-info-scanning.md"
+PRIVATE_INFO_DOC="$DOTFILES_DIR/docs/scan-outbound.md"
 
 echo "=== review-code-security skill structural tests ==="
 
@@ -68,11 +68,11 @@ else
     fail "does not cross-reference /review-plan-security"
 fi
 
-# --- Normal case 9: references docs/private-info-scanning.md ---
-if [ -f "$SKILL" ] && grep -qF 'docs/private-info-scanning.md' "$SKILL" 2>/dev/null; then
-    pass "references docs/private-info-scanning.md"
+# --- Normal case 9: references docs/scan-outbound.md ---
+if [ -f "$SKILL" ] && grep -qF 'docs/scan-outbound.md' "$SKILL" 2>/dev/null; then
+    pass "references docs/scan-outbound.md"
 else
-    fail "does not reference docs/private-info-scanning.md"
+    fail "does not reference docs/scan-outbound.md"
 fi
 
 # --- Normal case 10: contains 'Automated coverage' phrase ---
@@ -109,17 +109,17 @@ else
     pass "SKILL.md absent — security pattern check skipped (file-existence failure already recorded)"
 fi
 
-# --- Idempotency case 14: docs/private-info-scanning.md mentions review-code-security exactly once ---
+# --- Idempotency case 14: docs/scan-outbound.md mentions review-code-security exactly once ---
 if [ -f "$PRIVATE_INFO_DOC" ]; then
     count=$(grep -c 'review-code-security' "$PRIVATE_INFO_DOC" 2>/dev/null || true)
     : "${count:=0}"
     if [ "$count" -eq 1 ]; then
-        pass "docs/private-info-scanning.md mentions review-code-security exactly once"
+        pass "docs/scan-outbound.md mentions review-code-security exactly once"
     else
-        fail "docs/private-info-scanning.md mentions review-code-security $count times (expected exactly 1)"
+        fail "docs/scan-outbound.md mentions review-code-security $count times (expected exactly 1)"
     fi
 else
-    fail "docs/private-info-scanning.md does not exist"
+    fail "docs/scan-outbound.md does not exist"
 fi
 
 echo ""
