@@ -10,7 +10,7 @@ Skill naming follows existing `verb-noun` (kebab-case) convention.
 - [x] Phase 1: Architecture Security Checklist (`/review-security` skill)
   - [x] Verify: invoke `/review-security` in a new session and confirm TodoWrite-based checklist execution
 - [x] Phase 2: Security Test Cases (`test.md` edit)
-  - [ ] Verify: confirm Security cases section in test.md with correct OWASP/CWE citations, and test-rules/ subdirectory loads correctly
+  - [x] Verify: confirm Security cases section in test.md with correct OWASP/CWE citations, and test-rules/ subdirectory loads correctly
 - [ ] Phase 3: Security Patterns Reference (`/scan-security` skill)
 - [ ] Phase 4: Prompt Injection Defense
 
@@ -36,7 +36,7 @@ Skill naming follows existing `verb-noun` (kebab-case) convention.
 - [ ] `/write-tests` スキルの Procedure に「呼び出し経路ごとの異常系洗い出し」ステップを追加
 - [ ] Workflow State Machine の E2E 検証（全環境完了済み）— 着手可能
 
-### [Bug] workflow-gate の research/plan スキップマーカーが未定義 — 要修正
+### [Bug] workflow-gate の research/plan スキップマーカー — Verifying
 
 **再現手順:**
 1. 単一ファイルのドキュメント変更など、research/plan が不要なタスクで `/commit-push` を実行
@@ -44,7 +44,9 @@ Skill naming follows existing `verb-noun` (kebab-case) convention.
 3. `write_tests` には `<<WORKFLOW_WRITE_TESTS_NOT_NEEDED>>` echo マーカーがあるが、research/plan に相当するスキップマーカーが存在しない
 4. 回避策として workflow state JSON を直接編集するしかない
 
-**修正候補:**
-- [ ] `echo "<<WORKFLOW_RESEARCH_NOT_NEEDED>>"` / `echo "<<WORKFLOW_PLAN_NOT_NEEDED>>"` マーカーを追加
-- [ ] workflow-gate.js の block メッセージにもスキップ方法を案内する
+**修正:**
+- [x] `echo "<<WORKFLOW_RESEARCH_NOT_NEEDED: <reason>>"` / `echo "<<WORKFLOW_PLAN_NOT_NEEDED: <reason>>"` マーカーを追加（reason 必須）
+- [x] `echo "<<WORKFLOW_WRITE_TESTS_NOT_NEEDED: <reason>>"` も reason 必須形式に移行（`status: "skipped"` 記録）
+- [x] `WORKFLOW_DOCS_NOT_NEEDED` を削除（deprecation メッセージに置換）
+- [x] workflow-gate.js の SKILL_MAP にスキップ方法を案内
 
