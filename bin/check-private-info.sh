@@ -154,6 +154,103 @@ scan_line() {
         fi
     fi
 
+    # Hard secrets: provider API keys and tokens (Gitleaks-derived patterns)
+    # Anthropic checked before OpenAI — both use sk- prefix, Anthropic is more specific
+    local hs_workline="$line"
+
+    local hs_anthropic_re='sk-ant-(api|sid)[0-9]{2}-[A-Za-z0-9_-]{20,}'
+    if [[ "$hs_workline" =~ $hs_anthropic_re ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [anthropic-key] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+        hs_workline="${hs_workline/"$m"/}"
+    fi
+
+    local hs_openai_re='sk-(proj-|svcacct-)?[A-Za-z0-9_-]{20,}'
+    if [[ "$hs_workline" =~ $hs_openai_re ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [openai-key] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    if [[ "$line" =~ AKIA[0-9A-Z]{16} ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [aws-key] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    local hs_pem_re='-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----'
+    if [[ "$line" =~ $hs_pem_re ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [private-key] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    if [[ "$line" =~ gh[pousr]_[A-Za-z0-9]{36,} ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [github-token] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    local hs_slack_re='xox[baprs]-[0-9]+-[0-9]+-[A-Za-z0-9]+'
+    if [[ "$line" =~ $hs_slack_re ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [slack-token] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    if [[ "$line" =~ AIza[0-9A-Za-z_-]{35} ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [google-key] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    if [[ "$line" =~ hf_[A-Za-z0-9]{34,} ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [huggingface-token] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    if [[ "$line" =~ gsk_[A-Za-z0-9]{20,} ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [groq-key] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    if [[ "$line" =~ r8_[A-Za-z0-9]{37} ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [replicate-token] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    if [[ "$line" =~ co_[A-Za-z0-9]{40} ]]; then
+        local m="${BASH_REMATCH[0]}"
+        if ! is_allowed "$file" "$m"; then
+            echo "$file:$lineno: [cohere-key] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
     # Blocklist patterns
     for pattern in "${BLOCK_PATTERNS[@]+"${BLOCK_PATTERNS[@]}"}"; do
         if [[ "$line" =~ $pattern ]]; then
