@@ -78,11 +78,13 @@ Session start → session-start.js (SessionStart hook)
   if state file does not exist:
     resolves cwd (CLAUDE_PROJECT_DIR or process.cwd()) and git_branch
     scans ~/.claude/projects/<encoded-cwd>/<session_id>.jsonl (mtime desc, up to 10)
-    for each transcript: finds "Current workflow session_id: <prior-sid>" in
-      SessionStart/PostCompact attachment entries
-    if found with matching cwd+git_branch and at least one non-pending step:
-      copies prior session's steps (state inheritance)
-    else: creates fresh state with all steps pending
+    for each transcript: collects ALL "Current workflow session_id: <prior-sid>"
+      markers from SessionStart and PostCompact entries (in file order)
+    tries each collected ID in reverse order (PostCompact/most-recent first):
+      skip if: no state file, branch mismatch, or all-pending
+      if user_verification=complete: stop trying this JSONL (task done, start fresh)
+      else: copies matching session's steps (state inheritance)
+    if no match found in any transcript: creates fresh state with all steps pending
   writes ~/.claude/projects/workflow/<sid>.json (includes cwd, git_branch)
   outputs additionalContext: "Current workflow session_id: <sid>\nState file: ..."
     (→ recorded in transcript for future sessions to find via the scan above)
@@ -110,7 +112,10 @@ git commit attempt → workflow-gate.js (PreToolUse hook)
 State inheritance is cwd+branch scoped. The practical inheritance window is 7 days (zombie
 cleanup limit). Parallel sessions: transcript mtime ordering ensures the most-recently-used
 session wins. Non-git directories and detached HEAD both use `git_branch: null` — they match
-each other but not named branches.
+each other but not named branches. Completed workflows (`user_verification: complete`) are
+never inherited — the JSONL is skipped entirely so the new session starts fresh. PostCompact
+entries take priority because they are appended after SessionStart and reflect the most
+recent session_id in any given JSONL file.
 
 ### Fail-safe behavior
 
