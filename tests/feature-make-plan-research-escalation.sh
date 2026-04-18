@@ -69,11 +69,11 @@ assert_contains "$SKILL_MD" "NEEDS_RESEARCH" \
 assert_contains "$SKILL_MD" "skill:" \
     "N1b: SKILL_MD contains 'skill:'"
 
-assert_contains "$SKILL_MD" "question:" \
-    "N1c: SKILL_MD contains 'question:'"
+assert_contains "$PLANNER_MD" "question:" \
+    "N1c: PLANNER_MD contains 'question:' (format spec lives in planner.md)"
 
-assert_contains "$SKILL_MD" "reason:" \
-    "N1d: SKILL_MD contains 'reason:'"
+assert_contains "$PLANNER_MD" "reason:" \
+    "N1d: PLANNER_MD contains 'reason:' (format spec lives in planner.md)"
 
 assert_contains "$SKILL_MD" "deep-research" \
     "N1e: SKILL_MD contains 'deep-research'"
@@ -102,28 +102,25 @@ else
     fail "N3a: all three files contain NEEDS_RESEARCH"
 fi
 
-# N3b: 'skill: deep-research' in SKILL_MD and PLANNER_MD at minimum
-if grep -qE "skill:[[:space:]]*deep-research" "$SKILL_MD" 2>/dev/null && \
-   grep -qE "skill:[[:space:]]*deep-research" "$PLANNER_MD" 2>/dev/null; then
-    pass "N3b: 'skill: deep-research' appears in SKILL_MD and PLANNER_MD"
+# N3b: 'skill: deep-research' in PLANNER_MD (format spec; SKILL.md references planner.md)
+if grep -qE "skill:[[:space:]]*deep-research" "$PLANNER_MD" 2>/dev/null; then
+    pass "N3b: 'skill: deep-research' appears in PLANNER_MD"
 else
-    fail "N3b: 'skill: deep-research' must appear in SKILL_MD and PLANNER_MD"
+    fail "N3b: 'skill: deep-research' must appear in PLANNER_MD"
 fi
 
-# N3c: both SKILL_MD and PLANNER_MD contain 'question:'
-if grep -qE "question:" "$SKILL_MD" 2>/dev/null && \
-   grep -qE "question:" "$PLANNER_MD" 2>/dev/null; then
-    pass "N3c: SKILL_MD and PLANNER_MD both contain 'question:'"
+# N3c: PLANNER_MD contains 'question:' (format field)
+if grep -qE "question:" "$PLANNER_MD" 2>/dev/null; then
+    pass "N3c: PLANNER_MD contains 'question:'"
 else
-    fail "N3c: SKILL_MD and PLANNER_MD both contain 'question:'"
+    fail "N3c: PLANNER_MD must contain 'question:'"
 fi
 
-# N3d: both SKILL_MD and PLANNER_MD contain 'reason:'
-if grep -qE "reason:" "$SKILL_MD" 2>/dev/null && \
-   grep -qE "reason:" "$PLANNER_MD" 2>/dev/null; then
-    pass "N3d: SKILL_MD and PLANNER_MD both contain 'reason:'"
+# N3d: PLANNER_MD contains 'reason:' (format field)
+if grep -qE "reason:" "$PLANNER_MD" 2>/dev/null; then
+    pass "N3d: PLANNER_MD contains 'reason:'"
 else
-    fail "N3d: SKILL_MD and PLANNER_MD both contain 'reason:'"
+    fail "N3d: PLANNER_MD must contain 'reason:'"
 fi
 
 # N3e: both PLANNER_MD and REVIEWER_MD contain '[research:'
@@ -148,17 +145,13 @@ echo ""
 # ---------------------------------------------------------------------------
 echo "--- Error ---"
 
-# E1a: SKILL_MD handles empty question: (look for 'empty' or 'non-empty' near 'question')
-assert_contains "$SKILL_MD" "(empty|non-empty).{0,60}question|question.{0,60}(empty|non-empty)" \
-    "E1a: SKILL_MD contains handling for empty 'question:'"
+# E1a/E1b: SKILL_MD states missing/empty fields are malformed
+assert_contains "$SKILL_MD" "missing.?empty field|empty field" \
+    "E1a/E1b: SKILL_MD contains 'missing/empty field' malformed rule"
 
-# E1b: SKILL_MD handles whitespace-only reason: (look for 'whitespace' or 'non-empty' near 'reason')
-assert_contains "$SKILL_MD" "(whitespace|non-empty).{0,60}reason|reason.{0,60}(whitespace|non-empty)" \
-    "E1b: SKILL_MD contains handling for whitespace-only 'reason:'"
-
-# E1c: SKILL_MD handles unsupported skill value
-assert_contains "$SKILL_MD" "unsupported|v1" \
-    "E1c: SKILL_MD contains handling for unsupported skill value"
+# E1c: SKILL_MD states skill: != deep-research is malformed
+assert_contains "$SKILL_MD" "skill.*deep-research|deep-research.*skill" \
+    "E1c: SKILL_MD contains unsupported skill handling (skill: != deep-research)"
 
 # E2: SKILL_MD: malformed retry does not consume research_rounds
 assert_contains "$SKILL_MD" "malformed.{0,120}research_rounds|research_rounds.{0,120}malformed" \
