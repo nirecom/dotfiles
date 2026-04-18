@@ -12,7 +12,23 @@ fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
 pass() { echo "PASS: $1"; }
 expected_fail() { echo "Expected FAIL (not yet implemented): $1"; }
 
-TMPDIR_BASE=$(mktemp -d)
+# On Windows, Node.js (native) uses Windows paths and a different /tmp than bash (WSL).
+# Detect and use a temp dir on the Windows filesystem so both bash and Node.js can share it.
+_NODE_TMPDIR=$(node -e "process.stdout.write(require('os').tmpdir())" 2>/dev/null || echo "")
+if [[ "$_NODE_TMPDIR" =~ ^[A-Za-z]: ]]; then
+    # Windows path like C:\Users\...\Temp — convert to /c/Users/.../Temp for bash
+    _DRIVE=$(echo "$_NODE_TMPDIR" | cut -c1 | tr 'A-Z' 'a-z')
+    _REST=$(echo "$_NODE_TMPDIR" | cut -c3- | tr '\\' '/')
+    _BASH_WIN_TMPDIR="/${_DRIVE}${_REST}"
+    TMPDIR_BASE=$(mktemp -d "${_BASH_WIN_TMPDIR}/cctests.XXXXXXXX")
+    # Convert lib path from /c/... to c:/... for Windows Node.js require()
+    WORKFLOW_STATE_LIB_NODE=$(echo "$WORKFLOW_STATE_LIB" | sed 's|^/\([a-zA-Z]\)/|\1:/|')
+    SESSION_START_NODE=$(echo "$SESSION_START" | sed 's|^/\([a-zA-Z]\)/|\1:/|')
+else
+    TMPDIR_BASE=$(mktemp -d)
+    WORKFLOW_STATE_LIB_NODE="$WORKFLOW_STATE_LIB"
+    SESSION_START_NODE="$SESSION_START"
+fi
 WORKFLOW_DIR="$TMPDIR_BASE/workflow-state"
 mkdir -p "$WORKFLOW_DIR"
 trap 'rm -rf "$TMPDIR_BASE"' EXIT
@@ -99,6 +115,39 @@ write_transcript_line() {
     printf '%s\n' "{\"type\": \"attachment\", \"attachment\": {\"type\": \"hook_success\", \"hookEvent\": \"SessionStart\", \"stdout\": \"{\\\"additionalContext\\\": \\\"Current workflow session_id: $sid\\\\nState file: $state_path\\\"}\", \"exitCode\": 0, \"command\": \"node session-start.js\"}}" >> "$jsonl_file"
 }
 
+# Write a JSONL transcript line (PostCompact attachment) pointing to a session
+write_postcompact_line() {
+    local jsonl_file="$1" sid="$2" state_path="$3"
+    printf '%s\n' "{\"type\": \"attachment\", \"attachment\": {\"type\": \"hook_success\", \"hookEvent\": \"PostCompact\", \"stdout\": \"{\\\"additionalContext\\\": \\\"Current workflow session_id: $sid\\\\nState file: $state_path\\\"}\", \"exitCode\": 0, \"command\": \"node post-compact.js\"}}" >> "$jsonl_file"
+}
+
+# Make a state where all steps are complete
+make_complete_state() {
+    local sid="$1" branch="$2"
+    local branch_json
+    if [ "$branch" = "null" ]; then branch_json="null"; else branch_json="\"$branch\""; fi
+    cat <<EOF
+{
+  "version": 1,
+  "session_id": "$sid",
+  "git_branch": $branch_json,
+  "created_at": "2026-04-11T10:00:00.000Z",
+  "steps": {
+    "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
+    "plan":              {"status": "complete", "updated_at": "2026-04-11T10:02:00.000Z"},
+    "write_tests":       {"status": "complete", "updated_at": "2026-04-11T10:03:00.000Z"},
+    "code":              {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
+    "verify":            {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
+    "docs":              {"status": "complete", "updated_at": "2026-04-11T10:06:00.000Z"},
+    "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:07:00.000Z"}
+  }
+}
+EOF
+}
+
+# Convert bash path (/c/foo) to Windows Node.js path (c:/foo) on Windows; no-op on Unix.
+node_path() { echo "$1" | sed 's|^/\([a-zA-Z]\)/|\1:/|'; }
+
 # Returns the node inline script that calls findLatestStateForContext
 # $1 = cwd, $2 = git_branch (or "null")
 call_find_latest() {
@@ -109,9 +158,9 @@ call_find_latest() {
     else
         branch_js="'$branch'"
     fi
-    HOME="$fake_home" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" run_with_timeout node -e "
+    HOME="$fake_home" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" CLAUDE_TRANSCRIPT_BASE_DIR="$fake_home/.claude/projects" run_with_timeout node -e "
 try {
-  const { findLatestStateForContext } = require('$WORKFLOW_STATE_LIB');
+  const { findLatestStateForContext } = require('$WORKFLOW_STATE_LIB_NODE');
   if (typeof findLatestStateForContext !== 'function') {
     process.stdout.write('NOT_IMPLEMENTED');
     process.exit(0);
@@ -158,7 +207,7 @@ elif [ "$RESULT_A1" = "null" ] || [ -z "$RESULT_A1" ]; then
     fail "A1. findLatestStateForContext returned null — expected state with session_id=$SID_A1"
 else
     RESEARCH_STATUS_A1=$(printf '%s' "$RESULT_A1" | node -e "
-try { const s=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(s.steps && s.steps.research ? s.steps.research.status : 'MISSING'); } catch(e) { console.log('PARSE_ERROR'); }
+try { const s=JSON.parse((function(){let d='',b=Buffer.alloc(4096),n;try{while((n=require('fs').readSync(0,b,0,4096))>0)d+=b.slice(0,n).toString();}catch(e){}return d;})()); console.log(s.steps && s.steps.research ? s.steps.research.status : 'MISSING'); } catch(e) { console.log('PARSE_ERROR'); }
 " 2>/dev/null || echo "PARSE_ERROR")
     if [ "$RESEARCH_STATUS_A1" = "complete" ]; then
         pass "A1. findLatestStateForContext returned state with research=complete"
@@ -275,7 +324,7 @@ elif [ "$RESULT_A4" = "null" ] || [ -z "$RESULT_A4" ]; then
     fail "A4. returned null — expected session from newer transcript ($SID_A4B)"
 else
     RETURNED_SID_A4=$(printf '%s' "$RESULT_A4" | node -e "
-try { const s=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(s.session_id || 'MISSING'); } catch(e) { console.log('PARSE_ERROR'); }
+try { const s=JSON.parse((function(){let d='',b=Buffer.alloc(4096),n;try{while((n=require('fs').readSync(0,b,0,4096))>0)d+=b.slice(0,n).toString();}catch(e){}return d;})()); console.log(s.session_id || 'MISSING'); } catch(e) { console.log('PARSE_ERROR'); }
 " 2>/dev/null || echo "PARSE_ERROR")
     if [ "$RETURNED_SID_A4" = "$SID_A4B" ]; then
         pass "A4. newest transcript wins → returned $SID_A4B"
@@ -496,28 +545,28 @@ SID_A12="a12-test-$(printf '%04x%04x' $RANDOM $RANDOM)"
 ENV_FILE_A12="$TMPDIR_BASE/a12.env"
 
 # First run: creates state file
-run_with_timeout bash -c "echo '{\"session_id\":\"$SID_A12\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$ENV_FILE_A12' node '$SESSION_START'" >/dev/null 2>&1 || true
+run_with_timeout bash -c "echo '{\"session_id\":\"$SID_A12\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$ENV_FILE_A12' node '$SESSION_START_NODE'" >/dev/null 2>&1 || true
 
 # Modify state — set research=complete
 STATE_FILE_A12="$WORKFLOW_DIR/${SID_A12}.json"
 if [ -f "$STATE_FILE_A12" ]; then
     node -e "
 const fs = require('fs');
-const s = JSON.parse(fs.readFileSync('$STATE_FILE_A12', 'utf8'));
+const s = JSON.parse(fs.readFileSync('$(node_path "$STATE_FILE_A12")', 'utf8'));
 s.steps.research = { status: 'complete', updated_at: new Date().toISOString() };
-fs.writeFileSync('$STATE_FILE_A12', JSON.stringify(s, null, 2));
+fs.writeFileSync('$(node_path "$STATE_FILE_A12")', JSON.stringify(s, null, 2));
 " 2>/dev/null || true
 fi
 
 # Second run with same session_id
-run_with_timeout bash -c "echo '{\"session_id\":\"$SID_A12\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$ENV_FILE_A12' node '$SESSION_START'" >/dev/null 2>&1 || true
+run_with_timeout bash -c "echo '{\"session_id\":\"$SID_A12\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$ENV_FILE_A12' node '$SESSION_START_NODE'" >/dev/null 2>&1 || true
 
 if [ ! -f "$STATE_FILE_A12" ]; then
     fail "A12. state file missing after second run"
 else
     RESEARCH_A12=$(node -e "
 try {
-  const s = JSON.parse(require('fs').readFileSync('$STATE_FILE_A12', 'utf8'));
+  const s = JSON.parse(require('fs').readFileSync('$(node_path "$STATE_FILE_A12")', 'utf8'));
   const st = s.steps && s.steps.research ? s.steps.research.status : 'MISSING';
   console.log(st);
 } catch(e) { console.log('PARSE_ERROR'); }
@@ -540,7 +589,7 @@ echo "=== T-C1: session-start → stdout has additionalContext with session_id =
 TC1_SID="tc1-test-$(printf '%04x%04x' $RANDOM $RANDOM)"
 TC1_ENV="$TMPDIR_BASE/tc1.env"
 
-TC1_OUTPUT=$(run_with_timeout bash -c "echo '{\"session_id\":\"$TC1_SID\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$TC1_ENV' node '$SESSION_START'" 2>/dev/null || echo "ERROR")
+TC1_OUTPUT=$(run_with_timeout bash -c "echo '{\"session_id\":\"$TC1_SID\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$TC1_ENV' node '$SESSION_START_NODE'" 2>/dev/null || echo "ERROR")
 
 TC1_HAS_CONTEXT=$(printf '%s' "$TC1_OUTPUT" | node -e "
 try {
@@ -583,7 +632,7 @@ write_state "$SID_TC2_OLD" "$STATE_TC2"
 JSONL_TC2="$TRANS_DIR_TC2/${SID_TC2_OLD}.jsonl"
 write_transcript_line "$JSONL_TC2" "$SID_TC2_OLD" "$WORKFLOW_DIR/${SID_TC2_OLD}.json"
 
-TC2_OUTPUT=$(HOME="$FAKE_HOME_TC2" run_with_timeout bash -c "echo '{\"session_id\":\"$SID_TC2_NEW\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$TC2_ENV' CLAUDE_PROJECT_DIR='$CWD_TC2' node '$SESSION_START'" 2>/dev/null || echo "ERROR")
+TC2_OUTPUT=$(HOME="$FAKE_HOME_TC2" run_with_timeout bash -c "echo '{\"session_id\":\"$SID_TC2_NEW\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$TC2_ENV' CLAUDE_PROJECT_DIR='$CWD_TC2' node '$SESSION_START_NODE'" 2>/dev/null || echo "ERROR")
 
 TC2_HAS_INHERITED=$(printf '%s' "$TC2_OUTPUT" | node -e "
 try {
@@ -644,7 +693,7 @@ JSONL_TC3="$TRANS_DIR_TC3/${SID_TC3_OLD}.jsonl"
 write_transcript_line "$JSONL_TC3" "$SID_TC3_OLD" "$WORKFLOW_DIR/${SID_TC3_OLD}.json"
 
 # Spawn session-start with NEW session id
-HOME="$FAKE_HOME_TC3" run_with_timeout bash -c "echo '{\"session_id\":\"$SID_TC3_NEW\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$TC3_ENV' CLAUDE_PROJECT_DIR='$CWD_TC3' node '$SESSION_START'" >/dev/null 2>&1 || true
+HOME="$FAKE_HOME_TC3" run_with_timeout bash -c "echo '{\"session_id\":\"$SID_TC3_NEW\"}' | CLAUDE_WORKFLOW_DIR='$WORKFLOW_DIR' CLAUDE_ENV_FILE='$TC3_ENV' CLAUDE_PROJECT_DIR='$CWD_TC3' node '$SESSION_START_NODE'" >/dev/null 2>&1 || true
 
 NEW_STATE_EXISTS="no"
 if [ -f "$WORKFLOW_DIR/${SID_TC3_NEW}.json" ]; then
@@ -659,6 +708,229 @@ if [ "$NEW_STATE_EXISTS" = "yes" ] && [ "$OLD_ZOMBIE_DELETED" = "yes" ]; then
     pass "T-C3. new state exists AND old zombie deleted (inheritance before cleanup)"
 else
     expected_fail "T-C3. inheritance before cleanup not yet implemented (new=$NEW_STATE_EXISTS zombie_deleted=$OLD_ZOMBIE_DELETED)"
+fi
+
+# ---------------------------------------------------------------------------
+# A-M1: SessionStart(A) + PostCompact(B) → B (most recent) inherited
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== A-M1: SessionStart(A) + PostCompact(B) → B inherited (most recent) ==="
+
+CWD_AM1="/Users/nire/test-repo-am1"
+ENCODED_AM1=$(encode_path "$CWD_AM1")
+FAKE_HOME_AM1="$TMPDIR_BASE/home-am1"
+TRANS_DIR_AM1="$FAKE_HOME_AM1/.claude/projects/$ENCODED_AM1"
+mkdir -p "$TRANS_DIR_AM1"
+
+SID_AM1A="am1a-$(printf '%04x%04x' $RANDOM $RANDOM)"
+SID_AM1B="am1b-$(printf '%04x%04x' $RANDOM $RANDOM)"
+
+write_state "$SID_AM1A" "$(make_full_state "$SID_AM1A" "main")"
+write_state "$SID_AM1B" "$(make_full_state "$SID_AM1B" "main")"
+
+JSONL_AM1="$TRANS_DIR_AM1/${SID_AM1A}.jsonl"
+write_transcript_line "$JSONL_AM1" "$SID_AM1A" "$WORKFLOW_DIR/${SID_AM1A}.json"
+write_postcompact_line "$JSONL_AM1" "$SID_AM1B" "$WORKFLOW_DIR/${SID_AM1B}.json"
+
+RESULT_AM1=$(call_find_latest "$CWD_AM1" "main" "$FAKE_HOME_AM1")
+
+if [ "$RESULT_AM1" = "NOT_IMPLEMENTED" ]; then
+    expected_fail "A-M1. findLatestStateForContext not yet implemented (PostCompact preference)"
+elif [ "$RESULT_AM1" = "null" ] || [ -z "$RESULT_AM1" ]; then
+    fail "A-M1. expected state B to be inherited, got null"
+else
+    RETURNED_AM1=$(printf '%s' "$RESULT_AM1" | node -e "
+let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const s=JSON.parse(d);console.log(s.session_id||'MISSING');}catch(e){console.log('PARSE_ERROR');}});
+" 2>/dev/null || echo "PARSE_ERROR")
+    if [ "$RETURNED_AM1" = "$SID_AM1B" ]; then
+        pass "A-M1. PostCompact(B) preferred over SessionStart(A) → returned $SID_AM1B"
+    else
+        fail "A-M1. expected session_id=$SID_AM1B (PostCompact) but got $RETURNED_AM1"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# A-M2: PostCompact only (SessionStart compacted away) → state inherited
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== A-M2: PostCompact only (no SessionStart) → state inherited ==="
+
+CWD_AM2="/Users/nire/test-repo-am2"
+ENCODED_AM2=$(encode_path "$CWD_AM2")
+FAKE_HOME_AM2="$TMPDIR_BASE/home-am2"
+TRANS_DIR_AM2="$FAKE_HOME_AM2/.claude/projects/$ENCODED_AM2"
+mkdir -p "$TRANS_DIR_AM2"
+
+SID_AM2="am2-$(printf '%04x%04x' $RANDOM $RANDOM)"
+write_state "$SID_AM2" "$(make_full_state "$SID_AM2" "main")"
+
+JSONL_AM2="$TRANS_DIR_AM2/${SID_AM2}.jsonl"
+write_postcompact_line "$JSONL_AM2" "$SID_AM2" "$WORKFLOW_DIR/${SID_AM2}.json"
+
+RESULT_AM2=$(call_find_latest "$CWD_AM2" "main" "$FAKE_HOME_AM2")
+
+if [ "$RESULT_AM2" = "NOT_IMPLEMENTED" ]; then
+    expected_fail "A-M2. findLatestStateForContext not yet implemented (PostCompact-only)"
+elif [ "$RESULT_AM2" = "null" ] || [ -z "$RESULT_AM2" ]; then
+    fail "A-M2. PostCompact-only JSONL should allow inheritance, got null"
+else
+    pass "A-M2. PostCompact-only → state inherited"
+fi
+
+# ---------------------------------------------------------------------------
+# A-M3: Most recent session (B) has user_verification=complete → null
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== A-M3: PostCompact(B) user_verification=complete → no inheritance ==="
+
+CWD_AM3="/Users/nire/test-repo-am3"
+ENCODED_AM3=$(encode_path "$CWD_AM3")
+FAKE_HOME_AM3="$TMPDIR_BASE/home-am3"
+TRANS_DIR_AM3="$FAKE_HOME_AM3/.claude/projects/$ENCODED_AM3"
+mkdir -p "$TRANS_DIR_AM3"
+
+SID_AM3A="am3a-$(printf '%04x%04x' $RANDOM $RANDOM)"
+SID_AM3B="am3b-$(printf '%04x%04x' $RANDOM $RANDOM)"
+
+write_state "$SID_AM3A" "$(make_full_state "$SID_AM3A" "main")"
+write_state "$SID_AM3B" "$(make_complete_state "$SID_AM3B" "main")"
+
+JSONL_AM3="$TRANS_DIR_AM3/${SID_AM3A}.jsonl"
+write_transcript_line "$JSONL_AM3" "$SID_AM3A" "$WORKFLOW_DIR/${SID_AM3A}.json"
+write_postcompact_line "$JSONL_AM3" "$SID_AM3B" "$WORKFLOW_DIR/${SID_AM3B}.json"
+
+RESULT_AM3=$(call_find_latest "$CWD_AM3" "main" "$FAKE_HOME_AM3")
+
+if [ "$RESULT_AM3" = "NOT_IMPLEMENTED" ]; then
+    expected_fail "A-M3. findLatestStateForContext not yet implemented (complete→no inherit)"
+elif [ "$RESULT_AM3" = "null" ] || [ -z "$RESULT_AM3" ]; then
+    pass "A-M3. user_verification=complete → no inheritance (null)"
+else
+    fail "A-M3. expected null (completed task), got: $(printf '%s' "$RESULT_AM3" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const s=JSON.parse(d);console.log(s.session_id);}catch(e){console.log('?');}});" 2>/dev/null)"
+fi
+
+# ---------------------------------------------------------------------------
+# A-M4: Two JSONLs: older=complete, newer=active → newer inherited
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== A-M4: older JSONL complete, newer JSONL active → newer inherited ==="
+
+CWD_AM4="/Users/nire/test-repo-am4"
+ENCODED_AM4=$(encode_path "$CWD_AM4")
+FAKE_HOME_AM4="$TMPDIR_BASE/home-am4"
+TRANS_DIR_AM4="$FAKE_HOME_AM4/.claude/projects/$ENCODED_AM4"
+mkdir -p "$TRANS_DIR_AM4"
+
+SID_AM4OLD="am4old-$(printf '%04x%04x' $RANDOM $RANDOM)"
+SID_AM4NEW="am4new-$(printf '%04x%04x' $RANDOM $RANDOM)"
+
+write_state "$SID_AM4OLD" "$(make_complete_state "$SID_AM4OLD" "main")"
+write_state "$SID_AM4NEW" "$(make_full_state "$SID_AM4NEW" "main")"
+
+# Write older JSONL first, then set its mtime to past
+JSONL_AM4OLD="$TRANS_DIR_AM4/${SID_AM4OLD}.jsonl"
+write_transcript_line "$JSONL_AM4OLD" "$SID_AM4OLD" "$WORKFLOW_DIR/${SID_AM4OLD}.json"
+node -e "const fs=require('fs');const old=new Date(Date.now()-60000);fs.utimesSync('$JSONL_AM4OLD',old,old);" 2>/dev/null || true
+
+# Write newer JSONL
+JSONL_AM4NEW="$TRANS_DIR_AM4/${SID_AM4NEW}.jsonl"
+write_transcript_line "$JSONL_AM4NEW" "$SID_AM4NEW" "$WORKFLOW_DIR/${SID_AM4NEW}.json"
+
+RESULT_AM4=$(call_find_latest "$CWD_AM4" "main" "$FAKE_HOME_AM4")
+
+if [ "$RESULT_AM4" = "NOT_IMPLEMENTED" ]; then
+    expected_fail "A-M4. findLatestStateForContext not yet implemented (multi-JSONL mtime sort)"
+elif [ "$RESULT_AM4" = "null" ] || [ -z "$RESULT_AM4" ]; then
+    fail "A-M4. expected newer active state to be inherited, got null"
+else
+    RETURNED_AM4=$(printf '%s' "$RESULT_AM4" | node -e "
+let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const s=JSON.parse(d);console.log(s.session_id||'MISSING');}catch(e){console.log('PARSE_ERROR');}});
+" 2>/dev/null || echo "PARSE_ERROR")
+    if [ "$RETURNED_AM4" = "$SID_AM4NEW" ]; then
+        pass "A-M4. older complete JSONL skipped, newer active → returned $SID_AM4NEW"
+    else
+        fail "A-M4. expected $SID_AM4NEW but got $RETURNED_AM4"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# A-M5: SessionStart(A) + PostCompact(B), B state file missing → fall back to A
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== A-M5: PostCompact(B) state missing → fall back to SessionStart(A) ==="
+
+CWD_AM5="/Users/nire/test-repo-am5"
+ENCODED_AM5=$(encode_path "$CWD_AM5")
+FAKE_HOME_AM5="$TMPDIR_BASE/home-am5"
+TRANS_DIR_AM5="$FAKE_HOME_AM5/.claude/projects/$ENCODED_AM5"
+mkdir -p "$TRANS_DIR_AM5"
+
+SID_AM5A="am5a-$(printf '%04x%04x' $RANDOM $RANDOM)"
+SID_AM5B="am5b-$(printf '%04x%04x' $RANDOM $RANDOM)"
+
+write_state "$SID_AM5A" "$(make_full_state "$SID_AM5A" "main")"
+# Do NOT write state for SID_AM5B
+
+JSONL_AM5="$TRANS_DIR_AM5/${SID_AM5A}.jsonl"
+write_transcript_line "$JSONL_AM5" "$SID_AM5A" "$WORKFLOW_DIR/${SID_AM5A}.json"
+write_postcompact_line "$JSONL_AM5" "$SID_AM5B" "$WORKFLOW_DIR/${SID_AM5B}.json"
+
+RESULT_AM5=$(call_find_latest "$CWD_AM5" "main" "$FAKE_HOME_AM5")
+
+if [ "$RESULT_AM5" = "NOT_IMPLEMENTED" ]; then
+    expected_fail "A-M5. findLatestStateForContext not yet implemented (PostCompact state-missing fallback)"
+elif [ "$RESULT_AM5" = "null" ] || [ -z "$RESULT_AM5" ]; then
+    fail "A-M5. B state missing → expected fallback to A, got null"
+else
+    RETURNED_AM5=$(printf '%s' "$RESULT_AM5" | node -e "
+let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const s=JSON.parse(d);console.log(s.session_id||'MISSING');}catch(e){console.log('PARSE_ERROR');}});
+" 2>/dev/null || echo "PARSE_ERROR")
+    if [ "$RETURNED_AM5" = "$SID_AM5A" ]; then
+        pass "A-M5. B state missing → fell back to A ($SID_AM5A)"
+    else
+        fail "A-M5. expected $SID_AM5A (fallback) but got $RETURNED_AM5"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# A-M6: SessionStart(A) active + PostCompact(B) complete → null (no fallback)
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== A-M6: PostCompact(B) complete, SessionStart(A) active → null (no rollback) ==="
+
+CWD_AM6="/Users/nire/test-repo-am6"
+ENCODED_AM6=$(encode_path "$CWD_AM6")
+FAKE_HOME_AM6="$TMPDIR_BASE/home-am6"
+TRANS_DIR_AM6="$FAKE_HOME_AM6/.claude/projects/$ENCODED_AM6"
+mkdir -p "$TRANS_DIR_AM6"
+
+SID_AM6A="am6a-$(printf '%04x%04x' $RANDOM $RANDOM)"
+SID_AM6B="am6b-$(printf '%04x%04x' $RANDOM $RANDOM)"
+
+write_state "$SID_AM6A" "$(make_full_state "$SID_AM6A" "main")"
+write_state "$SID_AM6B" "$(make_complete_state "$SID_AM6B" "main")"
+
+JSONL_AM6="$TRANS_DIR_AM6/${SID_AM6A}.jsonl"
+write_transcript_line "$JSONL_AM6" "$SID_AM6A" "$WORKFLOW_DIR/${SID_AM6A}.json"
+write_postcompact_line "$JSONL_AM6" "$SID_AM6B" "$WORKFLOW_DIR/${SID_AM6B}.json"
+
+RESULT_AM6=$(call_find_latest "$CWD_AM6" "main" "$FAKE_HOME_AM6")
+
+if [ "$RESULT_AM6" = "NOT_IMPLEMENTED" ]; then
+    expected_fail "A-M6. findLatestStateForContext not yet implemented (complete B → no rollback to A)"
+elif [ "$RESULT_AM6" = "null" ] || [ -z "$RESULT_AM6" ]; then
+    pass "A-M6. user_verification=complete (B) → no fallback to A, returns null"
+else
+    RETURNED_AM6=$(printf '%s' "$RESULT_AM6" | node -e "
+let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const s=JSON.parse(d);console.log(s.session_id||'MISSING');}catch(e){console.log('PARSE_ERROR');}});
+" 2>/dev/null || echo "PARSE_ERROR")
+    fail "A-M6. expected null (no rollback), got session_id=$RETURNED_AM6"
 fi
 
 # ---------------------------------------------------------------------------
