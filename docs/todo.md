@@ -3,16 +3,12 @@
 ## Current Work
 
 
-### planner mid-plan research escalation — Verifying
-NEEDS_RESEARCH プロトコルを make-plan/SKILL.md・planner.md・reviewer.md に実装。
-- [ ] Verify: `/make-plan` を実行し、planner が `NEEDS_RESEARCH` を emit した時に orchestrator が `/deep-research` を呼び出して結果を inline で返すことを確認
-
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
 Design decision: minimize rules/ context consumption by extracting details into skills.
 Skill naming follows existing `verb-noun` (kebab-case) convention.
 - [x] Phase 1: Architecture Security Checklist (`/review-security` skill)
-  - [ ] Verify: invoke `/review-security` in a new session and confirm TodoWrite-based checklist execution
+  - [x] Verify: invoke `/review-security` in a new session and confirm TodoWrite-based checklist execution
 - [ ] Phase 2: Security Test Cases (`test.md` edit)
 - [ ] Phase 3: Security Patterns Reference (`/scan-security` skill)
 - [ ] Phase 4: Prompt Injection Defense
