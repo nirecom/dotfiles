@@ -3,6 +3,10 @@
 ## Current Work
 
 
+### planner mid-plan research escalation — Verifying
+NEEDS_RESEARCH プロトコルを make-plan/SKILL.md・planner.md・reviewer.md に実装。
+- [ ] Verify: `/make-plan` を実行し、planner が `NEEDS_RESEARCH` を emit した時に orchestrator が `/deep-research` を呼び出して結果を inline で返すことを確認
+
 ### Security Enhancement — Phase 1 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
 Design decision: minimize rules/ context consumption by extracting details into skills.
@@ -28,10 +32,6 @@ Skill naming follows existing `verb-noun` (kebab-case) convention.
 - [ ] install-base, install-develop — メタスクリプト（構成が異なる）
 - [ ] config/win ↔ config/mac ペアの hook 対応要否
 
-### planner の mid-plan research escalation — 検討
-planner サブエージェントが plan 作成中に調査不足 (未知の外部 API、欠損しているドメイン知識等) に気づいた場合、推測せず orchestrator にエスカレートする仕組み。
-- [ ] `claude-global/agents/planner.md` に `RESEARCH_NEEDED: <question>` エスカレーションルール追加
-- [ ] `claude-global/skills/make-plan/SKILL.md` の Procedure に受信時のハンドリング追加 (ユーザーに `/deep-research` 実行を促す)
 
 ### テスト設計: インテグレーション / E2E 異常系の網羅 — 検討
 背景: `docs/history.md` #21 参照。
