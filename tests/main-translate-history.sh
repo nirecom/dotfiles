@@ -38,7 +38,14 @@ assert_eq() {
 run_extract() {
     local input_file="$1"
     shift
-    PYTHONIOENCODING=utf-8 $TRANSLATE_CMD "$input_file" --extract --public "$@" 2>/dev/null
+    local manifest_out="$TMPDIR_BASE/_extract_out.json"
+    rm -f "$manifest_out"
+    PYTHONIOENCODING=utf-8 $TRANSLATE_CMD "$input_file" --extract -t "$manifest_out" --public "$@" 2>/dev/null || true
+    if [ -f "$manifest_out" ]; then
+        cat "$manifest_out"
+    else
+        echo "[]"
+    fi
 }
 
 run_apply() {
@@ -240,6 +247,83 @@ EOF
     fi
 }
 
+# --- Default path cases ---
+
+test_default_manifest_path_save() {
+    echo "Test: --extract saves to <file>.translate.json by default"
+    local f="$TMPDIR_BASE/default-path.md"
+    cat > "$f" <<'EOF'
+# History
+
+## Changes
+
+### 日本語エントリ (2024-01-01)
+Background: テスト
+EOF
+    local expected_manifest="${f%.md}.translate.json"
+    rm -f "$expected_manifest"
+    PYTHONIOENCODING=utf-8 $TRANSLATE_CMD "$f" --extract --public 2>/dev/null
+    if [ -f "$expected_manifest" ]; then
+        echo "  PASS: manifest written to default path"
+        PASS=$((PASS + 1))
+    else
+        echo "  FAIL: manifest not found at $expected_manifest"
+        FAIL=$((FAIL + 1))
+    fi
+    rm -f "$expected_manifest"
+}
+
+test_default_manifest_path_apply() {
+    echo "Test: --apply reads from <file>.translate.json by default"
+    local f="$TMPDIR_BASE/default-apply.md"
+    cat > "$f" <<'EOF'
+# History
+
+## Changes
+
+### 日本語 (2024-01-01)
+Background: テスト
+EOF
+    local manifest="${f%.md}.translate.json"
+    cat > "$manifest" <<'EOF'
+[
+  {
+    "title": "### 日本語 (2024-01-01)",
+    "original": "### 日本語 (2024-01-01)\nBackground: テスト\n",
+    "translated": "### English (2024-01-01)\nBackground: test\n"
+  }
+]
+EOF
+    local result
+    result=$(PYTHONIOENCODING=utf-8 $TRANSLATE_CMD "$f" --apply --public 2>/dev/null)
+    rm -f "$manifest"
+    if echo "$result" | grep -q "English"; then
+        echo "  PASS: --apply reads default manifest path"
+        PASS=$((PASS + 1))
+    else
+        echo "  FAIL: --apply did not read default manifest"
+        echo "  output: $result"
+        FAIL=$((FAIL + 1))
+    fi
+}
+
+test_missing_default_manifest_error() {
+    echo "Test: --apply without -t and no default manifest → exit 1"
+    local f="$TMPDIR_BASE/no-default-manifest.md"
+    echo "# History" > "$f"
+    local manifest="${f%.md}.translate.json"
+    rm -f "$manifest"
+    local exit_code=0 stderr_out
+    stderr_out=$(PYTHONIOENCODING=utf-8 $TRANSLATE_CMD "$f" --apply --public 2>&1 1>/dev/null) || exit_code=$?
+    if [ "$exit_code" -eq 1 ] && echo "$stderr_out" | grep -qi "not found"; then
+        echo "  PASS: exit 1 with error on missing default manifest"
+        PASS=$((PASS + 1))
+    else
+        echo "  FAIL: exit_code=$exit_code, stderr=$stderr_out"
+        FAIL=$((FAIL + 1))
+    fi
+}
+
 # --- Error cases ---
 
 test_file_not_found() {
@@ -270,52 +354,6 @@ test_no_mode_flag() {
     fi
 }
 
-test_apply_without_translations() {
-    echo "Test: --apply without -t → non-zero exit"
-    local f="$TMPDIR_BASE/nomanifest.md"
-    echo "# History" > "$f"
-    local exit_code=0
-    PYTHONIOENCODING=utf-8 $TRANSLATE_CMD "$f" --apply --public >/dev/null 2>&1 || exit_code=$?
-    if [ "$exit_code" -ne 0 ]; then
-        echo "  PASS: non-zero exit without -t"
-        PASS=$((PASS + 1))
-    else
-        echo "  FAIL: exit_code=$exit_code (expected non-zero)"
-        FAIL=$((FAIL + 1))
-    fi
-}
-
-test_manifest_file_not_found() {
-    echo "Test: --apply with nonexistent manifest → exit 1"
-    local f="$TMPDIR_BASE/mf-notfound.md"
-    echo "# History" > "$f"
-    local exit_code=0 stderr_out
-    stderr_out=$(PYTHONIOENCODING=utf-8 $TRANSLATE_CMD "$f" --apply -t /nonexistent/path.json --public 2>&1 1>/dev/null) || exit_code=$?
-    if [ "$exit_code" -eq 1 ] && echo "$stderr_out" | grep -qi "not found"; then
-        echo "  PASS: exit 1 with error"
-        PASS=$((PASS + 1))
-    else
-        echo "  FAIL: exit_code=$exit_code, stderr=$stderr_out"
-        FAIL=$((FAIL + 1))
-    fi
-}
-
-test_invalid_json_manifest() {
-    echo "Test: invalid JSON manifest → non-zero exit"
-    local f="$TMPDIR_BASE/invalid-json.md"
-    echo "# History" > "$f"
-    local manifest="$TMPDIR_BASE/broken.json"
-    echo '{broken' > "$manifest"
-    local exit_code=0
-    PYTHONIOENCODING=utf-8 $TRANSLATE_CMD "$f" --apply -t "$manifest" --public >/dev/null 2>&1 || exit_code=$?
-    if [ "$exit_code" -ne 0 ]; then
-        echo "  PASS: non-zero exit on invalid JSON"
-        PASS=$((PASS + 1))
-    else
-        echo "  FAIL: exit_code=$exit_code (expected non-zero)"
-        FAIL=$((FAIL + 1))
-    fi
-}
 
 test_manifest_file_not_found() {
     echo "Test: --apply with nonexistent manifest → exit 1"
@@ -613,10 +651,15 @@ main() {
     test_dry_run_shows_diff
 
     echo ""
+    echo "=== Default path cases ==="
+    test_default_manifest_path_save
+    test_default_manifest_path_apply
+    test_missing_default_manifest_error
+
+    echo ""
     echo "=== Error cases ==="
     test_file_not_found
     test_no_mode_flag
-    test_apply_without_translations
     test_manifest_file_not_found
     test_invalid_json_manifest
     test_manifest_original_not_found
