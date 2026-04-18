@@ -3,16 +3,22 @@
 ## Current Work
 
 
-### Security Enhancement — Phase 2 Verifying
+### Security Enhancement — Phase 3 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
 Design decision: minimize rules/ context consumption by extracting details into skills.
 Skill naming follows existing `verb-noun` (kebab-case) convention.
-- [x] Phase 1: Architecture Security Checklist (`/review-security` skill)
-  - [x] Verify: invoke `/review-security` in a new session and confirm TodoWrite-based checklist execution
+- [x] Phase 1: Architecture Security Checklist (renamed to `/review-plan-security`)
+  - [x] Verify: invoke `/review-plan-security` in a new session and confirm TodoWrite-based checklist execution
 - [x] Phase 2: Security Test Cases (`test.md` edit)
   - [x] Verify: confirm Security cases section in test.md with correct OWASP/CWE citations, and test-rules/ subdirectory loads correctly
-- [ ] Phase 3: Security Patterns Reference (`/scan-security` skill)
+- [ ] Phase 3: Security Patterns (`/review-code-security` skill + `check-private-info.sh` hard secrets)
+  - [ ] Verify: invoke `/review-code-security` and confirm pattern tables displayed; confirm hard-secret detection in check-private-info.sh
 - [ ] Phase 4: Prompt Injection Defense
+
+### セキュリティスキャンツール統合検討
+- [ ] Gitleaks: git history 対応シークレットスキャン。check-private-info.sh との役割分担を評価 (https://github.com/gitleaks/gitleaks)
+- [ ] Semgrep: 構文認識型静的解析（shell, Python, JS）。review-code-security の手動パターンを自動化できるか評価 (https://github.com/semgrep/semgrep)
+- [ ] detect-secrets: エントロピーベースの汎用シークレット検出。openssl rand -hex 32 系ジェネリック乱数をカバーできるか評価 (https://github.com/Yelp/detect-secrets)
 
 
 ### SSOT 参照ルールの設計 — 検討中
