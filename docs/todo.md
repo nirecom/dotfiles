@@ -3,7 +3,7 @@
 ## Current Work
 
 
-### Security Enhancement — Phase 3 Verifying
+### Security Enhancement — Phase 4 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
 Design decision: minimize rules/ context consumption by extracting details into skills.
 Skill naming follows existing `verb-noun` (kebab-case) convention.
@@ -11,12 +11,21 @@ Skill naming follows existing `verb-noun` (kebab-case) convention.
   - [x] Verify: invoke `/review-plan-security` in a new session and confirm TodoWrite-based checklist execution
 - [x] Phase 2: Security Test Cases (`test.md` edit)
   - [x] Verify: confirm Security cases section in test.md with correct OWASP/CWE citations, and test-rules/ subdirectory loads correctly
-- [ ] Phase 3: Security Patterns (`/review-code-security` skill + `check-private-info.sh` hard secrets)
-  - [ ] Verify: invoke `/review-code-security` and confirm pattern tables displayed; confirm hard-secret detection in check-private-info.sh
-- [ ] Phase 4: Prompt Injection Defense
+- [x] Phase 3: Security Patterns (`/review-code-security` skill + `scan-outbound.sh` hard secrets)
+  - [x] Verify: invoke `/review-code-security` and confirm pattern tables displayed; confirm hard-secret detection in scan-outbound.sh
+- [x] Phase 4: Trojan Source 対策 + Prompt Injection 統合 (`scan-outbound.sh`, SKILL.md 両 Axis 拡張)
+  - [ ] Verify: `main-hidden-char-scan.sh` 全 PASS 確認、スモーク検証済み（ユーザー確認待ち）
+
+### Phase 5: Prompt Injection Defense (PostToolUse hook) — 未着手
+Prompt injection の本来の防御点（ツール結果が LLM に戻る段）を PostToolUse hook で実装。
+- [ ] 設計：scan 対象 tool の選定（WebFetch / Read / Bash 等）
+- [ ] 検出パターン：JudgeClaw `bridge/injection_signals.py` の `_PATTERNS` リストを baseline として移植
+- [ ] Benign-context exclusion（PEM / data:image/ / コード文脈での Base64 誤検知回避）
+- [ ] 実装：`claude-global/hooks/` 配下に hook 追加
+- [ ] 参考：`judgeclaw`, lasso-security/claude-hooks
 
 ### セキュリティスキャンツール統合検討
-- [ ] Gitleaks: git history 対応シークレットスキャン。check-private-info.sh との役割分担を評価 (https://github.com/gitleaks/gitleaks)
+- [ ] Gitleaks: git history 対応シークレットスキャン。scan-outbound.sh との役割分担を評価 (https://github.com/gitleaks/gitleaks)
 - [ ] Semgrep: 構文認識型静的解析（shell, Python, JS）。review-code-security の手動パターンを自動化できるか評価 (https://github.com/semgrep/semgrep)
 - [ ] detect-secrets: エントロピーベースの汎用シークレット検出。openssl rand -hex 32 系ジェネリック乱数をカバーできるか評価 (https://github.com/Yelp/detect-secrets)
 
@@ -41,18 +50,4 @@ Skill naming follows existing `verb-noun` (kebab-case) convention.
 - [x] 現行の `test.md`（テストケースカテゴリ定義）に「インテグレーション / E2E 視点」の観点を追記
 - [ ] `/write-tests` スキルの Procedure に「呼び出し経路ごとの異常系洗い出し」ステップを追加
 - [ ] Workflow State Machine の E2E 検証（全環境完了済み）— 着手可能
-
-### [Bug] workflow-gate の research/plan スキップマーカー — Verifying
-
-**再現手順:**
-1. 単一ファイルのドキュメント変更など、research/plan が不要なタスクで `/commit-push` を実行
-2. workflow-gate が research/plan を `pending` のまま検出してブロック
-3. `write_tests` には `<<WORKFLOW_WRITE_TESTS_NOT_NEEDED>>` echo マーカーがあるが、research/plan に相当するスキップマーカーが存在しない
-4. 回避策として workflow state JSON を直接編集するしかない
-
-**修正:**
-- [x] `echo "<<WORKFLOW_RESEARCH_NOT_NEEDED: <reason>>"` / `echo "<<WORKFLOW_PLAN_NOT_NEEDED: <reason>>"` マーカーを追加（reason 必須）
-- [x] `echo "<<WORKFLOW_WRITE_TESTS_NOT_NEEDED: <reason>>"` も reason 必須形式に移行（`status: "skipped"` 記録）
-- [x] `WORKFLOW_DOCS_NOT_NEEDED` を削除（deprecation メッセージに置換）
-- [x] workflow-gate.js の SKILL_MAP にスキップ方法を案内
 

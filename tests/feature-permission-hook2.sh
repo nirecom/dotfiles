@@ -5,7 +5,7 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-SCANNER="$DOTFILES_DIR/bin/check-private-info.sh"
+SCANNER="$DOTFILES_DIR/bin/scan-outbound.sh"
 ERRORS=0
 
 fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }

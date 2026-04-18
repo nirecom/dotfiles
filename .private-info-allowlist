@@ -9,12 +9,13 @@ git@bitbucket.org
 noreply.github.com
 
 # Documentation examples (not real private info)
-docs/private-info-scanning.md:192.168.1.1
-docs/private-info-scanning.md:10.0.0.1
-docs/private-info-scanning.md:user@domain.tld
-docs/private-info-scanning.md:aa:bb:cc:dd:ee:ff
-docs/private-info-scanning.md:/Users/
-docs/private-info-scanning.md:Co-Authored-By
+docs/scan-outbound.md:192.168.1.1
+docs/scan-outbound.md:10.0.0.1
+docs/scan-outbound.md:user@domain.tld
+docs/scan-outbound.md:aa:bb:cc:dd:ee:ff
+docs/scan-outbound.md:/Users/
+docs/scan-outbound.md:Co-Authored-By
+docs/scan-outbound.md:BEGIN RSA PRIVATE KEY
 claude-global/rules/coding.md:Co-Authored-By
 
 # Scanner test data (not real private info) — glob covers all test files

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Scan content for private information patterns
 # Usage:
-#   check-private-info.sh [--stdin [label]] [file ...]
+#   scan-outbound.sh [--stdin [label]] [file ...]
 #   --stdin: read from stdin (optional label for output)
 #   file args: scan named files
 # Exit: 0 = clean, 1 = violations found, 2 = usage error
@@ -20,7 +20,7 @@ LABEL="stdin"
 
 # Parse arguments
 if [ $# -eq 0 ]; then
-    echo "Usage: check-private-info.sh [--stdin [label]] [file ...]" >&2
+    echo "Usage: scan-outbound.sh [--stdin [label]] [file ...]" >&2
     exit 2
 fi
 
@@ -247,6 +247,26 @@ scan_line() {
         local m="${BASH_REMATCH[0]}"
         if ! is_allowed "$file" "$m"; then
             echo "$file:$lineno: [cohere-key] $m"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    # Zero-width / BOM (Trojan Source — homoglyph/invisible identifier trick)
+    # U+200B (E2 80 8B), U+200C (8C), U+200D (8D), U+FEFF (EF BB BF)
+    local zw_re=$'\xe2\x80[\x8b-\x8d]|\xef\xbb\xbf'
+    if [[ "$line" =~ $zw_re ]]; then
+        if ! is_allowed "$file" "$line"; then
+            echo "$file:$lineno: [zero-width] <hidden char>"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+
+    # Bidi overrides (Trojan Source — display vs. execution divergence, CVE-2021-42574)
+    # U+202D/E (E2 80 AD/AE), U+2066-2069 (E2 81 A6-A9)
+    local bidi_re=$'\xe2\x80[\xad\xae]|\xe2\x81[\xa6-\xa9]'
+    if [[ "$line" =~ $bidi_re ]]; then
+        if ! is_allowed "$file" "$line"; then
+            echo "$file:$lineno: [bidi-override] <hidden char>"
             VIOLATIONS=$((VIOLATIONS + 1))
         fi
     fi
