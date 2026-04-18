@@ -24,7 +24,21 @@ sentinel echo を `&&` で繋いで 1 Bash 呼び出しにすると、`workflow-
 
 **現在の回避策**: sentinel は必ず別々の Bash 呼び出しで送る（`&&` 禁止）。
 
-- [ ] 修正方針を決定（候補 1 / 2 / 3）
+**関連バグ: `code` / `verify` ステップが `SKILL_MAP` 未登録**
+
+`workflow-gate.js` の `VALID_STEPS` には `code` と `verify` が存在するが、`SKILL_MAP` に対応エントリがない。
+gate はマップ未登録ステップへのフォールバックとして `WORKFLOW_MARK_STEP_*` を出力する設計になっており、
+Claude がそのフォールバック指示を実行していた。`WORKFLOW_MARK_STEP_code_complete` /
+`WORKFLOW_MARK_STEP_verify_complete` は意図されたマーカーではない。
+
+修正候補:
+- A. `SKILL_MAP` に `code` / `verify` の指示を追加
+  - `code`: "diff をチャットで提示しユーザー承認を得る"
+  - `verify`: "/review-code-security を実行する（任意）か、テスト実行結果を確認する"
+- B. `code` / `verify` を `VALID_STEPS` から削除して gate 対象外にする
+- C. `code` に staged ファイルの evidence-based override を追加（`write_tests` / `docs` と同様）
+
+- [ ] 修正方針を決定（候補 1 / 2 / 3、および A / B / C）
 - [ ] 実装（修正候補 1 or 2 の場合）
 - [ ] 関連 E2E テスト追加
 
