@@ -2,6 +2,31 @@
 
 ## Current Work
 
+### Bug: workflow sentinel が `&&` チェーンで無視される — 要修正
+
+**再現条件**: `echo "<<WORKFLOW_MARK_STEP_code_complete>>" && echo "<<WORKFLOW_MARK_STEP_verify_complete>>"` のように
+sentinel echo を `&&` で繋いで 1 Bash 呼び出しにすると、`workflow-mark.js` の strict anchored regex
+（`/^echo\s+"<<...>>"$/`）にマッチせず state が更新されない。結果として `workflow-gate.js` が
+次の `git commit` で当該 step を incomplete と判定し block する。
+
+**影響範囲**: 以下の全 sentinel が同じ regex 制約を持つ:
+- `WORKFLOW_MARK_STEP_*`
+- `WORKFLOW_RESEARCH_NOT_NEEDED` / `WORKFLOW_PLAN_NOT_NEEDED` / `WORKFLOW_WRITE_TESTS_NOT_NEEDED`
+- `WORKFLOW_USER_VERIFIED`
+- `WORKFLOW_RESET_FROM_*`
+
+**修正候補**:
+1. `workflow-mark.js` の入力をコマンド全体ではなく stdout で受け取るよう変更し、
+   出力文字列で sentinel を検索するパターンに切り替える（複数 sentinel を一括処理可能に）
+2. `workflow-mark.js` に `&&` 分割ロジックを追加し、各部分コマンドを個別に評価する
+3. sentinel の echo は必ず単独 Bash 呼び出しとする旨を `workflow-mark.js` の冒頭コメントに明記し、
+   feedback memory で運用回避（現状の暫定対処）
+
+**現在の回避策**: sentinel は必ず別々の Bash 呼び出しで送る（`&&` 禁止）。
+
+- [ ] 修正方針を決定（候補 1 / 2 / 3）
+- [ ] 実装（修正候補 1 or 2 の場合）
+- [ ] 関連 E2E テスト追加
 
 ### Security Enhancement — Phase 4 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
