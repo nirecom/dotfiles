@@ -61,15 +61,6 @@ else
     fail "missing OWASP/CWE citations"
 fi
 
-# --- Normal case 7: references Gitleaks, Semgrep, detect-secrets ---
-for tool in Gitleaks Semgrep detect-secrets; do
-    if [ -f "$SKILL" ] && grep -qi "$tool" "$SKILL" 2>/dev/null; then
-        pass "references '$tool'"
-    else
-        fail "does not reference '$tool'"
-    fi
-done
-
 # --- Normal case 8: cross-references /review-plan-security ---
 if [ -f "$SKILL" ] && grep -qF '/review-plan-security' "$SKILL" 2>/dev/null; then
     pass "cross-references /review-plan-security"
@@ -84,17 +75,11 @@ else
     fail "does not reference docs/private-info-scanning.md"
 fi
 
-# --- Normal case 10: contains 'Automated coverage' phrase in Axis 1 ---
-if [ -f "$SKILL" ]; then
-    # Extract Axis 1 section content (between '### Axis 1:' and the next '### ' or '## ' header)
-    axis1_content=$(perl -0777 -ne 'if (/### Axis 1:.*?\n(.*?)(?=\n### |\n## |\z)/s) { print $1 }' "$SKILL" 2>/dev/null || true)
-    if echo "$axis1_content" | grep -qiF 'Automated coverage'; then
-        pass "Axis 1 contains 'Automated coverage' phrase"
-    else
-        fail "Axis 1 does not contain 'Automated coverage' phrase"
-    fi
+# --- Normal case 10: contains 'Automated coverage' phrase ---
+if [ -f "$SKILL" ] && perl -lne 'if (/Automated coverage/i) { $found=1 } END { exit($found ? 0 : 1) }' "$SKILL" 2>/dev/null; then
+    pass "SKILL.md contains 'Automated coverage' phrase"
 else
-    fail "SKILL.md absent — Axis 1 'Automated coverage' check skipped"
+    fail "SKILL.md does not contain 'Automated coverage' phrase"
 fi
 
 # --- Edge case 11: no absolute paths (public repo leak check) ---

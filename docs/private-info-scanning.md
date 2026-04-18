@@ -118,3 +118,7 @@ Ensure `settings.json` has the hooks section (check `~/.claude/settings.json`).
 | `.private-info-allowlist` | Exception patterns |
 | `../dotfiles-private/.private-info-allowlist` | Environment-specific exception patterns (private repo) |
 | `../dotfiles-private/.private-info-blocklist` | Additional detection patterns (private repo) |
+
+## Related
+
+For code-level security vulnerability scanning (injection, traversal, SQL, etc.), see `/review-code-security`.
