@@ -10,10 +10,10 @@ Checkpoints scan for private information:
 |:---|:---|:---|
 | Git commit (files) | Every `git commit` | Pre-commit hook (`claude-global/hooks/pre-commit`) |
 | Git commit (message) | Every `git commit` | Commit-msg hook (`claude-global/hooks/commit-msg`) |
-| Claude Code edit | Every Edit/Write tool call | PreToolUse hook (`claude-global/hooks/check-private-info.js`) |
-| Claude Code commit | Every `git commit` via Bash tool | PreToolUse hook (`claude-global/hooks/check-private-info.js`) |
+| Claude Code edit | Every Edit/Write tool call | PreToolUse hook (`claude-global/hooks/scan-outbound.js`) |
+| Claude Code commit | Every `git commit` via Bash tool | PreToolUse hook (`claude-global/hooks/scan-outbound.js`) |
 
-All call `bin/check-private-info.sh` as the scanner (single source of truth for patterns).
+All call `bin/scan-outbound.sh` as the scanner (single source of truth for patterns).
 
 **Private repos are skipped**: detected dynamically via `gh api` (GitHub CLI). If the repo's `private` flag is `true`, scanning is skipped. If `gh` is unavailable or the API call fails, scanning proceeds (fail-open, safe default).
 
@@ -25,6 +25,8 @@ All call `bin/check-private-info.sh` as the scanner (single source of truth for 
 | Email addresses | `user@domain.tld` | `user@example.com` |
 | MAC addresses | `XX:XX:XX:XX:XX:XX` / `XX-XX-XX-XX-XX-XX` | `aa:bb:cc:dd:ee:ff` |
 | Absolute local paths | `/Users/<name>`, `/home/<name>`, `C:\Users\<name>` | `/Users/john/docs` |
+| Hard secrets | AWS/Anthropic/OpenAI/GitHub/Slack/Google/HuggingFace/Groq/Replicate/Cohere API keys, PEM private keys | `AKIA...`, `sk-ant-api03-...`, `ghp_...`, `-----BEGIN RSA PRIVATE KEY-----` |
+| Hidden Unicode (Trojan Source) | Zero-width: U+200B, U+200C, U+200D, U+FEFF. Bidi overrides: U+202D, U+202E, U+2066–2069 | CVE-2021-42574 |
 | Blocklist patterns | User-defined in `dotfiles-private/.private-info-blocklist` | Hostnames, domain names |
 
 ## Setup
@@ -71,20 +73,20 @@ Co-Authored-By
 Scan specific files:
 
 ```bash
-bin/check-private-info.sh path/to/file1 path/to/file2
+bin/scan-outbound.sh path/to/file1 path/to/file2
 ```
 
 Scan from stdin:
 
 ```bash
-echo "some content" | bin/check-private-info.sh --stdin
-echo "some content" | bin/check-private-info.sh --stdin filename-label
+echo "some content" | bin/scan-outbound.sh --stdin
+echo "some content" | bin/scan-outbound.sh --stdin filename-label
 ```
 
 Scan all tracked files in a repo:
 
 ```bash
-git ls-files | while read f; do [ -f "$f" ] && bin/check-private-info.sh "$f"; done
+git ls-files | while read f; do [ -f "$f" ] && bin/scan-outbound.sh "$f"; done
 ```
 
 ## Troubleshooting
@@ -110,10 +112,10 @@ Ensure `settings.json` has the hooks section (check `~/.claude/settings.json`).
 
 | File | Purpose |
 |:---|:---|
-| `bin/check-private-info.sh` | Scanner script (detection patterns) |
+| `bin/scan-outbound.sh` | Scanner script (detection patterns) |
 | `claude-global/hooks/pre-commit` | Git pre-commit hook (staged files) |
 | `claude-global/hooks/commit-msg` | Git commit-msg hook (commit message) |
-| `claude-global/hooks/check-private-info.js` | Claude Code PreToolUse hook |
+| `claude-global/hooks/scan-outbound.js` | Claude Code PreToolUse hook |
 | `claude-global/hooks/lib/is-private-repo.js` | Shared module: dynamic private repo detection via `gh api` |
 | `.private-info-allowlist` | Exception patterns |
 | `../dotfiles-private/.private-info-allowlist` | Environment-specific exception patterns (private repo) |

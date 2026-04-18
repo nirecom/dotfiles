@@ -8,7 +8,7 @@ if command -v cygpath >/dev/null 2>&1; then
   DOTFILES_DIR="$(cygpath -m "$DOTFILES_DIR")"
 fi
 LIB="$DOTFILES_DIR/claude-global/hooks/lib/is-private-repo.js"
-HOOK_PRIVATE="$DOTFILES_DIR/claude-global/hooks/check-private-info.js"
+HOOK_PRIVATE="$DOTFILES_DIR/claude-global/hooks/scan-outbound.js"
 HOOK_DOCS="$DOTFILES_DIR/claude-global/hooks/check-docs-updated.js"
 HOOK_TEST="$DOTFILES_DIR/claude-global/hooks/check-tests-updated.js"
 ERRORS=0
@@ -328,7 +328,7 @@ expect_block() {
 COMMIT_JSON='{"tool_name":"Bash","tool_input":{"command":"git commit -m \"update\""}}'
 
 echo ""
-echo "=== Integration: check-private-info.js ==="
+echo "=== Integration: scan-outbound.js ==="
 
 # Private repo: commit with private-looking content → approve (skipped)
 setup_mock_gh_private

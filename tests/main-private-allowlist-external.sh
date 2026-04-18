@@ -1,10 +1,10 @@
 #!/bin/bash
 # Test suite for external allowlist loading from dotfiles-private
-# Tests that check-private-info.sh loads .private-info-allowlist from sibling dotfiles-private repo
+# Tests that scan-outbound.sh loads .private-info-allowlist from sibling dotfiles-private repo
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-SCANNER="$DOTFILES_DIR/bin/check-private-info.sh"
+SCANNER="$DOTFILES_DIR/bin/scan-outbound.sh"
 ERRORS=0
 
 fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
@@ -20,11 +20,11 @@ mkdir -p "$FAKE_DOTFILES/bin"
 mkdir -p "$FAKE_PRIVATE"
 
 # Copy scanner to fake dotfiles
-cp "$SCANNER" "$FAKE_DOTFILES/bin/check-private-info.sh"
-chmod +x "$FAKE_DOTFILES/bin/check-private-info.sh"
+cp "$SCANNER" "$FAKE_DOTFILES/bin/scan-outbound.sh"
+chmod +x "$FAKE_DOTFILES/bin/scan-outbound.sh"
 
 # Use the fake scanner for tests
-SCANNER="$FAKE_DOTFILES/bin/check-private-info.sh"
+SCANNER="$FAKE_DOTFILES/bin/scan-outbound.sh"
 
 # Create empty local allowlist (scanner expects it)
 touch "$FAKE_DOTFILES/.private-info-allowlist"

@@ -234,7 +234,7 @@ bulk-deleted; most had directory versions with no data loss. One-time event.
 ```
 
 **Hooks**:
-- `check-private-info.js` (PreToolUse, matcher: `Bash`) — scans commands for private info patterns
+- `scan-outbound.js` (PreToolUse, matcher: `Bash`) — scans commands for private info patterns
 - `block-dotenv.js` (PreToolUse, matcher: `Bash|Read|Grep|Glob`) — blocks `.env` file access.
   Sanitizes git commit messages to avoid false positives
 - `workflow-gate.js` (PreToolUse, matcher: `Bash`) — enforces all 7 workflow steps before

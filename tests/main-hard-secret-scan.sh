@@ -1,5 +1,5 @@
 #!/bin/bash
-# Test suite for hard-secret pattern detection in check-private-info.sh
+# Test suite for hard-secret pattern detection in scan-outbound.sh
 # Tests that the scanner detects API keys, tokens, and private keys with
 # distinct labels in the output.
 #
@@ -8,7 +8,7 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-SCANNER_SRC="$DOTFILES_DIR/bin/check-private-info.sh"
+SCANNER_SRC="$DOTFILES_DIR/bin/scan-outbound.sh"
 ERRORS=0
 
 fail() { echo "FAIL: $1"; ERRORS=$((ERRORS + 1)); }
@@ -32,10 +32,10 @@ FAKE_PRIVATE="$TMPBASE/dotfiles-private"
 mkdir -p "$FAKE_DOTFILES/bin"
 mkdir -p "$FAKE_PRIVATE"
 
-cp "$SCANNER_SRC" "$FAKE_DOTFILES/bin/check-private-info.sh"
-chmod +x "$FAKE_DOTFILES/bin/check-private-info.sh"
+cp "$SCANNER_SRC" "$FAKE_DOTFILES/bin/scan-outbound.sh"
+chmod +x "$FAKE_DOTFILES/bin/scan-outbound.sh"
 
-SCANNER="$FAKE_DOTFILES/bin/check-private-info.sh"
+SCANNER="$FAKE_DOTFILES/bin/scan-outbound.sh"
 
 # Empty local allowlist (scanner expects it)
 : > "$FAKE_DOTFILES/.private-info-allowlist"
