@@ -2,14 +2,18 @@
 """Detect and translate Japanese entries in history.md files.
 
 Two-phase workflow:
-  1. Extract: detect Japanese entries and output a translation manifest (JSON)
+  1. Extract: detect Japanese entries and save a translation manifest (JSON)
   2. Apply: read completed manifest and replace Japanese with English
+
+The manifest path defaults to <file>.translate.json (alongside the history file).
+Override with -t / --translations.
 
 Usage:
     uv run bin/translate-history.py docs/history.md --extract
     uv run bin/translate-history.py docs/history.md --extract --public
-    uv run bin/translate-history.py docs/history.md --apply -t translations.json
-    uv run bin/translate-history.py docs/history.md --apply -t translations.json --dry-run
+    uv run bin/translate-history.py docs/history.md --apply
+    uv run bin/translate-history.py docs/history.md --apply -t custom.json
+    uv run bin/translate-history.py docs/history.md --apply --dry-run
 """
 
 import argparse
@@ -245,20 +249,21 @@ def main():
     content = file_path.read_text(encoding="utf-8").replace("\r\n", "\n")
     out = open(sys.stdout.fileno(), "wb", closefd=False)
 
+    default_manifest = file_path.with_suffix(".translate.json")
+
     if args.extract:
         sections = parse_sections(content)
         jp_entries = find_japanese_entries(sections)
         if not jp_entries:
             print("No Japanese entries found.", file=sys.stderr)
+            sys.exit(0)
         manifest = extract_manifest(file_path, jp_entries)
-        out.write(manifest.encode("utf-8"))
-        out.write(b"\n")
+        manifest_path = Path(args.translations).resolve() if args.translations else default_manifest
+        manifest_path.write_text(manifest + "\n", encoding="utf-8")
+        print(f"Manifest written to: {manifest_path} ({len(jp_entries)} entries)", file=sys.stderr)
 
     elif args.apply:
-        if not args.translations:
-            parser.error("--apply requires --translations (-t)")
-
-        manifest_path = Path(args.translations).resolve()
+        manifest_path = Path(args.translations).resolve() if args.translations else default_manifest
         if not manifest_path.exists():
             print(f"Error: {manifest_path} not found", file=sys.stderr)
             sys.exit(1)
