@@ -21,10 +21,9 @@
 
 ## Phase 1: Architecture Security Checklist
 
-**Goal**: `/review-security` skill を新規作成。計画時にセキュリティ 3 軸を確認させる。
-`rules/security.md` はスキルへのポインタ（1-2行）のみ。
+**Goal**: `/review-plan-security` skill（旧 `/review-security`）を作成。計画時にセキュリティ 3 軸を確認させる。
 
-**変更ファイル**: `claude-global/skills/review-security/SKILL.md` (新規), `claude-global/rules/security.md` (新規・ポインタのみ)
+**変更ファイル**: `claude-global/skills/review-plan-security/SKILL.md` (review-security からリネーム)
 
 **内容**:
 - Information Leakage チェック (出典: OWASP ASVS V8 Data Protection, V6 Stored Cryptography)
@@ -44,22 +43,26 @@
 - Prompt injection (OWASP LLM Top 10 LLM01, MCP Top 10 MCP06)
 - Idempotency of security (既存 Idempotency cases のセキュリティ拡張)
 
-## Phase 3: Security Patterns Reference
+## Phase 3: Security Patterns
 
-**Goal**: `/scan-security` skill を新規作成。テストで使えるシグネチャパターン集。
+**Goal**: `/review-code-security` skill を新規作成（コードレビュー時の具体パターン集）。`check-private-info.sh` にハードシークレット検出を追加。`pre-commit` に `.env` ファイルブロックを追加。
 
-**変更ファイル**: `claude-global/skills/scan-security/SKILL.md` (新規), `docs/private-info-scanning.md` (相互参照追加)
+**変更ファイル**:
+- `claude-global/skills/review-code-security/SKILL.md` (新規)
+- `claude-global/skills/review-plan-security/SKILL.md` (相互参照追記)
+- `bin/check-private-info.sh` (AWS/LLM API キー等 11 パターン追加)
+- `claude-global/hooks/pre-commit` (`.env` ファイルコミットブロック追加)
+- `docs/private-info-scanning.md` (パターン表と相互参照追記)
 
 **内容**:
-- Secret Patterns — Gitleaks built-in rules 由来 (https://github.com/gitleaks/gitleaks/tree/master/cmd/generate/config/rules)
-- Shell Security Patterns — Semgrep community rules 由来 (https://semgrep.dev/r?q=bash+security)
-- 将来の統合オプション (Gitleaks / Semgrep / detect-secrets の参照情報)
+- review-plan-security と同一 3 軸構造、各軸に具体パターン表
+- check-private-info.sh: AWS key, PEM header, GitHub PAT, Slack token, OpenAI/Anthropic/Google/HuggingFace/Groq/Replicate/Cohere API キー (Gitleaks 由来パターン)
 
 ## Phase 4: Prompt Injection Defense
 
-**Goal**: Prompt injection 防御パターンを security.md と security-patterns.md に追加。
+**Goal**: Prompt injection 防御パターンを review-plan-security と review-code-security に追加。
 
-**変更ファイル**: `claude-global/skills/review-security/SKILL.md` (追記), `claude-global/skills/scan-security/SKILL.md` (追記)
+**変更ファイル**: `claude-global/skills/review-plan-security/SKILL.md` (追記), `claude-global/skills/review-code-security/SKILL.md` (追記)
 
 **内容**:
 - Prompt Injection Defense セクション (出典: OWASP LLM Top 10 LLM01, MCP Top 10 MCP03/MCP06)
@@ -71,6 +74,6 @@
 ## Status
 
 - [x] Phase 1: Architecture Security Checklist
-- [ ] Phase 2: Security Test Cases
-- [ ] Phase 3: Security Patterns Reference
+- [x] Phase 2: Security Test Cases
+- [x] Phase 3: Security Patterns
 - [ ] Phase 4: Prompt Injection Defense

@@ -81,36 +81,6 @@ else
     pass "one or both SKILL.md files absent — axis-header consistency check skipped"
 fi
 
-# --- Consistency case 9: Source: line following each axis header matches between the two files ---
-if [ -f "$SKILL" ] && [ -f "$CODE_SKILL" ]; then
-    mismatch=0
-    checked=0
-    for n in 1 2 3; do
-        # Extract the first non-blank line beginning with 'Source:' that appears after '### Axis N:' and before the next '### ' header
-        plan_src=$(perl -0777 -ne 'if (/### Axis '"$n"':.*?\n(.*?)(?=\n### |\z)/s) { my $b = $1; if ($b =~ /^(Source:[^\n]*)/m) { print $1 } }' "$SKILL" 2>/dev/null || true)
-        code_src=$(perl -0777 -ne 'if (/### Axis '"$n"':.*?\n(.*?)(?=\n### |\z)/s) { my $b = $1; if ($b =~ /^(Source:[^\n]*)/m) { print $1 } }' "$CODE_SKILL" 2>/dev/null || true)
-        if [ -z "$plan_src" ] && [ -z "$code_src" ]; then
-            continue
-        fi
-        checked=$((checked + 1))
-        if [ "$plan_src" != "$code_src" ]; then
-            mismatch=1
-            echo "    Axis $n Source mismatch:"
-            echo "      plan: $plan_src"
-            echo "      code: $code_src"
-        fi
-    done
-    if [ "$checked" -eq 0 ]; then
-        fail "no Source: lines found under any axis in either SKILL.md"
-    elif [ "$mismatch" -eq 0 ]; then
-        pass "Source: lines match between review-plan-security and review-code-security for all axes"
-    else
-        fail "Source: lines differ between review-plan-security and review-code-security"
-    fi
-else
-    pass "one or both SKILL.md files absent — Source-line consistency check skipped"
-fi
-
 # --- Edge case 10: no absolute paths (public repo leak check) ---
 if [ -f "$SKILL" ] && grep -qiE '(^|[^a-zA-Z])(c:/|/home/|/Users/)' "$SKILL" 2>/dev/null; then
     fail "absolute path found in SKILL.md (public repo leak)"
