@@ -49,8 +49,8 @@ Background: User verification of three robustness improvements on Windows (VSCod
 Changes: (1) `echo "<<WORKFLOW_USER_VERIFIED>>"` ask dialog confirmed — permissions.ask rule fires and PostToolUse hook records user_verification as complete. (2) SessionStart creates UUID-format state file at session start (.git/workflow/<session-id>.json confirmed). (3) isPrivateRepo bypass removal confirmed via git diff — a6ad6ab had `if (isPrivateRepo(repoDir)) approve()`, current code imports only resolveRepoDir.
 
 ### Workflow State Machine: .git/workflow deny rule verified (2026-04-13)
-Background: New session (VSCode extension, Windows) で deny ルールが機能するか確認。settings.json の `Edit(**/.git/workflow/**)` / `Write(**/.git/workflow/**)` deny ルールは Claude Code 再起動後に有効になる。
-Changes: Write(**/.git/workflow/**) と Edit(**/.git/workflow/**) の両ルールが Claude Code のパーミッションシステムにより自動ブロックされることを確認。Windows での全動作確認完了。
+Background: In a new session (VSCode extension, Windows), confirmed that the deny rules work. The Edit(**/.git/workflow/**) and Write(**/.git/workflow/**) deny rules in settings.json take effect after restarting Claude Code.
+Changes: Confirmed that both Write(**/.git/workflow/**) and Edit(**/.git/workflow/**) rules are automatically blocked by the Claude Code permission system. Full verification on Windows complete.
 
 ### starship: increase command_timeout to 2000ms (2026-04-13)
 Background: starship prompt showed timeout warnings when changing into the dotfiles directory. Root cause: git fsmonitor daemon was not yet running, and daemon startup exceeded starship's default 500ms command_timeout.
@@ -69,8 +69,8 @@ Background: Claude Code's permission glob parser treats `:` as a named-parameter
 Changes: Changed both marker formats to use `_` as separator: `<<WORKFLOW_MARK_STEP:step:status>>` → `<<WORKFLOW_MARK_STEP_step_status>>`, `<<WORKFLOW_RESET_FROM:step>>` → `<<WORKFLOW_RESET_FROM_step>>`. Updated workflow-mark.js regexes, settings.json allow/ask rules (RESET_FROM single-quote variant removed — DQ only), workflow-gate.js block message, 5 skill Completion sections, and test suite. Windows re-verification confirmed: normal cases 1–4 and error cases 1–2 all pass.
 
 ### Workflow State Machine: cross-platform verification complete (2026-04-14, 60aa84c)
-Background: Windows・WSL・macOS の全プラットフォームで正常系・異常系の動作確認を完了。macOS は初のネイティブ E2E 実行。
-Changes: 正常系（セッション開始・ステップ記録・commit ブロック・commit 通過・PostToolUse 実発火）と異常系（ステートファイル破損 → fail-safe ブロック → --reset-from リカバリ、部分リセット）をすべて確認。macOS E2E で3つの移植性バグを発見・修正：(1) `timeout` 非対応 → `run_with_timeout()` perl フォールバック、(2) `CLAUDECODE` 継承によるネストセッションエラー → `unset CLAUDECODE`、(3) `disableBypassPermissionsMode: disable` が `--dangerously-skip-permissions` を無効化 → minimal settings.json 使用。WSL は Windows ブリッジ経由のため3つとも顕在化しなかった（`CLAUDECODE` 非伝播・Windows 側プロファイル参照）。test.md に `run_with_timeout` パターンと `claude -p` E2E 注意点を追記、Installer Testing を test-installer.md に分離。
+Background: Completed happy-path and error-path verification across Windows, WSL, and macOS. macOS was the first native E2E run.
+Changes: Verified happy path (session start, step recording, commit block, commit pass, PostToolUse real-fire) and error path (state file corruption -> fail-safe block -> --reset-from recovery, partial reset). Found and fixed three portability bugs during macOS E2E: (1) timeout not available -> run_with_timeout() perl fallback; (2) nested session error from inherited CLAUDECODE -> unset CLAUDECODE; (3) disableBypassPermissionsMode: disable neutralizing --dangerously-skip-permissions -> use minimal settings.json. WSL did not surface any of the three (CLAUDECODE not propagated, Windows profile referenced via bridge). Added run_with_timeout pattern and claude -p E2E caveats to test.md; extracted Installer Testing into test-installer.md.
 
 ### session-sync: push conflict auto-resolution (2026-04-14)
 Background: Session sync was silently failing with "push failed" toast when ~/.claude/projects
@@ -168,28 +168,28 @@ Changes: Replaced date-based cutoff with floor-based archiving: keep last --floo
 Background: On Windows with Git Bash, `git -C /<drive>/path commit` passed a Unix-style drive path (e.g. `/<drive>/git/dotfiles`) to workflow-gate.js. Windows Node.js does not accept Unix-style paths as `cwd` in `execSync`, causing `hasStagedTestChanges` and `hasStagedDocChanges` to silently return `false` even when tests/ or docs/ were staged — blocking commits with a spurious "write_tests not complete" error.
 Changes: `resolveRepoDir` now normalizes `/<drive>/path` → `C:\path` patterns (single drive letter followed by `/`). `hasStagedTestChanges` and `hasStagedDocChanges` catch blocks now write a warning to `process.stderr` instead of silently swallowing the error. Main execution wrapped in `require.main === module` guard; `resolveRepoDir`, `hasStagedTestChanges`, `hasStagedDocChanges` exported for testability. 13 tests added in `tests/fix-workflow-gate-unix-path.sh`.
 
-### fix: install.sh に uv 呼び出し追加・--develop の包含関係を Windows と統一 (2026-04-17, pending)
-Background: install/linux/uv.sh が存在するにもかかわらず install.sh のどこからも呼び出されていなかった。また --develop フラグが base パッケージブロックを実行しない実装になっており、Windows の install.ps1 (-Develop ⊇ -Base) と直交性が欠如していた。
-Changes: install.sh の base ブロックに uv.sh 呼び出しを追加。base ブロックの条件を --base || --develop || --full に変更し、Windows の包含関係 (Full ⊇ Develop ⊇ Base) と揃えた。
+### fix: add uv call to install.sh and align --develop inclusion with Windows (2026-04-17, pending)
+Background: install/linux/uv.sh existed but was never called from install.sh. The --develop flag also did not execute the base package block, breaking orthogonality with Windows install.ps1 (-Develop ⊇ -Base).
+Changes: Added uv.sh call to the base block in install.sh. Changed the base block condition to --base || --develop || --full to align with the Windows inclusion relationship (Full ⊇ Develop ⊇ Base).
 
 ### doc-append/doc-rotate + architecture.md split (2026-04-17, 28fa673)
-Background: docs/history.md の肥大化対策として doc-append.py / doc-rotate.py を追加。docs/architecture.md も 300 行超に備えて architecture/ サブディレクトリへ分割。
-Changes: bin/doc-append.py, bin/doc-rotate.py 追加。docs/architecture/ に claude-code.md, file-tree.md, shell-startup.md を分割。settings.json に uv run 権限追加。
+Background: Added doc-append.py and doc-rotate.py to manage growth of docs/history.md. Split docs/architecture.md into an architecture/ subdirectory in preparation for exceeding 300 lines.
+Changes: Added bin/doc-append.py and bin/doc-rotate.py. Split docs/architecture/ into claude-code.md, file-tree.md, and shell-startup.md. Added uv run permissions to settings.json.
 
-### install-obsolete: .git/workflow クリーンアップ (2026-04-17, 5b3bf91)
-Background: .git/workflow ディレクトリが旧 workflow state の保存場所だったが、~/.claude/projects/workflow に移行済み。install-obsolete でサルベージ・削除する処理を追加。
-Changes: install-obsolete.sh / install-obsolete.ps1 に .git/workflow → ~/.claude/projects/workflow サルベージ処理追加。7日以内に更新された JSON ファイルを新パスにコピーし、旧ディレクトリを削除。
+### install-obsolete: .git/workflow cleanup (2026-04-17, 5b3bf91)
+Background: .git/workflow was the old storage location for workflow state, but migration to ~/.claude/projects/workflow was complete. Added salvage and deletion logic to install-obsolete.
+Changes: Added .git/workflow -> ~/.claude/projects/workflow salvage logic to install-obsolete.sh and install-obsolete.ps1. Copies JSON files updated within 7 days to the new path and removes the old directory.
 
 ### profile.ps1: suppress create/delete mode output in startup git pull (2026-04-18, pending)
 Background: On pwsh startup, the auto-pull's `git merge --ff-only` emitted the full summary (dozens to hundreds of `create mode` / `delete mode` lines, especially for the session sync repo) after the diffstat. The Fast-forward signal and change-size indicator (`++++`) are desired, but the summary is noise.
 Changes: Added `--no-summary` to both `git merge --ff-only` invocations in `install/win/profile.ps1` (dotfiles auto-pull and session sync). Keeps the `Fast-forward` line and diffstat; suppresses `create mode` / `delete mode` lines only.
 ### Workflow State Machine: session ID injection and state inheritance across VS Code restarts (2026-04-18, (pending))
-Background: VS Code 再起動時（hook 変更・シャットダウン等）に新 session_id が発行され、旧 session の workflow state file が孤立する。workflow-gate がすべてのステップを pending と判定してコミットをブロックする問題を解消する。
-Changes: 3つの変更を組み合わせて解消。(1) session-start.js: 引き継ぎロジック追加 — 新セッション開始時、~/.claude/projects/<encoded-cwd>/<session_id>.jsonl をmtime降順(最大10件)スキャンし、SessionStart/PostCompact attachment エントリの stdout から「Current workflow session_id: <uuid>」を検索。同一 cwd+branch かつ all-pending でない state があれば steps をコピー引き継ぎ。(2) session-start.js: 出力を {} から additionalContext JSON (session_id + state path) に変更し、transcript に記録して将来のセッションが参照できるようにする。(3) post-compact.js (新規 PostCompact hook): compaction 後に session_id を再注入し transcript のマーカーを保持。workflow-state.js: getCurrentContext()・findLatestStateForContext(ctx) 追加、createInitialState() に optional ctx (cwd/git_branch) 引数追加。settings.json: PostCompact hook 登録追加。テスト: tests/feature-workflow-inherit-state.sh (A1–A12, T-C1–T-C3, 15 ケース) と tests/feature-workflow-post-compact.sh (B1–B3, 3 ケース)、計 18 ケース全 PASS。
+Background: When VS Code restarts (on hook changes, shutdown, etc.), a new session_id is issued and the old session workflow state file becomes orphaned, causing workflow-gate to treat all steps as pending and block commits.
+Changes: Resolved by three combined changes. (1) session-start.js: added inheritance logic — on new session start, scans ~/.claude/projects/<encoded-cwd>/<session_id>.jsonl files by mtime descending (up to 10), searches stdout of SessionStart/PostCompact attachment entries for 'Current workflow session_id: <uuid>'. If a state with the same cwd+branch exists and is not all-pending, copies its steps. (2) session-start.js: changed output from {} to additionalContext JSON (session_id + state path) to record in transcript for future sessions to reference. (3) post-compact.js (new PostCompact hook): re-injects session_id after compaction to preserve transcript markers. workflow-state.js: added getCurrentContext() and findLatestStateForContext(ctx), added optional ctx (cwd/git_branch) argument to createInitialState(). settings.json: registered PostCompact hook. Tests: tests/feature-workflow-inherit-state.sh (A1-A12, T-C1-T-C3, 15 cases) and tests/feature-workflow-post-compact.sh (B1-B3, 3 cases), 18 cases total, all PASS.
 
-### mark-step.js 削除・workflow-gate/mark メッセージ修正 検証完了 (2026-04-18, 9340267)
-Background: workflow-gate/mark のブロックメッセージを node mark-step.js 呼び出し形式から echo マーカー形式に移行。mark-step.js を削除し workflow-mark.js に統合済み。
-Changes: Windows / WSL / macOS 全環境で動作確認完了。ブロックメッセージに node mark-step.js が含まれないこと、WORKFLOW_MARK_STEP / WORKFLOW_RESET_FROM echo マーカーが state ファイルに正しく反映されることを確認。
+### mark-step.js removal and workflow-gate/mark message migration verified (2026-04-18, 9340267)
+Background: Migrated workflow-gate/mark block messages from node mark-step.js call format to echo marker format. mark-step.js deleted and consolidated into workflow-mark.js.
+Changes: Verified on all platforms: Windows, WSL, and macOS. Confirmed that block messages no longer contain node mark-step.js calls and that WORKFLOW_MARK_STEP / WORKFLOW_RESET_FROM echo markers are correctly reflected in state files.
 
 ### workflow-mark: require reason argument for WORKFLOW_DOCS_NOT_NEEDED sentinel (2026-04-18, (pending))
 Background: The bare <<WORKFLOW_DOCS_NOT_NEEDED>> sentinel allowed reflexive skipping of the docs step without the model articulating why. Several sessions skipped docs when a history.md entry was warranted.
@@ -205,22 +205,33 @@ Follow-up: two issues surfaced on first run — (a) running widget locks its exe
 Background: WORKFLOW_DOCS_NOT_NEEDED sentinel now requires a meaningful reason string (>=3 non-space chars, not a placeholder). Bare form is rejected. Verified via WS-EV-9 through WS-EV-18 in tests/main-workflow-evidence.sh.
 Changes: All 18 test cases passed. No code changes needed.
 
-### workflow-gate: fix hasStagedTestChanges for Unix-style Git Bash paths (2026-04-18, 876d12e)
-Background: Git Bash passes MSYS2-style paths (/<letter>/rest) to workflow-gate when using git -C. hasStagedTestChanges used this path as cwd for execSync, but Node.js on Windows cannot resolve MSYS2 drive paths, causing the function to throw and return false — the test-evidence override never triggered even when tests/ files were staged.
+### workflow-gate: fix hasStagedTestChanges for Unix-style Git Bash paths (2026-04-18, 876d12e)
+
+Background: Git Bash passes MSYS2-style paths (/<letter>/rest) to workflow-gate when using git -C. hasStagedTestChanges used this path as cwd for execSync, but Node.js on Windows cannot resolve MSYS2 drive paths, causing the function to throw and return false — the test-evidence override never triggered even when tests/ files were staged.
+
 Changes: Added resolveRepoDir() function that converts MSYS2 paths to Windows paths. Called from the main hook entrypoint to normalize repoDir before passing to hasStagedTestChanges/hasStagedDocChanges. Both functions now accept an explicit repoDir parameter. Exported all three functions for unit testing. Tests: fix-workflow-gate-unix-path.sh — 13 cases (A: resolveRepoDir unit x7, B: staged-file integration x4, C: error handling x2), all PASS.
 
-### workflow-gate: fix commit regex false-positive on argument text (2026-04-18, pending)
-Background: /git\s+(?:-C\s+\S+\s+)?commit\s/ had no line-anchor, so a Bash command whose arguments contained 'git commit' as text (e.g. doc-append.py --background '... git commit ...') triggered the commit block even though no git commit was being run.
+### workflow-gate: fix commit regex false-positive on argument text (2026-04-18, pending)
+
+Background: /git\s+(?:-C\s+\S+\s+)?commit\s/ had no line-anchor, so a Bash command whose arguments contained 'git commit' as text (e.g. doc-append.py --background '... git commit ...') triggered the commit block even though no git commit was being run.
+
 Changes: Added ^ anchor to the regex (/^git\s+(?:-C\s+\S+\s+)?commit\s/). Regression test tests/main-workflow-gate-regex.sh added (7 cases: normal x4, bug-regression x2, edge x1), all PASS.
 
-### Workflow State Inheritance across VS Code Restarts (2026-04-18, c6159ea)
-Background: Implemented session state inheritance so that workflow steps (research/plan completion state) carry over to new sessions after VS Code restarts. findLatestStateForContext scans transcript JSONL files to find the most recently used session state for the current cwd+branch.
+### Workflow State Inheritance across VS Code Restarts (2026-04-18, c6159ea)
+
+Background: Implemented session state inheritance so that workflow steps (research/plan completion state) carry over to new sessions after VS Code restarts. findLatestStateForContext scans transcript JSONL files to find the most recently used session state for the current cwd+branch.
+
 Changes: Manual smoke tests all passed: (1) steps inherited after VS Code restart, (2) most-recently-used session selected when multiple parallel sessions exist, (3) session_id preserved after /compact via SessionStart:compact hook.
 
-### Enforce doc-append for history.md; block Japanese in public-repo doc-append (2026-04-18, pending)
-Background: Claude was occasionally using the Edit tool directly on history.md instead of doc-append.py, violating the append-only convention. Japanese text was also leaking into history.md in public repos despite the language policy.
+### Enforce doc-append for history.md; block Japanese in public-repo doc-append (2026-04-18, pending)
+
+Background: Claude was occasionally using the Edit tool directly on history.md instead of doc-append.py, violating the append-only convention. Japanese text was also leaking into history.md in public repos despite the language policy.
+
 Changes: Added Edit(**/history.md) and Write(**/history.md) to the deny list in settings.json to hard-block direct edits. Added check-japanese-in-docs.js PreToolUse hook that blocks doc-append.py calls containing Japanese characters when the target repo is public. Tests: tests/main-check-japanese-in-docs.sh (10 cases, all PASS).
 
-### Workflow State Inheritance across VS Code Restarts (2026-04-18, 2852d03)
-Background: Workflow steps (research/plan completion state) were lost on VS Code restart because each new session started fresh. findLatestStateForContext was added to scan transcript JSONL files and inherit state from the most recently used session with matching cwd+branch.
-Changes: Manual smoke tests all passed: steps inherited after restart, most-recent session wins among parallel sessions, session_id preserved after /compact via SessionStart:compact hook. Also fixed a bug where Windows cwd was not lowercased before encoding, causing transcript directory lookup to fail (C--git-dotfiles vs c--git-dotfiles).
+### Workflow State Inheritance across VS Code Restarts (2026-04-18, 2852d03)
+
+Background: Workflow steps (research/plan completion state) were lost on VS Code restart because each new session started fresh. findLatestStateForContext was added to scan transcript JSONL files and inherit state from the most recently used session with matching cwd+branch.
+
+Changes: Manual smoke tests all passed: steps inherited after restart, most-recent session wins among parallel sessions, session_id preserved after /compact via SessionStart:compact hook. Also fixed a bug where Windows cwd was not lowercased before encoding, causing transcript directory lookup to fail (C--git-dotfiles vs c--git-dotfiles).
+
