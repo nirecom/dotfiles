@@ -74,6 +74,7 @@
 | [claude-global/hooks/workflow-gate.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-gate.js) | PreToolUse commit gate: enforces all 7 workflow steps | Fail-safe: blocks on missing/corrupted state. Replaces check-docs-updated.js and check-tests-updated.js |
 | [claude-global/hooks/workflow-mark.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-mark.js) | PostToolUse step marker hook | Intercepts `echo "<<WORKFLOW_MARK_STEP_step_status>>"` and `echo "<<WORKFLOW_RESET_FROM_step>>"` via strict regex on `tool_input.command`; marks step using `session_id` from hook stdin |
 | [claude-global/hooks/session-start.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/session-start.js) | SessionStart hook | Sets CLAUDE_SESSION_ID via CLAUDE_ENV_FILE; runs zombie state file cleanup |
+| [claude-global/hooks/workflow-run-tests.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/workflow-run-tests.js) | PostToolUse hook: auto-marks `run_tests` by Bash exit code | Detects test runner commands; last-run-wins |
 | [claude-global/hooks/lib/workflow-state.js](https://github.com/nirecom/dotfiles/blob/main/claude-global/hooks/lib/workflow-state.js) | Shared state module for workflow hooks | Reads/writes `~/.claude/projects/workflow/<session-id>.json` (session-scoped) |
 
 ## Tests
@@ -86,6 +87,8 @@
 | [tests/main-keychain-ssh-agent.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-keychain-ssh-agent.sh) | keychain SSH agent tests | install.sh inclusion + .profile_common auto-detection |
 | [tests/main-claude-tabs.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-claude-tabs.sh) | claude-tabs.ps1 installer tests | Structure validation (19 test cases) |
 | [tests/feature-robust-workflow.sh](https://github.com/nirecom/dotfiles/blob/main/tests/feature-robust-workflow.sh) | Workflow state machine tests | workflow-gate.js, workflow-mark.js, session-start.js |
+| [tests/main-workflow-run-tests.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-workflow-run-tests.sh) | workflow-run-tests.js unit tests | Command heuristics, exit-code marking, idempotency |
+| [tests/main-workflow-migration.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-workflow-migration.sh) | readState() migration tests | verify→run_tests, code removal, review_security addition |
 | [tests/feature-doc-tools.py](https://github.com/nirecom/dotfiles/blob/main/tests/feature-doc-tools.py) | doc-append.py and doc-rotate.py tests | 24 pytest cases |
 
 ## Git Configuration

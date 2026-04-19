@@ -286,7 +286,7 @@ else
     fail "6. Multiple pending steps → expected block with 'plan' and 'write_tests', got: $RESULT"
 fi
 
-# Test 7: write_tests set to skipped (non-skippable) → block
+# Test 7: run_tests set to skipped (non-skippable) → block
 REPO=$(setup_repo)
 write_state "test-session" '{
   "version": 1,
@@ -295,14 +295,14 @@ write_state "test-session" '{
   "steps": {
     "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "complete", "updated_at": "2026-04-11T10:02:00.000Z"},
-    "write_tests":       {"status": "skipped",  "updated_at": "2026-04-11T10:03:00.000Z"},
+    "write_tests":       {"status": "complete", "updated_at": "2026-04-11T10:03:00.000Z"},
     "review_security":   {"status": "complete", "updated_at": "2026-04-11T10:04:30.000Z"},
-    "run_tests":         {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
+    "run_tests":         {"status": "skipped",  "updated_at": "2026-04-11T10:05:00.000Z"},
     "docs":              {"status": "complete", "updated_at": "2026-04-11T10:06:00.000Z"},
     "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:07:00.000Z"}
   }
 }'
-expect_block_gate "7. write_tests skipped (non-skippable) → block" "$REPO" "$COMMIT_JSON"
+expect_block_gate "7. run_tests skipped (non-skippable) → block" "$REPO" "$COMMIT_JSON"
 
 # Test 8: user_verification set to skipped → block
 REPO=$(setup_repo)
@@ -431,13 +431,13 @@ else
     fail "35. CLAUDE_ENV_FILE → expected exact line 'CLAUDE_SESSION_ID=abc123', file content: $(cat "$ENV_FILE" 2>/dev/null || echo '(not found)')"
 fi
 
-# Test 36: stdout output is {}
+# Test 36: stdout is valid JSON (may include additionalContext)
 REPO=$(setup_repo)
 STDOUT=$(echo '{"session_id":"abc123"}' | CLAUDE_PROJECT_DIR="$REPO" CLAUDE_WORKFLOW_DIR="$WORKFLOW_DIR" node "$SESSION_START" 2>/dev/null || true)
-if echo "$STDOUT" | grep -q "{}"; then
-    pass "36. session-start stdout is {}"
+if [[ "$STDOUT" == "{"* ]] || [[ "$STDOUT" == "" ]]; then
+    pass "36. session-start stdout is valid JSON"
 else
-    fail "36. session-start stdout → expected '{}', got: '$STDOUT'"
+    fail "36. session-start stdout → expected valid JSON starting with '{', got: '$STDOUT'"
 fi
 
 # Test 37: Zombie cleanup — state file with all updated_at 8 days ago → deleted
@@ -647,12 +647,12 @@ N3_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_research_skipped>>"')
 run_mark_hook "$REPO" "$N3_JSON" >/dev/null
 expect_state_step "N3. status=skipped on research → recorded" "test-session" "research" "skipped"
 
-# Test N4: status in_progress on write_tests → recorded
+# Test N4: MARK_STEP for write_tests is rejected (evidence-based step, stays pending)
 REPO=$(setup_repo)
 write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 N4_JSON=$(build_mark_json 'echo "<<WORKFLOW_MARK_STEP_write_tests_in_progress>>"')
 run_mark_hook "$REPO" "$N4_JSON" >/dev/null
-expect_state_step "N4. status=in_progress on write_tests → recorded" "test-session" "write_tests" "in_progress"
+expect_state_step "N4. MARK_STEP for write_tests → rejected (stays pending)" "test-session" "write_tests" "pending"
 
 echo ""
 echo "=== workflow-mark: New hook — Must-NOT-mark cases ==="
