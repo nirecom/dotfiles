@@ -98,12 +98,14 @@ SID2="tdd2-$(printf '%04x%04x' $RANDOM $RANDOM)"
 ENV_FILE2="$TMPDIR_BASE/claude2.env"
 
 # Pre-write a state file with research=complete
+# Use current timestamp to avoid cleanupZombies(7) deleting the file.
+NOW_ISO=$(node -e "console.log(new Date().toISOString())" 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
 PRE_STATE='{
   "version": 1,
   "session_id": "'"$SID2"'",
-  "created_at": "2026-04-11T10:00:00.000Z",
+  "created_at": "'"$NOW_ISO"'",
   "steps": {
-    "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
+    "research":          {"status": "complete", "updated_at": "'"$NOW_ISO"'"},
     "plan":              {"status": "pending", "updated_at": null},
     "write_tests":       {"status": "pending", "updated_at": null},
     "review_security":   {"status": "pending", "updated_at": null},

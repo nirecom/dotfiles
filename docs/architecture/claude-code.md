@@ -20,8 +20,8 @@ Path: `~/.claude/projects/workflow/<session-id>.json` (never committed — outsi
     "research":          { "status": "complete", "updated_at": "..." },
     "plan":              { "status": "skipped",  "updated_at": "..." },
     "write_tests":       { "status": "complete", "updated_at": "..." },
-    "code":              { "status": "complete", "updated_at": "..." },
-    "verify":            { "status": "complete", "updated_at": "..." },
+    "run_tests":         { "status": "complete", "updated_at": "..." },
+    "review_security":   { "status": "complete", "updated_at": "..." },
     "docs":              { "status": "complete", "updated_at": "..." },
     "user_verification": { "status": "complete", "updated_at": "..." }
   }
@@ -32,7 +32,7 @@ Path: `~/.claude/projects/workflow/<session-id>.json` (never committed — outsi
 `git_branch` is `null` for non-git directories and detached HEAD.
 
 Statuses: `pending` | `in_progress` | `complete` | `skipped`
-- `skipped`: allowed only for `research` and `plan` (CLAUDE.md skip conditions)
+- `skipped`: allowed for `research`, `plan`, `write_tests`, and `review_security`
 - `user_verification`: cannot be `skipped` — enforced at CLI and permission level
 
 ### Steps and owners
@@ -42,8 +42,8 @@ Statuses: `pending` | `in_progress` | `complete` | `skipped`
 | `research` | `/survey-code` or `/deep-research` skill (emits `WORKFLOW_MARK_STEP` marker) |
 | `plan` | `/make-plan` skill (emits marker) |
 | `write_tests` | `/write-tests` skill (emits marker) **or** staged `tests/` / `test/` files detected by `workflow-gate.js` |
-| `code` | `echo "<<WORKFLOW_MARK_STEP_code_complete>>"` |
-| `verify` | `echo "<<WORKFLOW_MARK_STEP_verify_complete>>"` |
+| `run_tests` | PostToolUse hook (`workflow-run-tests.js`) auto-marks based on Bash exit code when command touches `tests/` or invokes a test runner. Manual fallback: `echo "<<WORKFLOW_MARK_STEP_run_tests_complete>>"` |
+| `review_security` | `/review-code-security` skill (emits `WORKFLOW_MARK_STEP` marker) **or** skipped via `echo "<<WORKFLOW_REVIEW_SECURITY_NOT_NEEDED: <reason>>"` |
 | `docs` | `/update-docs` skill (emits marker) **or** staged `docs/*.md` / `*.md` files detected by `workflow-gate.js` |
 | `user_verification` | `echo "<<WORKFLOW_USER_VERIFIED>>"` — triggers `ask` permission dialog; user must approve |
 
@@ -243,7 +243,11 @@ bulk-deleted; most had directory versions with no data loss. One-time event.
   for `write_tests` (staged `tests/` files) and `docs` (staged `*.md` files).
   Replaces `check-docs-updated.js` and `check-tests-updated.js`
 - `workflow-mark.js` (PostToolUse) — intercepts `echo "<<WORKFLOW_MARK_STEP_step_status>>"` and
-  `echo "<<WORKFLOW_RESET_FROM_step>>"` via strict regex on `tool_input.command`
+  `echo "<<WORKFLOW_RESET_FROM_step>>"` via strict regex on `tool_input.command`. Supports `&&`-chained
+  sentinel commands (all-or-nothing: any non-sentinel part rejects the whole command)
+- `workflow-run-tests.js` (PostToolUse, matcher: `Bash`) — auto-marks `run_tests` based on Bash exit
+  code. Detects test runner commands by path pattern (`tests/`) and known runner names. exit 0 →
+  `complete`; exit ≠ 0 → `pending` (last-run-wins). Sentinel echoes and read-only commands excluded
 - `session-start.js` (SessionStart) — appends `CLAUDE_SESSION_ID=<sid>` to `CLAUDE_ENV_FILE`;
   inherits prior session's workflow steps if cwd+branch match found in transcript (see Session
   ID flow); otherwise creates fresh state; outputs additionalContext with session_id; runs
