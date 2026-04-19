@@ -122,6 +122,20 @@ else
     fail "docs/scan-outbound.md does not exist"
 fi
 
+# --- Normal case 15: SKILL.md has a ## Completion section ---
+if [ -f "$SKILL" ] && grep -qE '^## Completion' "$SKILL" 2>/dev/null; then
+    pass "SKILL.md has ## Completion section"
+else
+    fail "SKILL.md missing ## Completion section"
+fi
+
+# --- Normal case 16: Completion section contains review_security_complete sentinel ---
+if [ -f "$SKILL" ] && grep -qF 'WORKFLOW_MARK_STEP_review_security_complete' "$SKILL" 2>/dev/null; then
+    pass "Completion section contains review_security_complete sentinel"
+else
+    fail "Completion section missing review_security_complete sentinel"
+fi
+
 echo ""
 echo "=== Results: $PASS passed, $FAIL failed ==="
 [ "$FAIL" -eq 0 ]
