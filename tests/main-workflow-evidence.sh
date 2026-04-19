@@ -87,10 +87,10 @@ ALL_COMPLETE_EXCEPT() {
     "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "complete", "updated_at": "2026-04-11T10:02:00.000Z"},
     "write_tests":       {"status": "$([ "$except_step" = "write_tests" ] && echo "pending" || echo "complete")", "updated_at": $([ "$except_step" = "write_tests" ] && echo "null" || echo '"2026-04-11T10:03:00.000Z"')},
-    "code":              {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
-    "docs":              {"status": "$([ "$except_step" = "docs" ] && echo "pending" || echo "complete")", "updated_at": $([ "$except_step" = "docs" ] && echo "null" || echo '"2026-04-11T10:06:00.000Z"')},
-    "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:07:00.000Z"}
+    "run_tests":         {"status": "$([ "$except_step" = "run_tests" ] && echo "pending" || echo "complete")", "updated_at": $([ "$except_step" = "run_tests" ] && echo "null" || echo '"2026-04-11T10:04:00.000Z"')},
+    "review_security":   {"status": "$([ "$except_step" = "review_security" ] && echo "pending" || echo "complete")", "updated_at": $([ "$except_step" = "review_security" ] && echo "null" || echo '"2026-04-11T10:04:30.000Z"')},
+    "docs":              {"status": "$([ "$except_step" = "docs" ] && echo "pending" || echo "complete")", "updated_at": $([ "$except_step" = "docs" ] && echo "null" || echo '"2026-04-11T10:05:00.000Z"')},
+    "user_verification": {"status": "$([ "$except_step" = "user_verification" ] && echo "pending" || echo "complete")", "updated_at": $([ "$except_step" = "user_verification" ] && echo "null" || echo '"2026-04-11T10:06:00.000Z"')}
   }
 }
 EOF
@@ -107,10 +107,10 @@ ALL_COMPLETE_EXCEPT_TWO() {
     "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "complete", "updated_at": "2026-04-11T10:02:00.000Z"},
     "write_tests":       {"status": "pending", "updated_at": null},
-    "code":              {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
+    "run_tests":         {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
+    "review_security":   {"status": "complete", "updated_at": "2026-04-11T10:04:30.000Z"},
     "docs":              {"status": "pending", "updated_at": null},
-    "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:07:00.000Z"}
+    "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:06:00.000Z"}
   }
 }
 EOF
