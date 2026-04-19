@@ -167,6 +167,60 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# SR-HOOK-1: PostToolUse hooks array has exactly 2 entries
+# Expected FAIL until settings.json is updated with workflow-run-tests.js hook
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== settings.json: SR-HOOK-1 — PostToolUse hooks has exactly 2 entries ==="
+
+if node -e "
+const s=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
+const hooks = s.hooks && s.hooks.PostToolUse && s.hooks.PostToolUse[0] && s.hooks.PostToolUse[0].hooks;
+process.exit(hooks && hooks.length === 2 ? 0 : 1);
+" -- "$SETTINGS" 2>/dev/null; then
+    pass "SR-HOOK-1. PostToolUse hooks array has exactly 2 entries"
+else
+    fail "SR-HOOK-1. PostToolUse hooks array does NOT have exactly 2 entries"
+fi
+
+# ---------------------------------------------------------------------------
+# SR-HOOK-2: Second PostToolUse hook command references workflow-run-tests.js
+# Expected FAIL until settings.json is updated with workflow-run-tests.js hook
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== settings.json: SR-HOOK-2 — second PostToolUse hook references workflow-run-tests.js ==="
+
+if node -e "
+const s=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
+const hooks = s.hooks && s.hooks.PostToolUse && s.hooks.PostToolUse[0] && s.hooks.PostToolUse[0].hooks;
+process.exit(hooks && hooks[1] && hooks[1].command && hooks[1].command.includes('workflow-run-tests.js') ? 0 : 1);
+" -- "$SETTINGS" 2>/dev/null; then
+    pass "SR-HOOK-2. second PostToolUse hook command references workflow-run-tests.js"
+else
+    fail "SR-HOOK-2. second PostToolUse hook does NOT reference workflow-run-tests.js"
+fi
+
+# ---------------------------------------------------------------------------
+# SR-D3-7: permissions.ask contains REVIEW_SECURITY_NOT_NEEDED entry
+# Expected FAIL until settings.json is updated
+# ---------------------------------------------------------------------------
+
+echo ""
+echo "=== settings.json: SR-D3-7 — ask contains REVIEW_SECURITY_NOT_NEEDED ==="
+
+if node -e "
+const s=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));
+const ask = s.permissions && s.permissions.ask || [];
+process.exit(ask.some(e => e.includes('WORKFLOW_REVIEW_SECURITY_NOT_NEEDED')) ? 0 : 1);
+" -- "$SETTINGS" 2>/dev/null; then
+    pass "SR-D3-7. permissions.ask contains WORKFLOW_REVIEW_SECURITY_NOT_NEEDED entry"
+else
+    fail "SR-D3-7. permissions.ask does NOT contain WORKFLOW_REVIEW_SECURITY_NOT_NEEDED entry"
+fi
+
+# ---------------------------------------------------------------------------
 # Results
 # ---------------------------------------------------------------------------
 
