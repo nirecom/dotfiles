@@ -26,46 +26,6 @@ history.md への追記が完全にブロックされる。
 - ai-specs に `bin/doc-append.py` を追加 (dotfiles の同スクリプトをコピー or シンボリックリンク)
 - または ai-specs 用の allow ルールを settings.json に追加
 
-### Bug: workflow sentinel が `&&` チェーンで無視される — 要修正
-
-**再現条件**: `echo "<<WORKFLOW_MARK_STEP_code_complete>>" && echo "<<WORKFLOW_MARK_STEP_verify_complete>>"` のように
-sentinel echo を `&&` で繋いで 1 Bash 呼び出しにすると、`workflow-mark.js` の strict anchored regex
-（`/^echo\s+"<<...>>"$/`）にマッチせず state が更新されない。結果として `workflow-gate.js` が
-次の `git commit` で当該 step を incomplete と判定し block する。
-
-**影響範囲**: 以下の全 sentinel が同じ regex 制約を持つ:
-- `WORKFLOW_MARK_STEP_*`
-- `WORKFLOW_RESEARCH_NOT_NEEDED` / `WORKFLOW_PLAN_NOT_NEEDED` / `WORKFLOW_WRITE_TESTS_NOT_NEEDED`
-- `WORKFLOW_USER_VERIFIED`
-- `WORKFLOW_RESET_FROM_*`
-
-**修正候補**:
-1. `workflow-mark.js` の入力をコマンド全体ではなく stdout で受け取るよう変更し、
-   出力文字列で sentinel を検索するパターンに切り替える（複数 sentinel を一括処理可能に）
-2. `workflow-mark.js` に `&&` 分割ロジックを追加し、各部分コマンドを個別に評価する
-3. sentinel の echo は必ず単独 Bash 呼び出しとする旨を `workflow-mark.js` の冒頭コメントに明記し、
-   feedback memory で運用回避（現状の暫定対処）
-
-**現在の回避策**: sentinel は必ず別々の Bash 呼び出しで送る（`&&` 禁止）。
-
-**関連バグ: `code` / `verify` ステップが `SKILL_MAP` 未登録**
-
-`workflow-gate.js` の `VALID_STEPS` には `code` と `verify` が存在するが、`SKILL_MAP` に対応エントリがない。
-gate はマップ未登録ステップへのフォールバックとして `WORKFLOW_MARK_STEP_*` を出力する設計になっており、
-Claude がそのフォールバック指示を実行していた。`WORKFLOW_MARK_STEP_code_complete` /
-`WORKFLOW_MARK_STEP_verify_complete` は意図されたマーカーではない。
-
-修正候補:
-- A. `SKILL_MAP` に `code` / `verify` の指示を追加
-  - `code`: "diff をチャットで提示しユーザー承認を得る"
-  - `verify`: "/review-code-security を実行する（任意）か、テスト実行結果を確認する"
-- B. `code` / `verify` を `VALID_STEPS` から削除して gate 対象外にする
-- C. `code` に staged ファイルの evidence-based override を追加（`write_tests` / `docs` と同様）
-
-- [ ] 修正方針を決定（候補 1 / 2 / 3、および A / B / C）
-- [ ] 実装（修正候補 1 or 2 の場合）
-- [ ] 関連 E2E テスト追加
-
 ### Security Enhancement — Phase 4 Verifying
 Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
 Design decision: minimize rules/ context consumption by extracting details into skills.
