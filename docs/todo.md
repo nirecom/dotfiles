@@ -2,6 +2,30 @@
 
 ## Current Work
 
+### Bug: workflow-gate が `git -C "quoted/path"` でドキュメントチェックをスキップする — 要修正
+
+**再現条件**: `git -C "c:/LLM/ai-specs" commit` のように `-C` フラグのパスを引用符で囲むと、
+`resolveRepoDir()` の regex `(\S+)` が `"c:/LLM/ai-specs"` を引用符付きのまま取得し、
+`execSync` の `cwd` に渡す際にディレクトリが見つからず `hasStagedDocChanges` / `hasStagedTestChanges`
+が常に `false` を返す。
+
+**影響**: docs/tests のステージが済んでいても gate が "incomplete" とブロックする。
+回避策: `-C` のパスを引用符なしで渡す（`git -C c:/LLM/ai-specs commit ...`）。
+
+**修正候補**: `resolveRepoDir` で取得したパス文字列の前後の `"` / `'` を strip する。
+
+---
+
+### Fix: ai-specs の history.md が Edit/Write deny で追記不能
+
+`settings.json` の deny リストに `Edit(**/history.md)` / `Write(**/history.md)` があり、
+`doc-append.py` 経由のみ許可する設計だが、ai-specs に `bin/doc-append.py` が存在しないため
+history.md への追記が完全にブロックされる。
+
+対処案:
+- ai-specs に `bin/doc-append.py` を追加 (dotfiles の同スクリプトをコピー or シンボリックリンク)
+- または ai-specs 用の allow ルールを settings.json に追加
+
 ### Bug: workflow sentinel が `&&` チェーンで無視される — 要修正
 
 **再現条件**: `echo "<<WORKFLOW_MARK_STEP_code_complete>>" && echo "<<WORKFLOW_MARK_STEP_verify_complete>>"` のように
