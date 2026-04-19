@@ -68,8 +68,8 @@ ALL_COMPLETE_JSON() {
     "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "complete", "updated_at": "2026-04-11T10:02:00.000Z"},
     "write_tests":       {"status": "complete", "updated_at": "2026-04-11T10:03:00.000Z"},
-    "code":              {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
+    "review_security":   {"status": "complete", "updated_at": "2026-04-11T10:04:30.000Z"},
+    "run_tests":         {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
     "docs":              {"status": "complete", "updated_at": "2026-04-11T10:06:00.000Z"},
     "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:07:00.000Z"}
   }
@@ -88,8 +88,8 @@ ALL_PENDING_JSON() {
     "research":          {"status": "pending", "updated_at": null},
     "plan":              {"status": "pending", "updated_at": null},
     "write_tests":       {"status": "pending", "updated_at": null},
-    "code":              {"status": "pending", "updated_at": null},
-    "verify":            {"status": "pending", "updated_at": null},
+    "review_security":   {"status": "pending", "updated_at": null},
+    "run_tests":         {"status": "pending", "updated_at": null},
     "docs":              {"status": "pending", "updated_at": null},
     "user_verification": {"status": "pending", "updated_at": null}
   }
@@ -205,8 +205,8 @@ write_state "test-session" '{
     "research":          {"status": "skipped",  "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "complete",  "updated_at": "2026-04-11T10:02:00.000Z"},
     "write_tests":       {"status": "complete",  "updated_at": "2026-04-11T10:03:00.000Z"},
-    "code":              {"status": "complete",  "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete",  "updated_at": "2026-04-11T10:05:00.000Z"},
+    "review_security":   {"status": "complete",  "updated_at": "2026-04-11T10:04:30.000Z"},
+    "run_tests":         {"status": "complete",  "updated_at": "2026-04-11T10:05:00.000Z"},
     "docs":              {"status": "complete",  "updated_at": "2026-04-11T10:06:00.000Z"},
     "user_verification": {"status": "complete",  "updated_at": "2026-04-11T10:07:00.000Z"}
   }
@@ -223,8 +223,8 @@ write_state "test-session" '{
     "research":          {"status": "complete",  "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "skipped",   "updated_at": "2026-04-11T10:02:00.000Z"},
     "write_tests":       {"status": "complete",  "updated_at": "2026-04-11T10:03:00.000Z"},
-    "code":              {"status": "complete",  "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete",  "updated_at": "2026-04-11T10:05:00.000Z"},
+    "review_security":   {"status": "complete",  "updated_at": "2026-04-11T10:04:30.000Z"},
+    "run_tests":         {"status": "complete",  "updated_at": "2026-04-11T10:05:00.000Z"},
     "docs":              {"status": "complete",  "updated_at": "2026-04-11T10:06:00.000Z"},
     "user_verification": {"status": "complete",  "updated_at": "2026-04-11T10:07:00.000Z"}
   }
@@ -255,8 +255,8 @@ write_state "test-session" '{
     "research":          {"status": "pending",  "updated_at": null},
     "plan":              {"status": "complete", "updated_at": "2026-04-11T10:02:00.000Z"},
     "write_tests":       {"status": "complete", "updated_at": "2026-04-11T10:03:00.000Z"},
-    "code":              {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
+    "review_security":   {"status": "complete", "updated_at": "2026-04-11T10:04:30.000Z"},
+    "run_tests":         {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
     "docs":              {"status": "complete", "updated_at": "2026-04-11T10:06:00.000Z"},
     "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:07:00.000Z"}
   }
@@ -273,8 +273,8 @@ write_state "test-session" '{
     "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "pending",  "updated_at": null},
     "write_tests":       {"status": "pending",  "updated_at": null},
-    "code":              {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
+    "review_security":   {"status": "complete", "updated_at": "2026-04-11T10:04:30.000Z"},
+    "run_tests":         {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
     "docs":              {"status": "complete", "updated_at": "2026-04-11T10:06:00.000Z"},
     "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:07:00.000Z"}
   }
@@ -296,8 +296,8 @@ write_state "test-session" '{
     "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "complete", "updated_at": "2026-04-11T10:02:00.000Z"},
     "write_tests":       {"status": "skipped",  "updated_at": "2026-04-11T10:03:00.000Z"},
-    "code":              {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
+    "review_security":   {"status": "complete", "updated_at": "2026-04-11T10:04:30.000Z"},
+    "run_tests":         {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
     "docs":              {"status": "complete", "updated_at": "2026-04-11T10:06:00.000Z"},
     "user_verification": {"status": "complete", "updated_at": "2026-04-11T10:07:00.000Z"}
   }
@@ -314,8 +314,8 @@ write_state "test-session" '{
     "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "complete", "updated_at": "2026-04-11T10:02:00.000Z"},
     "write_tests":       {"status": "complete", "updated_at": "2026-04-11T10:03:00.000Z"},
-    "code":              {"status": "complete", "updated_at": "2026-04-11T10:04:00.000Z"},
-    "verify":            {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
+    "review_security":   {"status": "complete", "updated_at": "2026-04-11T10:04:30.000Z"},
+    "run_tests":         {"status": "complete", "updated_at": "2026-04-11T10:05:00.000Z"},
     "docs":              {"status": "complete", "updated_at": "2026-04-11T10:06:00.000Z"},
     "user_verification": {"status": "skipped",  "updated_at": "2026-04-11T10:07:00.000Z"}
   }
@@ -456,8 +456,8 @@ cat > "$ZOMBIE_FILE" <<EOF
     "research":          {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"},
     "plan":              {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"},
     "write_tests":       {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"},
-    "code":              {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"},
-    "verify":            {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"},
+    "review_security":   {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"},
+    "run_tests":         {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"},
     "docs":              {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"},
     "user_verification": {"status": "complete", "updated_at": "$EIGHT_DAYS_AGO"}
   }
@@ -485,8 +485,8 @@ cat > "$RECENT_FILE" <<EOF
     "research":          {"status": "complete", "updated_at": "$THREE_DAYS_AGO"},
     "plan":              {"status": "complete", "updated_at": "$THREE_DAYS_AGO"},
     "write_tests":       {"status": "complete", "updated_at": "$THREE_DAYS_AGO"},
-    "code":              {"status": "complete", "updated_at": "$THREE_DAYS_AGO"},
-    "verify":            {"status": "complete", "updated_at": "$THREE_DAYS_AGO"},
+    "review_security":   {"status": "complete", "updated_at": "$THREE_DAYS_AGO"},
+    "run_tests":         {"status": "complete", "updated_at": "$THREE_DAYS_AGO"},
     "docs":              {"status": "complete", "updated_at": "$THREE_DAYS_AGO"},
     "user_verification": {"status": "complete", "updated_at": "$THREE_DAYS_AGO"}
   }
@@ -825,18 +825,18 @@ build_reset_json() {
 }
 
 # Test R1: RESET_FROM_write_tests on ALL_COMPLETE → research=complete, plan=complete,
-#          write_tests=pending, code=pending, verify=pending, docs=pending,
+#          write_tests=pending, review_security=pending, run_tests=pending, docs=pending,
 #          user_verification=pending
 REPO=$(setup_repo)
 write_state "test-session" "$(ALL_COMPLETE_JSON test-session)"
 R1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_write_tests>>"')
 run_mark_hook "$REPO" "$R1_JSON" >/dev/null
-expect_state_step "R1a. RESET_FROM:write_tests → research=complete" "test-session" "research" "complete"
-expect_state_step "R1b. RESET_FROM:write_tests → plan=complete"     "test-session" "plan"     "complete"
-expect_state_step "R1c. RESET_FROM:write_tests → write_tests=pending" "test-session" "write_tests" "pending"
-expect_state_step "R1d. RESET_FROM:write_tests → code=pending"      "test-session" "code"     "pending"
-expect_state_step "R1e. RESET_FROM:write_tests → verify=pending"    "test-session" "verify"   "pending"
-expect_state_step "R1f. RESET_FROM:write_tests → docs=pending"      "test-session" "docs"     "pending"
+expect_state_step "R1a. RESET_FROM:write_tests → research=complete"        "test-session" "research"        "complete"
+expect_state_step "R1b. RESET_FROM:write_tests → plan=complete"            "test-session" "plan"            "complete"
+expect_state_step "R1c. RESET_FROM:write_tests → write_tests=pending"      "test-session" "write_tests"     "pending"
+expect_state_step "R1d. RESET_FROM:write_tests → review_security=pending"  "test-session" "review_security" "pending"
+expect_state_step "R1e. RESET_FROM:write_tests → run_tests=pending"        "test-session" "run_tests"       "pending"
+expect_state_step "R1f. RESET_FROM:write_tests → docs=pending"             "test-session" "docs"            "pending"
 expect_state_step "R1g. RESET_FROM:write_tests → user_verification=pending" "test-session" "user_verification" "pending"
 
 # Test R2: RESET_FROM_research → all steps pending (nothing before research)
@@ -844,25 +844,25 @@ REPO=$(setup_repo)
 write_state "test-session" "$(ALL_COMPLETE_JSON test-session)"
 R2_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_research>>"')
 run_mark_hook "$REPO" "$R2_JSON" >/dev/null
-expect_state_step "R2a. RESET_FROM:research → research=pending"          "test-session" "research"          "pending"
-expect_state_step "R2b. RESET_FROM:research → plan=pending"              "test-session" "plan"              "pending"
-expect_state_step "R2c. RESET_FROM:research → write_tests=pending"       "test-session" "write_tests"       "pending"
-expect_state_step "R2d. RESET_FROM:research → code=pending"              "test-session" "code"              "pending"
-expect_state_step "R2e. RESET_FROM:research → verify=pending"            "test-session" "verify"            "pending"
-expect_state_step "R2f. RESET_FROM:research → docs=pending"              "test-session" "docs"              "pending"
-expect_state_step "R2g. RESET_FROM:research → user_verification=pending" "test-session" "user_verification" "pending"
+expect_state_step "R2a. RESET_FROM:research → research=pending"             "test-session" "research"          "pending"
+expect_state_step "R2b. RESET_FROM:research → plan=pending"                 "test-session" "plan"              "pending"
+expect_state_step "R2c. RESET_FROM:research → write_tests=pending"          "test-session" "write_tests"       "pending"
+expect_state_step "R2d. RESET_FROM:research → review_security=pending"      "test-session" "review_security"   "pending"
+expect_state_step "R2e. RESET_FROM:research → run_tests=pending"            "test-session" "run_tests"         "pending"
+expect_state_step "R2f. RESET_FROM:research → docs=pending"                 "test-session" "docs"              "pending"
+expect_state_step "R2g. RESET_FROM:research → user_verification=pending"    "test-session" "user_verification" "pending"
 
 # Test R3: RESET_FROM_user_verification → all steps before it complete, user_verification=pending
 REPO=$(setup_repo)
 write_state "test-session" "$(ALL_PENDING_JSON test-session)"
 R3_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_user_verification>>"')
 run_mark_hook "$REPO" "$R3_JSON" >/dev/null
-expect_state_step "R3a. RESET_FROM:user_verification → research=complete"    "test-session" "research"          "complete"
-expect_state_step "R3b. RESET_FROM:user_verification → plan=complete"        "test-session" "plan"              "complete"
-expect_state_step "R3c. RESET_FROM:user_verification → write_tests=complete" "test-session" "write_tests"       "complete"
-expect_state_step "R3d. RESET_FROM:user_verification → code=complete"        "test-session" "code"              "complete"
-expect_state_step "R3e. RESET_FROM:user_verification → verify=complete"      "test-session" "verify"            "complete"
-expect_state_step "R3f. RESET_FROM:user_verification → docs=complete"        "test-session" "docs"              "complete"
+expect_state_step "R3a. RESET_FROM:user_verification → research=complete"        "test-session" "research"          "complete"
+expect_state_step "R3b. RESET_FROM:user_verification → plan=complete"            "test-session" "plan"              "complete"
+expect_state_step "R3c. RESET_FROM:user_verification → write_tests=complete"     "test-session" "write_tests"       "complete"
+expect_state_step "R3d. RESET_FROM:user_verification → review_security=complete" "test-session" "review_security"   "complete"
+expect_state_step "R3e. RESET_FROM:user_verification → run_tests=complete"       "test-session" "run_tests"         "complete"
+expect_state_step "R3f. RESET_FROM:user_verification → docs=complete"            "test-session" "docs"              "complete"
 expect_state_step "R3g. RESET_FROM:user_verification → user_verification=pending" "test-session" "user_verification" "pending"
 
 # Test R4: single-quote variant → NOT processed (SQ RESET_FROM removed from source)
@@ -870,10 +870,10 @@ REPO=$(setup_repo)
 write_state "test-session" "$(ALL_COMPLETE_JSON test-session)"
 R4_JSON=$(build_reset_json "echo '<<WORKFLOW_RESET_FROM_write_tests>>'")
 run_mark_hook "$REPO" "$R4_JSON" >/dev/null
-expect_no_state_change "R4a. single-quote RESET_FROM → research unchanged (complete)"   "test-session" "research"   "complete"
-expect_no_state_change "R4b. single-quote RESET_FROM → plan unchanged (complete)"       "test-session" "plan"       "complete"
+expect_no_state_change "R4a. single-quote RESET_FROM → research unchanged (complete)"    "test-session" "research"    "complete"
+expect_no_state_change "R4b. single-quote RESET_FROM → plan unchanged (complete)"        "test-session" "plan"        "complete"
 expect_no_state_change "R4c. single-quote RESET_FROM → write_tests unchanged (complete)" "test-session" "write_tests" "complete"
-expect_no_state_change "R4d. single-quote RESET_FROM → code unchanged (complete)"       "test-session" "code"       "complete"
+expect_no_state_change "R4d. single-quote RESET_FROM → run_tests unchanged (complete)"   "test-session" "run_tests"   "complete"
 
 echo ""
 echo "=== workflow-mark: RESET_FROM marker — Must-NOT-match cases ==="
@@ -947,9 +947,9 @@ write_state "test-session" "$(ALL_COMPLETE_JSON test-session)"
 RI1_JSON=$(build_reset_json 'echo "<<WORKFLOW_RESET_FROM_write_tests>>"')
 run_mark_hook "$REPO" "$RI1_JSON" >/dev/null
 run_mark_hook "$REPO" "$RI1_JSON" >/dev/null
-expect_state_step "RI1a. RESET_FROM applied twice → research=complete (idempotent)"   "test-session" "research"   "complete"
-expect_state_step "RI1b. RESET_FROM applied twice → write_tests=pending (idempotent)" "test-session" "write_tests" "pending"
-expect_state_step "RI1c. RESET_FROM applied twice → code=pending (idempotent)"        "test-session" "code"        "pending"
+expect_state_step "RI1a. RESET_FROM applied twice → research=complete (idempotent)"    "test-session" "research"    "complete"
+expect_state_step "RI1b. RESET_FROM applied twice → write_tests=pending (idempotent)"  "test-session" "write_tests"  "pending"
+expect_state_step "RI1c. RESET_FROM applied twice → run_tests=pending (idempotent)"    "test-session" "run_tests"    "pending"
 
 # ---------------------------------------------------------------------------
 # settings.json — hook registration structure

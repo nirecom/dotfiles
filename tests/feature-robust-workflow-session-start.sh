@@ -75,7 +75,7 @@ else
     STEPS_OK=$(node -e "
 try {
   const s = JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'));
-  const steps = ['research','plan','write_tests','code','verify','docs','user_verification'];
+  const steps = ['research','plan','write_tests','run_tests','review_security','docs','user_verification'];
   const all = steps.every(k => s.steps && s.steps[k] && s.steps[k].status === 'pending');
   process.exit(all ? 0 : 1);
 } catch (e) { process.exit(1); }
@@ -106,8 +106,8 @@ PRE_STATE='{
     "research":          {"status": "complete", "updated_at": "2026-04-11T10:01:00.000Z"},
     "plan":              {"status": "pending", "updated_at": null},
     "write_tests":       {"status": "pending", "updated_at": null},
-    "code":              {"status": "pending", "updated_at": null},
-    "verify":            {"status": "pending", "updated_at": null},
+    "review_security":   {"status": "pending", "updated_at": null},
+    "run_tests":         {"status": "pending", "updated_at": null},
     "docs":              {"status": "pending", "updated_at": null},
     "user_verification": {"status": "pending", "updated_at": null}
   }
