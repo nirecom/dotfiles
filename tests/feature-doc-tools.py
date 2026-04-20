@@ -112,6 +112,29 @@ APPEND_BASE_ARGS = dict(
 )
 
 
+def make_big_history(tmp_path, n_entries=125):
+    """Generate a history.md with n_entries 5-line blocks (### + 3 + blank).
+
+    Default n_entries=125 → 125 * 4 = 500 lines (4 lines per entry; the trailing
+    blank serves as the inter-entry separator). Adjust n_entries to target
+    different line counts.
+    """
+    lines = []
+    for i in range(n_entries):
+        day = (i % 28) + 1
+        month = ((i // 28) % 12) + 1
+        lines.append(
+            f"### FEATURE: Entry {i:03d} (2024-{month:02d}-{day:02d}, abc{i:04d})"
+        )
+        lines.append(f"Background: background text for entry {i}")
+        lines.append(f"Changes: changes for entry {i}")
+        lines.append("")
+    content = "\n".join(lines)
+    p = tmp_path / "history.md"
+    p.write_text(content, encoding="utf-8")
+    return p
+
+
 def append_args(
     path,
     subject=APPEND_BASE_ARGS["subject"],
@@ -322,6 +345,115 @@ class TestDocAppendIdempotency:
         text = p.read_text(encoding="utf-8")
         # Should not have 3+ consecutive blank lines before new entry
         assert "\n\n\n\n### New entry" not in text
+
+
+class TestDocAppendAutoRotate:
+    def test_n1_auto_rotate_triggers_over_threshold(self, tmp_path):
+        """N1: append that pushes file >= 500 lines auto-rotates archive + index."""
+        p = make_big_history(tmp_path, n_entries=100)
+        # Sanity check on initial size: 100 entries * 4 lines = 400 lines
+        # (no trailing newline after final "" join element).
+        initial_lines = p.read_text(encoding="utf-8").count("\n") + 1
+        assert 390 <= initial_lines <= 510, (
+            f"Expected initial line count in [390, 510]; got {initial_lines}"
+        )
+
+        # Bump to 125 entries (~500 lines) so that the appended entry pushes over
+        # the 500-line threshold. We use n_entries=125 so the post-append file
+        # is comfortably over 500 lines.
+        p = make_big_history(tmp_path, n_entries=125)
+        pre_append_lines = p.read_text(encoding="utf-8").count("\n") + 1
+        assert pre_append_lines >= 490, (
+            f"Pre-append file must be near/over threshold; got {pre_append_lines}"
+        )
+
+        result = append_args(
+            p,
+            subject="Trigger entry",
+            date="2026-04-20",
+            commits="fff9999",
+        )
+        assert result.returncode == 0, result.stderr
+
+        archive_dir = tmp_path / "history"
+        assert (archive_dir / "2024.md").exists(), (
+            "Archive file history/2024.md must be created by auto-rotation. "
+            f"stdout: {result.stdout!r} stderr: {result.stderr!r}"
+        )
+        assert (archive_dir / "index.md").exists(), (
+            "history/index.md must be rebuilt by auto-rotation. "
+            f"stdout: {result.stdout!r} stderr: {result.stderr!r}"
+        )
+
+        body = p.read_text(encoding="utf-8")
+        body_lines = body.count("\n") + 1
+        assert body_lines < 200, (
+            f"Resulting history body should be much smaller after rotation; "
+            f"got {body_lines} lines"
+        )
+        # Newly-appended entry should be among the kept floor=20 most recent
+        assert "Trigger entry" in body, (
+            "Newly-appended Trigger entry must remain in body (within floor=20)"
+        )
+
+    def test_n2_auto_rotate_silent_under_threshold(self, tmp_path):
+        """N2: small file under threshold → no archive dir created."""
+        p = make_history(tmp_path, SAMPLE_HISTORY)
+        result = append_args(
+            p,
+            subject="Small append",
+            date="2026-04-20",
+            commits="aaa1111",
+        )
+        assert result.returncode == 0, result.stderr
+        assert not (tmp_path / "history").exists(), (
+            "No rotation should occur for a small file; history/ dir must not exist"
+        )
+
+    def test_g1_auto_rotate_keeps_appended_entry_in_body(self, tmp_path):
+        """G1: appended Trigger entry stays in body and is the most recent."""
+        p = make_big_history(tmp_path, n_entries=125)
+        result = append_args(
+            p,
+            subject="Trigger entry",
+            date="2026-04-20",
+            commits="fff9999",
+        )
+        assert result.returncode == 0, result.stderr
+
+        # Rotation must have triggered (precondition for this G1 check)
+        archive_dir = tmp_path / "history"
+        assert (archive_dir / "2024.md").exists(), (
+            "Auto-rotation precondition: history/2024.md must exist"
+        )
+
+        body = p.read_text(encoding="utf-8")
+        assert "Trigger entry" in body, "Appended entry must remain in body"
+
+        # Trigger entry should be the most recent — appear after all kept old
+        # entries. Find the position of the Trigger entry header and confirm
+        # that no later "### " header exists after it (excluding the
+        # ## Archived block, which uses ## not ###).
+        trigger_pos = body.index("Trigger entry")
+        # All `### ` headers in body
+        header_positions = []
+        idx = 0
+        while True:
+            i = body.find("### ", idx)
+            if i == -1:
+                break
+            header_positions.append(i)
+            idx = i + 1
+        assert header_positions, "Body must contain at least one ### header"
+        # Find the header position that corresponds to the Trigger entry
+        # (the ### header immediately preceding "Trigger entry").
+        trigger_header_pos = max(h for h in header_positions if h <= trigger_pos)
+        # No ### header may appear after the Trigger entry's header
+        later_headers = [h for h in header_positions if h > trigger_header_pos]
+        assert not later_headers, (
+            f"Trigger entry must be the LAST ### entry in body, but found "
+            f"{len(later_headers)} later headers at positions {later_headers}"
+        )
 
 
 # ===========================================================================
