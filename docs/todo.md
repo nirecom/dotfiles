@@ -2,13 +2,14 @@
 
 ## Current Work
 
-### Phase 5: Prompt Injection Defense (PostToolUse hook) — 実装中
+### Phase 5: Prompt Injection Defense (PostToolUse hook) — Verifying
 PostToolUse hook で WebFetch の結果をスキャン。高信頼シグナルは BLOCK、低信頼は WARN。
 - [x] 設計確定：WebFetch のみ、フルスキャン、JudgeClaw パターン移植
-- [ ] テスト (`tests/main-scan-inbound.sh`)
-- [ ] 実装 (`claude-global/hooks/scan-inbound.js`)
-- [ ] settings.json 登録
-- [ ] ドキュメント
+- [x] テスト (`tests/main-scan-inbound.sh`) — 31件 PASS
+- [x] 実装 (`claude-global/hooks/scan-inbound.js`)
+- [x] settings.json 登録
+- [x] ドキュメント
+- [ ] **ユーザー確認待ち**
 
 ### scan-inbound 拡張候補 — 要検討
 - [ ] **Read** 対象追加: git clone した悪意ファイルの injection 検出。誤検知（HTML/XML/コード）とのトレードオフを評価してから判断
