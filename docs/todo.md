@@ -2,17 +2,10 @@
 
 ## Current Work
 
-### Bug: workflow-gate が `git -C "quoted/path"` でドキュメントチェックをスキップする — 要修正
+### Fix: workflow-gate quoted-path バグ — ユーザー確認待ち
 
-**再現条件**: `git -C "c:/LLM/ai-specs" commit` のように `-C` フラグのパスを引用符で囲むと、
-`resolveRepoDir()` の regex `(\S+)` が `"c:/LLM/ai-specs"` を引用符付きのまま取得し、
-`execSync` の `cwd` に渡す際にディレクトリが見つからず `hasStagedDocChanges` / `hasStagedTestChanges`
-が常に `false` を返す。
-
-**影響**: docs/tests のステージが済んでいても gate が "incomplete" とブロックする。
-回避策: `-C` のパスを引用符なしで渡す（`git -C c:/LLM/ai-specs commit ...`）。
-
-**修正候補**: `resolveRepoDir` で取得したパス文字列の前後の `"` / `'` を strip する。
+修正完了。`git -C "quoted/path"` で docs/tests ステージ済みでも gate がブロックしていた問題を解消。
+確認後 history.md に移動。
 
 ---
 
