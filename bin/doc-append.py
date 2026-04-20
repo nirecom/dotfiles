@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Append a new entry to a history.md without reading the full file.
+"""Append a new entry to a stream document (append-only markdown log).
 
 Uses tail-seek to check invariants, then appends via open('ab').
 
 Usage:
-    uv run bin/doc-append.py <path> --subject S --date YYYY-MM-DD --commits C
+    doc-append [path] --category FEATURE --subject S --date YYYY-MM-DD --commits C
         --background TEXT --changes TEXT
-    uv run bin/doc-append.py <path> --incident --subject S --date YYYY-MM-DD
-        --commits C --cause TEXT --fix TEXT
+    doc-append [path] --category INCIDENT --subject S --date YYYY-MM-DD --commits C
+        --cause TEXT --fix TEXT
+
+Categories: INCIDENT, BUGFIX, FEATURE, REFACTOR, CONFIG, SECURITY
+If [path] is omitted, defaults to docs/history.md relative to CWD.
 """
 
 import argparse
@@ -17,7 +20,7 @@ from datetime import date as Date
 from pathlib import Path
 
 DATE_RE = re.compile(r"\((\d{4}-\d{2}-\d{2}),")
-INCIDENT_RE = re.compile(r"^### #(\d+):", re.MULTILINE)
+INCIDENT_RE = re.compile(r"^### (?:INCIDENT: )?#(\d+):", re.MULTILINE)
 ENTRY_RE = re.compile(r"^### ", re.MULTILINE)
 
 TAIL_SIZES = [4096, 16384]
@@ -72,11 +75,11 @@ def _count_lines(path: Path) -> int:
 
 def _build_entry(args, incident_num: int | None, eol: bytes) -> bytes:
     e = eol.decode()
-    if args.incident:
-        header = f"### #{incident_num}: {args.subject} ({args.date}, {args.commits})"
+    if args.category == "INCIDENT":
+        header = f"### INCIDENT: #{incident_num}: {args.subject} ({args.date}, {args.commits})"
         body = f"Cause: {args.cause}{e}Fix: {args.fix}"
     else:
-        header = f"### {args.subject} ({args.date}, {args.commits})"
+        header = f"### {args.category}: {args.subject} ({args.date}, {args.commits})"
         body = f"Background: {args.background}{e}Changes: {args.changes}"
     return (f"{header}{e}{body}{e}").encode("utf-8").replace(b"\n", eol)
 
@@ -87,9 +90,13 @@ def main():
     parser.add_argument("--subject", required=True)
     parser.add_argument("--date", required=True)
     parser.add_argument("--commits", required=True)
+    parser.add_argument(
+        "--category",
+        required=True,
+        choices=["INCIDENT", "BUGFIX", "FEATURE", "REFACTOR", "CONFIG", "SECURITY"],
+    )
     parser.add_argument("--background")
     parser.add_argument("--changes")
-    parser.add_argument("--incident", action="store_true")
     parser.add_argument("--cause")
     parser.add_argument("--fix")
     args = parser.parse_args()
@@ -102,9 +109,9 @@ def main():
         sys.exit(1)
 
     # Validate required fields
-    if args.incident:
+    if args.category == "INCIDENT":
         if not args.cause or not args.fix:
-            print("Error: --incident requires --cause and --fix", file=sys.stderr)
+            print("Error: INCIDENT requires --cause and --fix", file=sys.stderr)
             sys.exit(1)
     else:
         if not args.background or not args.changes:
@@ -144,10 +151,9 @@ def main():
         last_date = _find_last_date_in_tail(tail_text)
 
         # Incident numbering
-        if args.incident:
+        if args.category == "INCIDENT":
             last_incident = _find_last_incident_in_text(tail_text)
             if last_incident is None and has_entry:
-                # tail had entries but no incident — do full scan
                 full_text = path.read_bytes().decode("utf-8", errors="replace")
                 last_incident = _find_last_incident_in_text(full_text)
             if last_incident is None:
@@ -163,7 +169,7 @@ def main():
         )
         sys.exit(1)
 
-    if args.incident:
+    if args.category == "INCIDENT":
         incident_num = (last_incident + 1) if last_incident is not None else 1
     else:
         incident_num = None

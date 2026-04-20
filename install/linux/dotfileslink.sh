@@ -76,3 +76,15 @@ mkdir -p ~/.emacs_backup
 if [ -e ~/.ssh/ssh-add-all ]; then
     chmod +x ~/.ssh/ssh-add-all
 fi
+
+# Generate doc-append launcher
+mkdir -p ~/.local/bin
+cat > ~/.local/bin/doc-append << EOF
+#!/usr/bin/env bash
+if [[ -z "\${1:-}" || "\${1:-}" == --* ]]; then
+  exec uv run "$HOME/dotfiles/bin/doc-append.py" "docs/history.md" "\$@"
+else
+  exec uv run "$HOME/dotfiles/bin/doc-append.py" "\$@"
+fi
+EOF
+chmod +x ~/.local/bin/doc-append

@@ -189,3 +189,22 @@ if (Test-Path $profileSource) {
         Write-Host "Linked: $dest -> $profileSource" -ForegroundColor Green
     }
 }
+
+# Generate doc-append launcher
+$LocalBin = "$HOME\.local\bin"
+New-Item -ItemType Directory -Force -Path $LocalBin | Out-Null
+$cmdContent = @"
+@echo off
+set "_ARG1=%~1"
+if "%~1"=="" goto nopath
+if "%_ARG1:~0,1%"=="-" goto nopath
+goto haspath
+:nopath
+uv run "$DotfilesDir\bin\doc-append.py" docs/history.md %*
+goto end
+:haspath
+uv run "$DotfilesDir\bin\doc-append.py" %*
+:end
+"@
+[System.IO.File]::WriteAllText("$LocalBin\doc-append.cmd", $cmdContent, [System.Text.Encoding]::ASCII)
+Write-Host "Generated: $LocalBin\doc-append.cmd" -ForegroundColor Green

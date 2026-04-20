@@ -129,10 +129,11 @@ def append_args(
         "--commits", commits,
     ]
     if incident:
-        args.append("--incident")
+        args += ["--category", "INCIDENT"]
         args += ["--cause", cause or "some cause"]
         args += ["--fix", fix or "some fix"]
     else:
+        args += ["--category", "FEATURE"]
         args += ["--background", background or "some background"]
         args += ["--changes", changes or "some changes"]
     return run_append(path, *args)
@@ -150,12 +151,12 @@ class TestDocAppendNormal:
         result = append_args(p)
         assert result.returncode == 0, result.stderr
         content = p.read_text(encoding="utf-8")
-        assert "### New entry (2025-12-01, fff9999)" in content
+        assert "### FEATURE: New entry (2025-12-01, fff9999)" in content
         assert "Background: some background" in content
         assert "Changes: some changes" in content
         # New entry must be after existing entries
         pos_second = content.index("### Second entry")
-        pos_new = content.index("### New entry")
+        pos_new = content.index("### FEATURE: New entry")
         assert pos_new > pos_second
 
     def test_n2_incident_numbered_after_last(self, tmp_path):
@@ -163,7 +164,7 @@ class TestDocAppendNormal:
         p = make_history(tmp_path, SAMPLE_WITH_INCIDENTS)
         result = run_append(
             p,
-            "--incident",
+            "--category", "INCIDENT",
             "--subject", "Third incident",
             "--date", "2025-12-01",
             "--commits", "ccc0003",
@@ -172,7 +173,7 @@ class TestDocAppendNormal:
         )
         assert result.returncode == 0, result.stderr
         content = p.read_text(encoding="utf-8")
-        assert "### #3: Third incident (2025-12-01, ccc0003)" in content
+        assert "### INCIDENT: #3: Third incident (2025-12-01, ccc0003)" in content
 
     def test_n3_incident_from_tail_scan(self, tmp_path):
         """N3: #3: exists in tail → new incident is #4:."""
@@ -185,7 +186,7 @@ Fix: fix3
         p = make_history(tmp_path, base)
         result = run_append(
             p,
-            "--incident",
+            "--category", "INCIDENT",
             "--subject", "Fourth incident",
             "--date", "2025-12-01",
             "--commits", "ddd0004",
@@ -194,7 +195,7 @@ Fix: fix3
         )
         assert result.returncode == 0, result.stderr
         content = p.read_text(encoding="utf-8")
-        assert "### #4: Fourth incident (2025-12-01, ddd0004)" in content
+        assert "### INCIDENT: #4: Fourth incident (2025-12-01, ddd0004)" in content
 
 
 class TestDocAppendError:
@@ -239,7 +240,7 @@ class TestDocAppendEdge:
         result = append_args(p)
         assert result.returncode == 0, result.stderr
         content = p.read_text(encoding="utf-8")
-        assert "### New entry (2025-12-01, fff9999)" in content
+        assert "### FEATURE: New entry (2025-12-01, fff9999)" in content
         assert "Background: some background" in content
 
     def test_g2_no_trailing_newline(self, tmp_path):
@@ -250,7 +251,7 @@ class TestDocAppendEdge:
         assert result.returncode == 0, result.stderr
         raw = p.read_text(encoding="utf-8")
         # New entry should be on its own line, not concatenated to previous
-        assert "\n### New entry" in raw
+        assert "\n### FEATURE: New entry" in raw
 
     def test_g3_crlf_file(self, tmp_path):
         """G3: CRLF file → appended entry uses CRLF."""
@@ -259,7 +260,7 @@ class TestDocAppendEdge:
         assert result.returncode == 0, result.stderr
         raw = p.read_bytes()
         # The appended section should also use CRLF
-        new_entry_header = b"### New entry"
+        new_entry_header = b"### FEATURE: New entry"
         idx = raw.index(new_entry_header)
         # Scan for \r\n in the new section
         new_section = raw[idx:]
@@ -277,14 +278,14 @@ class TestDocAppendEdge:
         result = append_args(p)
         assert result.returncode == 0, result.stderr
         text = p.read_text(encoding="utf-8")
-        assert "### New entry (2025-12-01, fff9999)" in text
+        assert "### FEATURE: New entry (2025-12-01, fff9999)" in text
 
     def test_g5_first_incident_no_prior_numbers(self, tmp_path):
         """G5: First incident (no #N: anywhere) → #1:, stderr warning."""
         p = make_history(tmp_path, SAMPLE_HISTORY)
         result = run_append(
             p,
-            "--incident",
+            "--category", "INCIDENT",
             "--subject", "First incident",
             "--date", "2025-12-01",
             "--commits", "zzz0001",
@@ -293,7 +294,7 @@ class TestDocAppendEdge:
         )
         assert result.returncode == 0, result.stderr
         content = p.read_text(encoding="utf-8")
-        assert "### #1: First incident (2025-12-01, zzz0001)" in content
+        assert "### INCIDENT: #1: First incident (2025-12-01, zzz0001)" in content
         # Warning should appear on stderr
         assert result.stderr.strip() != ""
 
@@ -307,10 +308,10 @@ class TestDocAppendIdempotency:
         r2 = append_args(p, subject="Entry B", date="2025-12-02", commits="bbb0002")
         assert r2.returncode == 0, r2.stderr
         content = p.read_text(encoding="utf-8")
-        assert "### Entry A (2025-12-01, aaa0001)" in content
-        assert "### Entry B (2025-12-02, bbb0002)" in content
+        assert "### FEATURE: Entry A (2025-12-01, aaa0001)" in content
+        assert "### FEATURE: Entry B (2025-12-02, bbb0002)" in content
         # Entry A must appear before Entry B
-        assert content.index("### Entry A") < content.index("### Entry B")
+        assert content.index("### FEATURE: Entry A") < content.index("### FEATURE: Entry B")
 
     def test_i2_multiple_trailing_blanks(self, tmp_path):
         """I2: File with multiple trailing blank lines → no extra blank gap."""
