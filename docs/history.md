@@ -290,3 +290,7 @@ Changes: doc-append.py now invokes doc-rotate.py as a subprocess (--threshold-wa
 ### CONFIG: Add WebFetch allow domains for deep-research (2026-04-20, HEAD)
 Background: WebFetch permission list only covered specific doc sites. Claude/MCP/LangChain research during deep-research sessions prompted for each new domain.
 Changes: Added 8 domains to permissions.allow: code.claude.com, platform.claude.com, anthropic.com, modelcontextprotocol.io, spec.modelcontextprotocol.io, ecc.tools, docs.langchain.com, reference.langchain.com.
+
+### FEATURE: write-tests skill: enumerate call paths step (2026-04-20, (pending))
+Background: Incident #21 (CLAUDE_ENV_FILE export prefix bug) revealed that tests only covered single-file units; integration path boundaries were never enumerated as test targets, allowing format mismatches to go undetected.
+Changes: Added step 3 'Enumerate call paths' to write-tests SKILL.md Procedure — traces callers -> file -> downstream consumers, identifies format/contract expectations at each boundary, and feeds potential mismatches into step 4 as integration-path error cases. Steps 3-5 renumbered to 4-6.

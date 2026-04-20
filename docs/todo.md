@@ -31,6 +31,7 @@
 ### テスト設計: インテグレーション / E2E 異常系の網羅 — 検討
 背景: `docs/history.md` #21 参照。
 - [x] 現行の `test.md`（テストケースカテゴリ定義）に「インテグレーション / E2E 視点」の観点を追記
-- [ ] `/write-tests` スキルの Procedure に「呼び出し経路ごとの異常系洗い出し」ステップを追加
+- [x] `/write-tests` スキルの Procedure に「呼び出し経路ごとの異常系洗い出し」ステップを追加 — Verifying
+- [ ] **ユーザー確認**: write-tests の Procedure 変更を確認
 - [ ] Workflow State Machine の E2E 検証（全環境完了済み）— 着手可能
 
