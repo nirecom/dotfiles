@@ -2,13 +2,6 @@
 
 ## Current Work
 
-### Fix: workflow-gate quoted-path バグ — ユーザー確認待ち
-
-修正完了。`git -C "quoted/path"` で docs/tests ステージ済みでも gate がブロックしていた問題を解消。
-確認後 history.md に移動。
-
----
-
 ### Fix: ai-specs の history.md が Edit/Write deny で追記不能
 
 `settings.json` の deny リストに `Edit(**/history.md)` / `Write(**/history.md)` があり、
