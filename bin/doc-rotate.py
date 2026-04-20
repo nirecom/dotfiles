@@ -20,6 +20,23 @@ WARN_LINES = 500
 HARD_LINES = 800
 DEFAULT_FLOOR = 20
 
+CATEGORIES = ("INCIDENT", "BUGFIX", "FEATURE", "REFACTOR", "CONFIG", "SECURITY")
+CATEGORY_PREFIX_RE = re.compile(
+    r"^### (?:(" + "|".join(CATEGORIES) + r"): )?(?:#\d+: )?"
+)
+
+
+def _extract_category(header: str) -> str:
+    m = CATEGORY_PREFIX_RE.match(header)
+    return m.group(1) if m and m.group(1) else ""
+
+
+def _subject_from_header(header: str) -> str:
+    s = CATEGORY_PREFIX_RE.sub("", header)
+    if s == header:
+        s = re.sub(r"^### ", "", header)
+    return re.sub(r"\s*\(.*", "", s).strip()
+
 
 def _parse_entries(content: str):
     """Parse history.md into (entries, preamble) tuple.
@@ -264,7 +281,23 @@ def _write_index(
             if e["date"] is not None:
                 by_year.setdefault(e["date"].year, []).append(e)
 
+    from collections import Counter
+
+    all_flat = [e for es in by_year.values() for e in es] + undated
+    cat_counts = Counter(_extract_category(e["header"]) for e in all_flat)
+    cat_counts.pop("", None)
+
     lines = ["# History Index", ""]
+
+    if cat_counts:
+        ordered = ["FEATURE", "BUGFIX", "INCIDENT", "REFACTOR", "CONFIG", "SECURITY"]
+        parts = [f"{c}: {cat_counts[c]}" for c in ordered if c in cat_counts]
+        extras = sorted(c for c in cat_counts if c not in ordered)
+        parts.extend(f"{c}: {cat_counts[c]}" for c in extras)
+        lines.append("## Category Distribution")
+        lines.append("")
+        lines.append(" | ".join(parts))
+        lines.append("")
 
     for y in sorted(by_year.keys(), reverse=True):
         lines.append(f"## {y}")
@@ -276,26 +309,65 @@ def _write_index(
                 if y in archived_years
                 else f"../history.md#{anchor}"
             )
-            subj = re.sub(r"^### #?\d*:?\s*", "", e["header"])
-            subj = re.sub(r"\s*\(.*", "", subj).strip()
-            summary = _first_sentence(e["body_lines"])
-            if summary:
-                lines.append(
-                    f"- **{e['date'].isoformat()}** [{subj}]({link}) — {summary}"
-                )
-            else:
-                lines.append(f"- **{e['date'].isoformat()}** [{subj}]({link})")
+            cat = _extract_category(e["header"])
+            cat_prefix = f"{cat}: " if cat else ""
+            subj = _subject_from_header(e["header"])
+            date_str = e["date"].isoformat()
+            lines.append(f"- {date_str}: {cat_prefix}[{subj}]({link})")
         lines.append("")
 
     if undated:
         lines.append("## (undated)")
         for e in undated:
             anchor = _make_anchor(e["header"])
-            subj = re.sub(r"^### ", "", e["header"]).strip()
-            lines.append(f"- [{subj}](../history.md#{anchor})")
+            cat = _extract_category(e["header"])
+            cat_prefix = f"{cat}: " if cat else ""
+            subj = _subject_from_header(e["header"])
+            lines.append(f"- {cat_prefix}[{subj}](../history.md#{anchor})")
         lines.append("")
 
     index_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def rebuild_index(history_path: Path) -> int:
+    """Rebuild history/index.md from existing archive files without rotating."""
+    archive_dir = history_path.parent / "history"
+    if not archive_dir.exists():
+        print(f"Error: {archive_dir} not found", file=sys.stderr)
+        return 1
+
+    current_entries: list[dict] = []
+    if history_path.exists():
+        current_entries, _ = _parse_entries(
+            history_path.read_text(encoding="utf-8")
+        )
+
+    archived_years: dict[int, list] = {}
+    for arch_file in sorted(archive_dir.glob("[0-9]*.md")):
+        try:
+            y = int(arch_file.stem)
+        except ValueError:
+            continue
+        arch_entries, _ = _parse_entries(arch_file.read_text(encoding="utf-8"))
+        archived_years[y] = [e for e in arch_entries if e["date"] is not None]
+
+    legacy_undated: list[dict] = []
+    legacy_path = archive_dir / "legacy.md"
+    if legacy_path.exists():
+        legacy_entries, _ = _parse_entries(
+            legacy_path.read_text(encoding="utf-8")
+        )
+        legacy_undated = [e for e in legacy_entries if e["date"] is None]
+
+    all_entries = (
+        [e for es in archived_years.values() for e in es]
+        + legacy_undated
+        + current_entries
+    )
+
+    _write_index(archive_dir / "index.md", all_entries, archived_years, archive_dir)
+    print(f"Rebuilt {archive_dir / 'index.md'}")
+    return 0
 
 
 def main():
@@ -322,7 +394,15 @@ def main():
         help="Number of most recent entries to keep in body",
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--rebuild-index",
+        action="store_true",
+        help="Rebuild history/index.md from existing archive files (no rotation)",
+    )
     args = parser.parse_args()
+
+    if args.rebuild_index:
+        sys.exit(rebuild_index(Path(args.path)))
 
     sys.exit(
         rotate(

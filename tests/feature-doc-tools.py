@@ -330,22 +330,22 @@ class TestDocAppendIdempotency:
 
 # Build a history with a 2-year span: entries from 2024 and 2025+
 OLD_ENTRIES = """\
-### Old entry one (2024-01-10, aaa0001)
+### BUGFIX: Old entry one (2024-01-10, aaa0001)
 Background: old background one
 Changes: old changes one
 
-### Old entry two (2024-06-15, aaa0002)
+### FEATURE: Old entry two (2024-06-15, aaa0002)
 Background: old background two
 Changes: old changes two
 
 """
 
 RECENT_ENTRIES = """\
-### Recent entry one (2026-01-01, bbb0001)
+### FEATURE: Recent entry one (2026-01-01, bbb0001)
 Background: recent background one
 Changes: recent changes one
 
-### Recent entry two (2026-03-01, bbb0002)
+### BUGFIX: Recent entry two (2026-03-01, bbb0002)
 Background: recent background two
 Changes: recent changes two
 
@@ -362,11 +362,11 @@ class TestDocRotateNormal:
         assert result.returncode == 0, result.stderr
         body = p.read_text(encoding="utf-8")
         # Recent entries must remain in body
-        assert "### Recent entry one" in body
-        assert "### Recent entry two" in body
+        assert "### FEATURE: Recent entry one" in body
+        assert "### BUGFIX: Recent entry two" in body
         # Old entries must NOT remain in body (archived)
-        assert "### Old entry one" not in body
-        assert "### Old entry two" not in body
+        assert "### BUGFIX: Old entry one" not in body
+        assert "### FEATURE: Old entry two" not in body
         # Archive file for 2024 must exist
         archive_dir = tmp_path / "history"
         assert (archive_dir / "2024.md").exists()
@@ -405,6 +405,203 @@ class TestDocRotateNormal:
 
         assert body_after_first == body_after_second
         assert archive_2024_after_first == archive_2024_after_second
+
+    def test_n4_index_shows_category_badge(self, tmp_path):
+        """N4: index.md shows ## Category Distribution and per-entry badges."""
+        import re
+
+        p = make_history(tmp_path, TWO_YEAR_HISTORY)
+        result = run_rotate(p, "--floor", "2")
+        assert result.returncode == 0, result.stderr
+        archive_dir = tmp_path / "history"
+        index_path = archive_dir / "index.md"
+        assert index_path.exists(), "index.md must exist after rotation"
+        index_text = index_path.read_text(encoding="utf-8")
+        # Distribution section header present
+        assert "## Category Distribution" in index_text, (
+            f"Category Distribution section not found in index. Content: {index_text!r}"
+        )
+        # Distribution line contains a category and a count
+        assert re.search(r"(BUGFIX|FEATURE):\s*\d+", index_text), (
+            f"Category count line not found in index. Content: {index_text!r}"
+        )
+        # At least one entry line has a category prefix (colon style)
+        assert re.search(r"^- \d{4}-\d{2}-\d{2}: (BUGFIX|FEATURE):", index_text, re.MULTILINE), (
+            f"No category prefix found on entry lines. Content: {index_text!r}"
+        )
+
+    def test_n5_rebuild_index_only(self, tmp_path):
+        """N5: --rebuild-index rebuilds index.md without touching history.md body."""
+        p = make_history(tmp_path, TWO_YEAR_HISTORY)
+        r1 = run_rotate(p, "--floor", "2")
+        assert r1.returncode == 0, r1.stderr
+        body_after_rotate = p.read_bytes()
+        archive_dir = tmp_path / "history"
+        index_path = archive_dir / "index.md"
+        # Stomp the index.md with garbage
+        index_path.write_text("STALE\n", encoding="utf-8")
+        # Rebuild
+        r2 = run_rotate(p, "--rebuild-index")
+        assert r2.returncode == 0, r2.stderr
+        new_index = index_path.read_text(encoding="utf-8")
+        assert "STALE" not in new_index, "Stale content must be replaced"
+        assert "# History Index" in new_index, (
+            f"Rebuilt index missing # History Index header. Content: {new_index!r}"
+        )
+        # history.md body must be byte-identical
+        assert p.read_bytes() == body_after_rotate, (
+            "history.md body must NOT be touched by --rebuild-index"
+        )
+
+    def test_n6_index_strips_category_from_link_text(self, tmp_path):
+        """N6: index link text shows subject only, with CATEGORY: prefix stripped."""
+        content = """\
+### FEATURE: Some subject (2026-01-01, abc1234)
+Background: bg
+Changes: ch
+
+### FEATURE: Another (2024-01-01, def5678)
+Background: bg2
+Changes: ch2
+
+"""
+        p = make_history(tmp_path, content)
+        result = run_rotate(p, "--floor", "1")
+        assert result.returncode == 0, result.stderr
+        archive_dir = tmp_path / "history"
+        index_path = archive_dir / "index.md"
+        assert index_path.exists()
+        index_text = index_path.read_text(encoding="utf-8")
+        # Find the bullet line for "Another" (the archived entry)
+        bullet_line = None
+        for line in index_text.splitlines():
+            if "Another" in line and line.lstrip().startswith("-"):
+                bullet_line = line
+                break
+        assert bullet_line is not None, (
+            f"No bullet line found for archived entry. Index: {index_text!r}"
+        )
+        # The bracketed link text should contain "Another" but NOT "FEATURE:"
+        import re
+        m = re.search(r"\[([^\]]+)\]", bullet_line)
+        assert m is not None, f"No [link text] found in bullet: {bullet_line!r}"
+        link_text = m.group(1)
+        assert "Another" in link_text, f"Subject missing from link text: {link_text!r}"
+        assert "FEATURE:" not in link_text, (
+            f"FEATURE: prefix not stripped from link text: {link_text!r}"
+        )
+
+    def test_n7_index_handles_incident_format(self, tmp_path):
+        """N7: INCIDENT entries get badge; link strips INCIDENT: and #N: prefixes."""
+        content = """\
+### INCIDENT: #42: Crash on startup (2024-02-01, abc1234)
+Cause: bad init
+Fix: reorder init
+
+### FEATURE: Newer (2026-01-01, def5678)
+Background: bg
+Changes: ch
+
+"""
+        p = make_history(tmp_path, content)
+        result = run_rotate(p, "--floor", "1")
+        assert result.returncode == 0, result.stderr
+        archive_dir = tmp_path / "history"
+        index_path = archive_dir / "index.md"
+        assert index_path.exists()
+        index_text = index_path.read_text(encoding="utf-8")
+        # Find the bullet line for the incident
+        bullet_line = None
+        for line in index_text.splitlines():
+            if "Crash on startup" in line and line.lstrip().startswith("-"):
+                bullet_line = line
+                break
+        assert bullet_line is not None, (
+            f"No bullet line found for incident. Index: {index_text!r}"
+        )
+        assert "INCIDENT:" in bullet_line, (
+            f"INCIDENT: prefix missing from bullet: {bullet_line!r}"
+        )
+        import re
+        m = re.search(r"\[([^\]]+)\]", bullet_line)
+        assert m is not None, f"No [link text] found in bullet: {bullet_line!r}"
+        link_text = m.group(1)
+        assert "Crash on startup" in link_text, (
+            f"Subject missing from link text: {link_text!r}"
+        )
+        assert "INCIDENT:" not in link_text, (
+            f"INCIDENT: prefix not stripped: {link_text!r}"
+        )
+        assert "#42:" not in link_text, (
+            f"#42: prefix not stripped: {link_text!r}"
+        )
+
+    def test_n8_index_uncategorized_entries_no_badge(self, tmp_path):
+        """N8: bare/uncategorized entries get no badge; not counted in distribution."""
+        content = """\
+### FEATURE: Categorized one (2024-01-01, abc1234)
+Background: bg
+Changes: ch
+
+### Plain entry (2024-02-01, def5678)
+Background: bg2
+Changes: ch2
+
+### FEATURE: Recent kept (2026-01-01, eee0001)
+Background: bg3
+Changes: ch3
+
+"""
+        p = make_history(tmp_path, content)
+        result = run_rotate(p, "--floor", "1")
+        assert result.returncode == 0, result.stderr
+        archive_dir = tmp_path / "history"
+        index_path = archive_dir / "index.md"
+        assert index_path.exists()
+        index_text = index_path.read_text(encoding="utf-8")
+        # Find bare entry's bullet
+        bare_line = None
+        for line in index_text.splitlines():
+            if "Plain entry" in line and line.lstrip().startswith("-"):
+                bare_line = line
+                break
+        assert bare_line is not None, (
+            f"No bullet line found for bare entry. Index: {index_text!r}"
+        )
+        # Make sure bare entry has no category prefix between date and link
+        import re
+        # Format for uncategorized: "- YYYY-MM-DD: [Subject](...)" (no WORD: between date and link)
+        before_link = bare_line.split("[", 1)[0]
+        assert not re.search(r"[A-Z]{4,9}:", before_link.split(":", 2)[-1].strip()), (
+            f"Bare entry should have no category prefix, but found one in: {bare_line!r}"
+        )
+        # Distribution: FEATURE: 1 (only the archived FEATURE entry counts;
+        # the recent FEATURE is kept in body and not in archive index).
+        # We require FEATURE count is present and "uncategorized" is not used.
+        assert re.search(r"FEATURE:\s*\d+", index_text), (
+            f"FEATURE count missing from distribution: {index_text!r}"
+        )
+        assert "uncategorized" not in index_text.lower(), (
+            f"Distribution must not include 'uncategorized': {index_text!r}"
+        )
+
+    def test_n9_rebuild_index_idempotent(self, tmp_path):
+        """N9: --rebuild-index produces identical bytes when run twice."""
+        p = make_history(tmp_path, TWO_YEAR_HISTORY)
+        r1 = run_rotate(p, "--floor", "2")
+        assert r1.returncode == 0, r1.stderr
+        archive_dir = tmp_path / "history"
+        index_path = archive_dir / "index.md"
+
+        r2 = run_rotate(p, "--rebuild-index")
+        assert r2.returncode == 0, r2.stderr
+        first = index_path.read_bytes()
+
+        r3 = run_rotate(p, "--rebuild-index")
+        assert r3.returncode == 0, r3.stderr
+        second = index_path.read_bytes()
+
+        assert first == second, "Rebuild must be idempotent (byte-identical output)"
 
 
 class TestDocRotateError:
@@ -501,8 +698,8 @@ Changes: only
         assert result.returncode == 0, result.stderr
         body = p.read_text(encoding="utf-8")
         assert "## Archived" in body
-        assert "### Old entry one" not in body
-        assert "### Recent entry one" in body
+        assert "### BUGFIX: Old entry one" not in body
+        assert "### FEATURE: Recent entry one" in body
 
 
 class TestDocRotateIdempotency:
