@@ -2,15 +2,15 @@
 
 ## Current Work
 
-### Fix: ai-specs の history.md が Edit/Write deny で追記不能
+### doc-append グローバル化 + カテゴリシステム — Verifying
 
-`settings.json` の deny リストに `Edit(**/history.md)` / `Write(**/history.md)` があり、
-`doc-append.py` 経由のみ許可する設計だが、ai-specs に `bin/doc-append.py` が存在しないため
-history.md への追記が完全にブロックされる。
+実装完了。ユーザー確認待ち。
 
-対処案:
-- ai-specs に `bin/doc-append.py` を追加 (dotfiles の同スクリプトをコピー or シンボリックリンク)
-- または ai-specs 用の allow ルールを settings.json に追加
+- `doc-append` を `~/.local/bin/` にインストール時生成するランチャーに変更
+- settings.json allow rule: `"Bash(doc-append *)"` — どのリポジトリからも使用可能
+- `--category` 必須引数 (INCIDENT/BUGFIX/FEATURE/REFACTOR/CONFIG/SECURITY)
+- 新形式: `### CATEGORY: Subject` / `### INCIDENT: #N: Subject`
+- 既存 history.md (3 ファイル、186 エントリ) をマイグレーション済み
 
 ### Phase 5: Prompt Injection Defense (PostToolUse hook) — 未着手
 Prompt injection の本来の防御点（ツール結果が LLM に戻る段）を PostToolUse hook で実装。

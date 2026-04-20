@@ -53,25 +53,25 @@ expect_approve() {
 echo "=== Normal cases: should block ==="
 
 expect_block "--subject arg contains hiragana (テスト)" \
-    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --schema history --subject テスト --background ok --changes done"}}'
+    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --category FEATURE --subject テスト --background ok --changes done"}}'
 
 expect_block "--background arg contains katakana (カタカナ)" \
-    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --schema history --subject test --background カタカナ --changes done"}}'
+    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --category FEATURE --subject test --background カタカナ --changes done"}}'
 
 expect_block "--changes arg contains kanji (変更)" \
-    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --schema history --subject test --background ok --changes 変更した"}}'
+    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --category FEATURE --subject test --background ok --changes 変更した"}}'
 
 expect_block "full-width characters (ＡＢＣ)" \
-    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --schema history --subject ＡＢＣ --background ok --changes done"}}'
+    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --category FEATURE --subject ＡＢＣ --background ok --changes done"}}'
 
 expect_block "English + single Japanese character mixed (testあtest)" \
-    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --schema history --subject testあtest --background ok --changes done"}}'
+    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --category FEATURE --subject testあtest --background ok --changes done"}}'
 
 echo ""
 echo "=== Normal cases: should approve ==="
 
 expect_approve "English-only doc-append command" \
-    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --schema history --subject Test --background Background --changes Changes"}}'
+    '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py docs/history.md --category FEATURE --subject Test --background Background --changes Changes"}}'
 
 expect_approve "Bash command with Japanese but no doc-append.py" \
     '{"tool_name":"Bash","tool_input":{"command":"echo テスト"}}'
@@ -87,6 +87,21 @@ expect_approve "empty command string" \
 
 expect_approve "doc-append.py with no arguments (no Japanese)" \
     '{"tool_name":"Bash","tool_input":{"command":"uv run bin/doc-append.py"}}'
+
+echo ""
+echo "=== Wrapper form: should block ==="
+
+expect_block "doc-append wrapper with Japanese subject" \
+    '{"tool_name":"Bash","tool_input":{"command":"doc-append docs/history.md --subject テスト --date 2026-01-01 --commits abc1234 --category FEATURE --background テスト --changes テスト"}}'
+
+echo ""
+echo "=== Wrapper form: should approve ==="
+
+expect_approve "doc-append wrapper with English-only content" \
+    '{"tool_name":"Bash","tool_input":{"command":"doc-append docs/history.md --subject Test --date 2026-01-01 --commits abc1234 --category FEATURE --background English --changes English"}}'
+
+expect_approve "word-boundary: some-other-command with Japanese (not doc-append)" \
+    '{"tool_name":"Bash","tool_input":{"command":"some-other-command --background テスト"}}'
 
 echo ""
 echo "=== Results ==="
