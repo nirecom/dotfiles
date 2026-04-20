@@ -286,3 +286,7 @@ Changes: Added claude-global/hooks/scan-inbound.js. BLOCK signals: chatml_tag, d
 ### FEATURE: doc-append: auto-rotate when history.md >= 500 lines (2026-04-20, pending)
 Background: Manual rotation step required noticing the warning and remembering to run doc-rotate.py. Easy to skip — files grew past the soft limit unattended.
 Changes: doc-append.py now invokes doc-rotate.py as a subprocess (--threshold-warn 500 --floor 20) when the resulting file is >= 500 lines. Rotation already calls _write_index, so history/index.md is rebuilt in the same pass. Tests cover trigger, silent under threshold, and that the just-appended entry remains in the body.
+
+### CONFIG: Add WebFetch allow domains for deep-research (2026-04-20, HEAD)
+Background: WebFetch permission list only covered specific doc sites. Claude/MCP/LangChain research during deep-research sessions prompted for each new domain.
+Changes: Added 8 domains to permissions.allow: code.claude.com, platform.claude.com, anthropic.com, modelcontextprotocol.io, spec.modelcontextprotocol.io, ecc.tools, docs.langchain.com, reference.langchain.com.
