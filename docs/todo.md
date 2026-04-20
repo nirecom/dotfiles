@@ -2,23 +2,17 @@
 
 ## Current Work
 
-### doc-append グローバル化 + カテゴリシステム — Verifying
+### Phase 5: Prompt Injection Defense (PostToolUse hook) — 実装中
+PostToolUse hook で WebFetch の結果をスキャン。高信頼シグナルは BLOCK、低信頼は WARN。
+- [x] 設計確定：WebFetch のみ、フルスキャン、JudgeClaw パターン移植
+- [ ] テスト (`tests/main-scan-inbound.sh`)
+- [ ] 実装 (`claude-global/hooks/scan-inbound.js`)
+- [ ] settings.json 登録
+- [ ] ドキュメント
 
-実装完了。ユーザー確認待ち。
-
-- `doc-append` を `~/.local/bin/` にインストール時生成するランチャーに変更
-- settings.json allow rule: `"Bash(doc-append *)"` — どのリポジトリからも使用可能
-- `--category` 必須引数 (INCIDENT/BUGFIX/FEATURE/REFACTOR/CONFIG/SECURITY)
-- 新形式: `### CATEGORY: Subject` / `### INCIDENT: #N: Subject`
-- 既存 history.md (3 ファイル、186 エントリ) をマイグレーション済み
-
-### Phase 5: Prompt Injection Defense (PostToolUse hook) — 未着手
-Prompt injection の本来の防御点（ツール結果が LLM に戻る段）を PostToolUse hook で実装。
-- [ ] 設計：scan 対象 tool の選定（WebFetch / Read / Bash 等）
-- [ ] 検出パターン：JudgeClaw `bridge/injection_signals.py` の `_PATTERNS` リストを baseline として移植
-- [ ] Benign-context exclusion（PEM / data:image/ / コード文脈での Base64 誤検知回避）
-- [ ] 実装：`claude-global/hooks/` 配下に hook 追加
-- [ ] 参考：`judgeclaw`, lasso-security/claude-hooks
+### scan-inbound 拡張候補 — 要検討
+- [ ] **Read** 対象追加: git clone した悪意ファイルの injection 検出。誤検知（HTML/XML/コード）とのトレードオフを評価してから判断
+- [ ] **Bash** 対象追加: git log / npm install 等の stdout injection 検出。誤検知（ビルド出力・テスト結果）が多いため慎重に評価
 
 ### セキュリティスキャンツール統合検討
 - [ ] Gitleaks: git history 対応シークレットスキャン。scan-outbound.sh との役割分担を評価 (https://github.com/gitleaks/gitleaks)
