@@ -12,19 +12,6 @@ history.md への追記が完全にブロックされる。
 - ai-specs に `bin/doc-append.py` を追加 (dotfiles の同スクリプトをコピー or シンボリックリンク)
 - または ai-specs 用の allow ルールを settings.json に追加
 
-### Security Enhancement — Phase 4 Verifying
-Security checklist and test coverage improvements. Full plan in `docs/plan.md`.
-Design decision: minimize rules/ context consumption by extracting details into skills.
-Skill naming follows existing `verb-noun` (kebab-case) convention.
-- [x] Phase 1: Architecture Security Checklist (renamed to `/review-plan-security`)
-  - [x] Verify: invoke `/review-plan-security` in a new session and confirm TodoWrite-based checklist execution
-- [x] Phase 2: Security Test Cases (`test.md` edit)
-  - [x] Verify: confirm Security cases section in test.md with correct OWASP/CWE citations, and test-rules/ subdirectory loads correctly
-- [x] Phase 3: Security Patterns (`/review-code-security` skill + `scan-outbound.sh` hard secrets)
-  - [x] Verify: invoke `/review-code-security` and confirm pattern tables displayed; confirm hard-secret detection in scan-outbound.sh
-- [x] Phase 4: Trojan Source 対策 + Prompt Injection 統合 (`scan-outbound.sh`, SKILL.md 両 Axis 拡張)
-  - [ ] Verify: `main-hidden-char-scan.sh` 全 PASS 確認、スモーク検証済み（ユーザー確認待ち）
-
 ### Phase 5: Prompt Injection Defense (PostToolUse hook) — 未着手
 Prompt injection の本来の防御点（ツール結果が LLM に戻る段）を PostToolUse hook で実装。
 - [ ] 設計：scan 対象 tool の選定（WebFetch / Read / Bash 等）
