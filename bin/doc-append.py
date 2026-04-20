@@ -15,6 +15,7 @@ If [path] is omitted, defaults to docs/history.md relative to CWD.
 
 import argparse
 import re
+import subprocess
 import sys
 from datetime import date as Date
 from pathlib import Path
@@ -198,13 +199,26 @@ def main():
             f.write(eol + eol)
         f.write(entry_bytes)
 
-    # Warn if file is large
+    # Auto-rotate when file exceeds the warn threshold
     lines = _count_lines(path)
     if lines >= WARN_LINES:
+        rotate_script = Path(__file__).parent / "doc-rotate.py"
         print(
-            f"Warning: {path} is now {lines} lines (>= {WARN_LINES}). "
-            "Consider running doc-rotate.py.",
+            f"Note: {path} is now {lines} lines (>= {WARN_LINES}). "
+            "Auto-rotating...",
             file=sys.stderr,
+        )
+        subprocess.run(
+            [
+                sys.executable,
+                str(rotate_script),
+                str(path),
+                "--threshold-warn",
+                str(WARN_LINES),
+                "--floor",
+                "20",
+            ],
+            check=False,
         )
 
 
