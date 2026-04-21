@@ -2,9 +2,6 @@
 
 ## Current Work
 
-### block-tests-direct.js hook — Verifying
-- [ ] User verification: confirm hook blocks direct test writes from main conversation and allows /write-tests subagent writes
-
 ### scan-inbound 拡張候補 — 要検討
 - [ ] **Read** 対象追加: git clone した悪意ファイルの injection 検出。誤検知（HTML/XML/コード）とのトレードオフを評価してから判断
 - [ ] **Bash** 対象追加: git log / npm install 等の stdout injection 検出。誤検知（ビルド出力・テスト結果）が多いため慎重に評価
