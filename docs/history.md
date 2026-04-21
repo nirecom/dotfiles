@@ -294,3 +294,7 @@ Changes: Added 8 domains to permissions.allow: code.claude.com, platform.claude.
 ### FEATURE: write-tests skill: enumerate call paths step (2026-04-20, (pending))
 Background: Incident #21 (CLAUDE_ENV_FILE export prefix bug) revealed that tests only covered single-file units; integration path boundaries were never enumerated as test targets, allowing format mismatches to go undetected.
 Changes: Added step 3 'Enumerate call paths' to write-tests SKILL.md Procedure — traces callers -> file -> downstream consumers, identifies format/contract expectations at each boundary, and feeds potential mismatches into step 4 as integration-path error cases. Steps 3-5 renumbered to 4-6.
+
+### FEATURE: workflow-gate: docs-only commit short-circuit (2026-04-21, pending)
+Background: After VS Code restarts, new Claude Code sessions required 4-5 ask-dialog clicks (WORKFLOW_*_NOT_NEEDED: echoes) to commit a trivial follow-up change such as ticking a checkbox in docs/todo.md. The workflow gate guards code quality — these checks were unnecessary overhead for docs-only changes.
+Changes: Added isDocsOnlyStaged(repoDir) to workflow-gate.js. When all staged files match docs/*.md, all steps except user_verification are automatically bypassed. Block message replaced with 'docs-only commit — only user_verification is required.' Files outside docs/ (CLAUDE.md, SKILL.md, root README.md, etc.) are treated as behavior code and excluded. Tests: tests/feature-workflow-gate-docs-only.sh (18 cases, all PASS). Documentation added to CLAUDE.md and docs/architecture/claude-code.md.
