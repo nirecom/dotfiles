@@ -2,6 +2,8 @@
 
 ## Current Work
 
+### block-tests-direct.js hook — Verifying
+- [ ] User verification: confirm hook blocks direct test writes from main conversation and allows /write-tests subagent writes
 
 ### scan-inbound 拡張候補 — 要検討
 - [ ] **Read** 対象追加: git clone した悪意ファイルの injection 検出。誤検知（HTML/XML/コード）とのトレードオフを評価してから判断
@@ -36,5 +38,5 @@
 
 ### テスト設計: インテグレーション / E2E 異常系の網羅 — 検討
 背景: `docs/history.md` #21 参照。
-- [ ] Workflow State Machine: 手動 E2E 検証シナリオを自動テスト化（手動検証は全環境完了済み、自動化が未着手）
+- [x] Workflow State Machine: 自動テスト化 — `tests/main-workflow-state-machine.sh` に集約（ユーザー確認待ち）
 
