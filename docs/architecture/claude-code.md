@@ -104,6 +104,8 @@ Skill runs (/make-plan, /write-tests, etc.)
 git commit attempt → workflow-gate.js (PreToolUse hook)
   reads session_id from hook stdin JSON
   loads ~/.claude/projects/workflow/<session_id>.json
+  docs-only short-circuit: if ALL staged files match docs/*.md (no other files),
+    only user_verification is checked; all other steps are bypassed
   for write_tests: also checks staged tests/ files (evidence override)
   for docs: also checks staged docs/*.md / *.md files (evidence override)
   approves if all steps complete/skipped; blocks with remediation message otherwise
@@ -241,6 +243,10 @@ bulk-deleted; most had directory versions with no data loss. One-time event.
   `git commit`. Reads state from `~/.claude/projects/workflow/<session-id>.json`. Fail-safe:
   blocks on missing session_id, missing state file, or corrupted JSON. Evidence-based override
   for `write_tests` (staged `tests/` files) and `docs` (staged `*.md` files).
+  **Docs-only short-circuit**: when every staged file matches `docs/*.md`, only `user_verification`
+  is required — research/plan/write_tests/run_tests/review_security are automatically bypassed.
+  Files outside `docs/` (including `CLAUDE.md`, `SKILL.md`, root `README.md`) are not eligible.
+  Use case: follow-up commits that only tick checkboxes or append to `docs/todo.md` / `docs/history.md`.
   Replaces `check-docs-updated.js` and `check-tests-updated.js`
 - `workflow-mark.js` (PostToolUse) — intercepts `echo "<<WORKFLOW_MARK_STEP_step_status>>"` and
   `echo "<<WORKFLOW_RESET_FROM_step>>"` via strict regex on `tool_input.command`. Supports `&&`-chained
