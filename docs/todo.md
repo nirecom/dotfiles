@@ -33,7 +33,4 @@
 - [ ] 検討: `doc-append` による自動採番、既存エントリの一括番号振りスクリプト
 - docs-only short-circuit 導入により当面の必須条件ではない
 
-### テスト設計: インテグレーション / E2E 異常系の網羅 — 検討
-背景: `docs/history.md` #21 参照。
-- [x] Workflow State Machine: 自動テスト化 — `tests/main-workflow-state-machine.sh` に集約（ユーザー確認待ち）
 
