@@ -36,5 +36,5 @@
 
 ### テスト設計: インテグレーション / E2E 異常系の網羅 — 検討
 背景: `docs/history.md` #21 参照。
-- [ ] Workflow State Machine の E2E 検証（全環境完了済み）— 着手可能
+- [ ] Workflow State Machine: 手動 E2E 検証シナリオを自動テスト化（手動検証は全環境完了済み、自動化が未着手）
 
