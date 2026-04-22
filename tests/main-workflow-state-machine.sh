@@ -419,6 +419,73 @@ else
     fail "L2-c. docs-only staged cross-repo — expected block+docs-only, got: $L2C_RESULT"
 fi
 
+# L2-c2: root README.md only staged → docs-only short-circuit
+SID_2C2="l2c2-$(printf '%04x%04x' $RANDOM $RANDOM)"
+write_state "$SID_2C2" "$(ALL_PENDING_JSON "$SID_2C2")"
+echo "readme change" > "$REPO_A/README.md"
+git -C "$REPO_A" add README.md
+L2C2_JSON="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git -C $REPO_A commit -m test\"},\"session_id\":\"$SID_2C2\"}"
+L2C2_RESULT=$(run_gate "$REPO_A" "$L2C2_JSON")
+git -C "$REPO_A" reset HEAD -- . 2>/dev/null || true
+git -C "$REPO_A" checkout -- README.md 2>/dev/null || true
+if echo "$L2C2_RESULT" | grep -q '"block"' && echo "$L2C2_RESULT" | grep -qi "docs-only"; then
+    pass "L2-c2. root README.md only staged → docs-only short-circuit"
+else
+    fail "L2-c2. root README.md only staged → docs-only short-circuit — got: $L2C2_RESULT"
+fi
+
+# L2-c3: docs/todo.md + README.md mixed staged → docs-only short-circuit
+SID_2C3="l2c3-$(printf '%04x%04x' $RANDOM $RANDOM)"
+write_state "$SID_2C3" "$(ALL_PENDING_JSON "$SID_2C3")"
+mkdir -p "$REPO_A/docs"
+echo "todo change" > "$REPO_A/docs/todo.md"
+echo "readme change" > "$REPO_A/README.md"
+git -C "$REPO_A" add docs/todo.md README.md
+L2C3_JSON="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git -C $REPO_A commit -m test\"},\"session_id\":\"$SID_2C3\"}"
+L2C3_RESULT=$(run_gate "$REPO_A" "$L2C3_JSON")
+git -C "$REPO_A" reset HEAD -- . 2>/dev/null || true
+git -C "$REPO_A" clean -fdq 2>/dev/null || true
+git -C "$REPO_A" checkout -- README.md 2>/dev/null || true
+if echo "$L2C3_RESULT" | grep -q '"block"' && echo "$L2C3_RESULT" | grep -qi "docs-only"; then
+    pass "L2-c3. docs/todo.md + README.md mixed staged → docs-only short-circuit"
+else
+    fail "L2-c3. docs/todo.md + README.md mixed staged → docs-only short-circuit — got: $L2C3_RESULT"
+fi
+
+# L2-c4: root CLAUDE.md only staged → full gate (behavior code)
+SID_2C4="l2c4-$(printf '%04x%04x' $RANDOM $RANDOM)"
+write_state "$SID_2C4" "$(ALL_PENDING_JSON "$SID_2C4")"
+echo "# claude config" > "$REPO_A/CLAUDE.md"
+git -C "$REPO_A" add CLAUDE.md
+L2C4_JSON="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git -C $REPO_A commit -m test\"},\"session_id\":\"$SID_2C4\"}"
+L2C4_RESULT=$(run_gate "$REPO_A" "$L2C4_JSON")
+git -C "$REPO_A" reset HEAD -- . 2>/dev/null || true
+rm -f "$REPO_A/CLAUDE.md"
+if echo "$L2C4_RESULT" | grep -q '"block"' \
+   && ! echo "$L2C4_RESULT" | grep -qi "docs-only" \
+   && echo "$L2C4_RESULT" | grep -q "research"; then
+    pass "L2-c4. root CLAUDE.md only staged → full gate (behavior code)"
+else
+    fail "L2-c4. root CLAUDE.md only staged → full gate (behavior code) — got: $L2C4_RESULT"
+fi
+
+# L2-c5: subdirectory README.md staged → full gate (root-only allowlist)
+SID_2C5="l2c5-$(printf '%04x%04x' $RANDOM $RANDOM)"
+write_state "$SID_2C5" "$(ALL_PENDING_JSON "$SID_2C5")"
+mkdir -p "$REPO_A/subproject"
+echo "sub readme" > "$REPO_A/subproject/README.md"
+git -C "$REPO_A" add subproject/README.md
+L2C5_JSON="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git -C $REPO_A commit -m test\"},\"session_id\":\"$SID_2C5\"}"
+L2C5_RESULT=$(run_gate "$REPO_A" "$L2C5_JSON")
+git -C "$REPO_A" reset HEAD -- . 2>/dev/null || true
+rm -rf "$REPO_A/subproject"
+if echo "$L2C5_RESULT" | grep -q '"block"' \
+   && ! echo "$L2C5_RESULT" | grep -qi "docs-only"; then
+    pass "L2-c5. subdirectory README.md staged → full gate (root-only allowlist)"
+else
+    fail "L2-c5. subdirectory README.md staged → full gate (root-only allowlist) — got: $L2C5_RESULT"
+fi
+
 # L2-d: repoA tests/ staged, write_tests=pending → approve (evidence-based override)
 SID_2D="l2d-$(printf '%04x%04x' $RANDOM $RANDOM)"
 write_state "$SID_2D" "$(cat <<EOF
