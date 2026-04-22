@@ -92,8 +92,20 @@ if ($languageHotkey -ne '3' -or $layoutHotkey -ne '3' -or $hotkeyValue -ne '3') 
     Write-Host "Input language hotkeys already disabled." -ForegroundColor DarkGray
 }
 
+# Step 7: Install / update PowerShell Core
+Write-Host ""
+Write-Host "--- Installing PowerShell Core ---"
+# Run in a fresh subprocess to isolate from WinHTTP state corruption caused by
+# prior winget calls in this session (winget can leave Invoke-RestMethod broken).
+$pwshBin = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+if (Test-Path $pwshBin) {
+    & $pwshBin -NoProfile -ExecutionPolicy Bypass -File "$DotfilesDir\install\win\pwsh.ps1"
+} else {
+    & "$DotfilesDir\install\win\pwsh.ps1"
+}
+
 if ($Base -or $Develop -or $Toolchain -or $Full) {
-    # Step 7: Install base packages
+    # Step 8: Install base packages
     Write-Host ""
     Write-Host "--- Installing base packages ---"
     & "$DotfilesDir\install\win\starship.ps1"
@@ -102,31 +114,31 @@ if ($Base -or $Develop -or $Toolchain -or $Full) {
     & "$DotfilesDir\install\win\autohotkey.ps1"
     & "$DotfilesDir\install\win\powertoys.ps1"
 
-    # Step 8: Install Claude Usage Widget
+    # Step 9: Install Claude Usage Widget
     Write-Host ""
     Write-Host "--- Installing Claude Usage Widget ---"
     & "$DotfilesDir\install\win\claude-usage-widget.ps1"
 
-    # Step 9: Install Claude Tabs
+    # Step 10: Install Claude Tabs
     Write-Host ""
     Write-Host "--- Installing Claude Tabs ---"
     & "$DotfilesDir\install\win\claude-tabs.ps1"
 }
 
 if ($Develop -or $Toolchain -or $Full) {
-    # Step 10: Install development tools
+    # Step 11: Install development tools
     Write-Host ""
     Write-Host "--- Installing development tools ---"
     & "$DotfilesDir\install\win\awscli.ps1"
 
-    # Step 11: Install VS Code and extensions
+    # Step 12: Install VS Code and extensions
     Write-Host ""
     Write-Host "--- Installing Visual Studio Code ---"
     & "$DotfilesDir\install\win\vscode.ps1"
 }
 
 if ($Toolchain -or $Full) {
-    # Step 12: Install toolchain
+    # Step 13: Install toolchain
     Write-Host ""
     Write-Host "--- Installing toolchain ---"
     & "$DotfilesDir\install\win\vs-cpp.ps1"
