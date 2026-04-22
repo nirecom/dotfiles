@@ -18,7 +18,7 @@ Most agent frameworks rely on the model to remember process steps. This framewor
 
 - **Evidence-based completion**: staged `tests/` and `docs/*.md` files automatically satisfy their corresponding steps — no manual marker required.
 - **State inheritance**: after context compaction or a fresh session on the same cwd+branch, prior workflow state is inherited so progress is not lost.
-- **Docs-only short-circuit**: when every staged file is under `docs/*.md`, steps 1–6 are bypassed automatically for documentation-only commits.
+- **Docs-only short-circuit**: when every staged file is human-facing documentation (any `.md` under `docs/`, or root `README.md`/`CHANGELOG.md`/`CONTRIBUTING.md`/`LICENSE.md`), steps 1–6 are bypassed automatically for documentation-only commits.
 
 ### Cross-machine session continuity
 
