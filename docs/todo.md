@@ -34,3 +34,8 @@
 - docs-only short-circuit 導入により当面の必須条件ではない
 
 
+
+### pwsh installer 別PC での動作確認 — Verifying
+- [ ] 別PC（pwsh 7.6.0 など旧バージョン搭載）で `./install.ps1` を実行し、7.6.1 へのアップグレードが正常に行われることを確認
+  - UAC ダイアログが出て承認後に "PowerShell Core updated to 7.6.1. Restart your terminal." が表示されること
+  - 再実行時に "PowerShell Core is already up to date (7.6.1)." が表示されること
