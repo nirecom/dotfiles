@@ -11,8 +11,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
 ALLOWLIST="$DOTFILES_DIR/.private-info-allowlist"
-ALLOWLIST_PRIVATE="$DOTFILES_DIR/../my-private-repo/.private-info-allowlist"
-BLOCKLIST_PRIVATE="$DOTFILES_DIR/../my-private-repo/.private-info-blocklist"
+_dotfiles_private="${DOTFILES_PRIVATE_DIR:-$DOTFILES_DIR/../my-private-repo}"
+ALLOWLIST_PRIVATE="$_dotfiles_private/.private-info-allowlist"
+BLOCKLIST_PRIVATE="$_dotfiles_private/.private-info-blocklist"
 
 VIOLATIONS=0
 MODE=""
