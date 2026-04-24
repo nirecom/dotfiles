@@ -9,7 +9,16 @@ $DotfilesDir = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInv
 
 # --- Step 1: Language environment check (strict) ---
 $uiLang = (Get-UICulture).Name
-$firstLang = (Get-WinUserLanguageList)[0].LanguageTag
+try {
+    $savedWP = $WarningPreference
+    $WarningPreference = 'SilentlyContinue'
+    Import-Module International -UseWindowsPowerShell -ErrorAction Stop
+    $WarningPreference = $savedWP
+    $firstLang = (Get-WinUserLanguageList)[0].LanguageTag
+} catch {
+    Write-Host "Skipping AutoHotkey setup: International module unavailable ($_)" -ForegroundColor DarkGray
+    return
+}
 
 if (-not ($uiLang -like "en*")) {
     Write-Host "Skipping AutoHotkey setup: UI language is '$uiLang', not English." -ForegroundColor DarkGray
