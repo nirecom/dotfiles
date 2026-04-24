@@ -137,6 +137,45 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# N7: pre-commit uses AGENTS_CONFIG_DIR to locate scanner (no old DOTFILES_DIR path)
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== N7: pre-commit — scanner path uses AGENTS_CONFIG_DIR ==="
+
+PRE_COMMIT="$DOTFILES_DIR/claude-global/hooks/pre-commit"
+if grep -q '_cfg_dir.*AGENTS_CONFIG_DIR' "$PRE_COMMIT" && grep -q 'SCANNER=.*_cfg_dir.*bin/scan-outbound' "$PRE_COMMIT"; then
+    pass "N7. pre-commit uses AGENTS_CONFIG_DIR to locate scan-outbound.sh"
+else
+    fail "N7. pre-commit does not use AGENTS_CONFIG_DIR for scanner path"
+fi
+
+# ---------------------------------------------------------------------------
+# N8: commit-msg uses AGENTS_CONFIG_DIR to locate scanner
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== N8: commit-msg — scanner path uses AGENTS_CONFIG_DIR ==="
+
+COMMIT_MSG="$DOTFILES_DIR/claude-global/hooks/commit-msg"
+if grep -q '_cfg_dir.*AGENTS_CONFIG_DIR' "$COMMIT_MSG" && grep -q 'SCANNER=.*_cfg_dir.*bin/scan-outbound' "$COMMIT_MSG"; then
+    pass "N8. commit-msg uses AGENTS_CONFIG_DIR to locate scan-outbound.sh"
+else
+    fail "N8. commit-msg does not use AGENTS_CONFIG_DIR for scanner path"
+fi
+
+# ---------------------------------------------------------------------------
+# N9: scan-outbound.sh uses DOTFILES_PRIVATE_DIR optional fallback
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== N9: scan-outbound.sh — dotfiles-private uses DOTFILES_PRIVATE_DIR fallback ==="
+
+SCAN_OUTBOUND="$DOTFILES_DIR/bin/scan-outbound.sh"
+if grep -q 'DOTFILES_PRIVATE_DIR:-' "$SCAN_OUTBOUND"; then
+    pass "N9. scan-outbound.sh uses \${DOTFILES_PRIVATE_DIR:-...} fallback for private allowlist"
+else
+    fail "N9. scan-outbound.sh does not use DOTFILES_PRIVATE_DIR fallback"
+fi
+
+# ---------------------------------------------------------------------------
 # Results
 # ---------------------------------------------------------------------------
 echo ""
