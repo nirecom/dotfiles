@@ -337,4 +337,8 @@ Changes: Replaced Get-Process msiexec with [System.Threading.Mutex]::TryOpenExis
 
 ### BUGFIX: autohotkey.ps1: suppress WinPSCompat warning when loading International module (2026-04-25, pending)
 Background: autohotkey.ps1 used Import-Module International -UseWindowsPowerShell to load a Windows PowerShell-only module in pwsh. PowerShell emits a verbose WinPSCompatSession warning on every load. A prior attempt to suppress it with -SkipEditionCheck caused the nested module Microsoft.InternationalSettings.Commands to fail to load, silently skipping the entire AutoHotkey setup.
-Changes: Wrap the Import-Module call with $WarningPreference = 'SilentlyContinue' / restore pattern. -UseWindowsPowerShell is kept (correct for this module); only the cosmetic warning is suppressed.
+Changes: Wrap the Import-Module call with $WarningPreference = 'SilentlyContinue' / restore pattern. -UseWindowsPowerShell is kept (correct for this module); only the cosmetic warning is suppressed.
+
+### FEATURE: docs/history.md classification -- history-classification.md + split-history.py (2026-04-25, pending)
+Background: Step 6 of the agents repo split. Classified all 71 history.md entries into @claude (agents repo), @dotfiles (keep in dotfiles repo), or @both, then built a machine-driven split script to produce the two output files.
+Changes: Created docs/history-classification.md (71 entries: @claude=58, @dotfiles=13, @both=0). Created bin/split-history.py: reads history.md + classification table, writes history-agents.md (@claude+@both) and history-dotfiles.md (@dotfiles+@both). Normalization: strips trailing date suffix like (2026-04-12, abc1234); normalizes INCIDENT: #N: -> INCIDENT #N: for fuzzy match. 0 unmatched entries on current history.md. Added 11 tests (N11-N15, E4-E6, I1, ER1-ER2) to tests/feature-agents-repo-split.sh.

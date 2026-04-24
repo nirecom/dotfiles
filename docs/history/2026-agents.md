@@ -1,0 +1,112 @@
+# History (agents/2026)
+
+### REFACTOR: Consolidate subagent instructions to skill definitions (2026-04-08, (pending))
+Background: rules/test.md contained subagent implementation details (how subagent works, what it launches) that duplicated the authoritative definitions in write-tests and review-tests skills. Prior commit a951983 had added subagent enforcement to rules/test.md because procedural instructions were sometimes ignored, but this created a maintenance burden — two places to update when the mechanism changed.
+Changes: Replaced "Test Iteration Subagent" section with "Test Writing" (pointer to `/write-tests` only). Removed Explore subagent explanation from "Test Coverage Review" (pointer to `/review-tests` only). Subagent implementation details now live exclusively in skill SKILL.md files.
+
+
+### FEATURE: Session sync: silent push failure notification (2026-04-08, (pending))
+Background: `codes` function ran session-sync push in a hidden process (Windows: `-WindowStyle Hidden`, Linux: `>/dev/null 2>&1`). Push failures were completely invisible — cross-machine sync silently failed for 6 days (diverged branch from 4/2 to 4/8) with no indication.
+Changes: Added `--quiet` flag (sh) / `-Quiet` switch (ps1) to session-sync scripts. In quiet mode, success is silent; failure triggers OS notification (Windows: `System.Windows.Forms.MessageBox`, Linux: `notify-send` with stderr fallback). `codes` function now passes the quiet flag instead of discarding all output.
+
+
+### FEATURE: Enforce workflow via TodoWrite checklist (2026-04-08, (pending))
+Background: CLAUDE.md workflow steps (Research, Plan) were frequently skipped at session start. The "describable in one sentence" skip criterion was too vague, allowing rationalization.
+Changes: Rewrote workflow preamble to require TodoWrite checklist creation for every task. Removed `as needed` from Research step. Replaced vague skip criteria with concrete conditions (single-file change AND no design decision). Added explicit rule that skipping Research does not justify skipping Plan.
+
+
+### CONFIG: Commit confirmation reduced from 2 to 1 (2026-04-08, 74662ae, 4223e09)
+Background: Committing required two approvals — skill chat confirmation and settings.json permission dialog. Hooks (pre-commit, commit-msg) now reliably block private info, making the permission dialog redundant.
+Changes: Added commit message presentation step to commit-push skill (diff stats + message shown in chat, wait for approval). Moved `Bash(git commit *)` and `Bash(git -C * commit *)` from ask to allow in settings.json. `cd && git commit` pattern remains in ask (prohibited by rules/git.md).
+
+
+### REFACTOR: Session sync: toast notifications and output cleanup (2026-04-08, (pending))
+Background: Quiet-mode push showed no indication of sync start/end, making it impossible to know when it was safe to shut down the laptop. Additionally, `git commit` output included noisy "create mode" / "delete mode" lines. Failure notification used `MessageBox` (modal, requires click to dismiss).
+Changes: Added `git commit -q` flag to suppress file mode messages (both sh/ps1). Replaced `MessageBox` with Windows toast notifications (`WinRT ToastNotificationManager` API, no external modules). Quiet mode now shows toast at push start ("pushing..."), completion ("push complete"), and failure. Because pwsh 7+ cannot directly load WinRT types, `Show-SessionToast` in ps1 shells out to `powershell.exe` (Windows PowerShell 5.1) to run the toast code — this works from both pwsh 7 and PS 5.1 callers. Bash/WSL2 also calls `powershell.exe` for toast; native Linux falls back to `notify-send`. Fixed `git add`/`git push` stderr handling in ps1 (`$ErrorActionPreference` temporarily set to `Continue` to prevent CRLF warnings from throwing).
+
+
+### REFACTOR: todo.md completion cleanup rule (2026-04-09, (pending))
+Background: After verification passed, completed phases/steps were sometimes left behind in todo.md as `[x]` checkboxes or stub pointers back to history.md, causing todo.md to bloat and duplicate history.md content.
+Changes: Updated `claude-global/rules/docs-convention.md` todo.md rule to explicitly require full removal from todo.md after verification passes — no leftover checkboxes, sub-steps, or stub pointers back to history.md. Entry must exist in exactly one place.
+
+
+### FEATURE: make-plan: planner/reviewer discussion loop (2026-04-09, (pending))
+Background: The Plan phase used a single `/make-plan` skill drafting the plan in the main conversation. No independent critique step — quality relied on the main Claude catching its own gaps, and thorough review was inconsistent.
+Changes: Introduced `claude-global/agents/` with two subagents — `planner` (drafts and revises plans) and `reviewer` (critically reviews, surfaces minor and major issues). `/make-plan` now orchestrates a discussion loop: planner drafts → reviewer returns `APPROVED` or `NEEDS_REVISION` with numbered concerns → planner revises → re-review. Escalates to the user after 3 rounds without approval. Skip conditions (single-file change AND no design decision) are preserved. Added `agents` symlink to install scripts (`install/linux/dotfileslink.sh`, `install/win/dotfileslink.ps1`). Updated `claude-global/CLAUDE.md` workflow Plan step description.
+
+
+### REFACTOR: Session sync: consolidate toast to single completion notification (2026-04-09, (pending))
+Background: Quiet-mode push showed two toast banners per push — "pushing..." at start and "push complete" at end — which felt redundant. The original purpose was to signal when it was safe to shut down the laptop, so only the completion state is essential. Attempted in-place text update via `NotificationData` + `ToastNotifier.Update()`, but PS 5.1's COM interop cannot project WinRT `IMap<string,string>` to `IDictionary`, so neither indexer assignment nor `.Insert()` method works. Tag+Group replacement shows a second banner pop rather than a smooth in-place update.
+Changes: Removed the "pushing..." toast call from both `bin/session-sync.ps1` and `bin/session-sync.sh`. Only "push complete" / "push failed (...)" is shown now. Kept Tag+Group on the ps1 toast so consecutive pushes replace the previous entry in Action Center instead of accumulating. Updated `docs/architecture.md` to reflect single-notification behavior.
+
+
+### REFACTOR: write-tests subagent mode: auto → acceptEdits (2026-04-09, (pending))
+Background: `/write-tests` was designed to run test iteration inside a subagent to avoid Edit confirmation dialogs, but dialogs for `tests/` files were still appearing in the parent conversation. Root cause: VSCode extension's "Ask before edits" mode gates Edit/Write at the extension level, which the subagent's `mode: "auto"` parameter does not override.
+Changes: Changed subagent launch mode in `claude-global/skills/write-tests/SKILL.md` from `"auto"` to `"acceptEdits"` to explicitly pre-authorize edits. If insufficient, next step is to add `Edit(tests/**)` / `Write(tests/**)` to `permissions.allow` in `settings.json` (recorded in memory for follow-up).
+
+
+### FEATURE: commit-push: restore permission dialog as single gate (2026-04-09, (pending))
+Background: Prior fix (4223e09, 5b0ceed) moved `Bash(git commit *)` and `Bash(git -C * commit *)` from ask to allow, expecting the skill's chat confirmation to serve as the sole approval point. In practice Claude frequently skipped the chat step and ran add→commit→push without any gate, because no tool call enforced a pause. The chat-only gate was unreliable.
+Changes: Reverted both patterns back to `permissions.ask` in `claude-global/settings.json`. Removed "Wait for user approval before proceeding" from step 3 of `claude-global/skills/commit-push/SKILL.md` — the chat message is now informational, and the commit permission dialog is the single enforced gate. Net result: skill presents drafted message in chat → `git commit` triggers one dialog → approval cascades through to `git push` (still allow-listed). Same 1-confirmation goal as 4223e09 but achieved via a mechanism that does not depend on Claude honoring a string instruction.
+
+
+### CONFIG: Session sync: filter create/delete mode from pull output (2026-04-10, (pending))
+Background: Previous output cleanup (22fed74) added `git commit -q` to suppress `create mode` / `delete mode` lines during push. However, the same lines still appeared during `pull` — they come from git's fast-forward merge output, not from commit.
+Changes: Added `Where-Object` filter to `git pull --rebase` output in `bin/session-sync.ps1` pull action, excluding lines matching `^\s*(create|delete) mode `. Extended the same filter to `bin/session-sync.sh` pull action using `grep -Ev` with `PIPESTATUS[0]` to preserve git's exit code.
+
+
+### CONFIG: Optimize skill token usage with model and effort tuning (2026-04-10, 986d925)
+Background: Total token usage was frequently hitting limits. All skills inherited the session model (Opus) and effort level, even for mechanical tasks like git operations or doc updates. Official docs confirmed `model` and `effort` frontmatter are supported in both skills and subagents (https://code.claude.com/docs/en/skills, https://code.claude.com/docs/en/sub-agents).
+Changes: Set `model: haiku` + `effort: low` on `commit-push` (git-only). Set `model: sonnet` + `effort: low` on `survey-code`, `review-tests`, `update-docs`, `update-instruction`. Reasoning-heavy skills (`deep-research`, `review-security`, `write-tests`) and agents (`planner`, `reviewer`) remain unchanged (inherit session model).
+
+
+### FEATURE: make-plan token optimization: reviewer checklist and loop limit (2026-04-11, (pending))
+Background: make-plan planner/reviewer loop consumed excessive tokens. Two causes identified: (1) reviewer's 7-item checklist with individual rule file references encouraged redundant Read calls for rules already loaded as Memory Files (~3.6k tokens wasted per round), (2) 3-round loop limit allowed up to 3 expensive revision cycles.
+Research: Surveyed GitHub Claude Code patterns (HumanLayer, everything-claude-code, anthropic repos, lst97/claude-code-sub-agents). Key findings: community consensus is lean subagent prompts; rules/ files loaded via Memory Files should not be re-read; skills: frontmatter enables on-demand injection but is unsuitable for always-applicable rules. Reviewer effort: high retained (core quality mechanism).
+Changes: Consolidated reviewer checklist from 7 items to 4 (correctness+completeness, rules compliance, risks+edge cases, scope). Added explicit instruction not to re-read rules via Read tool. Reduced loop escalation limit from 3 to 2 rounds.
+
+
+### CONFIG: Explicit model pinning for quality-critical skills and agents (2026-04-11, (pending))
+Background: Preparing to set CLI default model to haiku for cost reduction. `model: inherit` and unspecified model fields would inherit haiku, degrading quality for reasoning-heavy tasks. Research confirmed `CLAUDE_CODE_SUBAGENT_MODEL` env var overrides ALL subagents including frontmatter (official docs priority order: env var > call-time > frontmatter > parent model), making it unsuitable for selective control.
+Changes: Set `model: opus` on 6 definitions: planner, reviewer (previously `inherit`), deep-research, make-plan, review-security, write-tests (previously unspecified). Mechanical skills remain unchanged (commit-push: haiku, survey-code/review-tests/update-docs/update-instruction: sonnet).
+
+
+### FEATURE: save-research skill (2026-04-11, (pending))
+Background: Useful research findings from conversations were lost after the session ended, requiring re-investigation on the same topics.
+Changes: Added `claude-global/skills/save-research/SKILL.md`. The skill saves conversation research findings to `../ai-specs/projects/engineering/research-results/<slug>.md` using relative paths (dotfiles is a public repo). Follows the established format of the existing `llm-document-ordering.md` research file.
+
+
+### SECURITY: check-private-info.sh: external allowlist and glob file-scope support (2026-04-11, (pending))
+Background: Test-file allowlist entries were listed individually per file, making it verbose to add new test files. Environment-specific exceptions (e.g., company IP ranges) had no place to live without modifying the public .private-info-allowlist.
+Changes: Added ALLOWLIST_PRIVATE loading from ../dotfiles-private/.private-info-allowlist when present — environment-specific exceptions can live in the private repo without touching the public file. Added glob matching for file-scoped allowlist patterns (e.g., tests/*:@example.com), consolidating per-file entries into single glob lines.
+
+
+### FEATURE: README.md added to doc management framework (2026-04-11, (pending))
+Background: docs-convention.md Standard Files only covered internal docs (architecture.md, todo.md, history.md, ops.md, infrastructure.md). Public repos lacked guidance on maintaining README.md for external users. /update-docs skill mentioned README.md only conditionally ("if file tree or installation procedure changed").
+Changes: Added README.md to Standard Files table (role: public-facing entry point, size: compact, when: public repos). Added content rules: external-facing overview, delegate internals to other docs, source repo root for ai-specs projects. Promoted README.md to always-target in /update-docs General projects; added source repo root target to ai-specs projects.
+
+
+### FEATURE: commit-push: delegate missing-test case to write-tests skill (2026-04-11, (pending))
+Background: When /commit-push detected missing tests, Claude was writing test files directly in the main conversation instead of via the write-tests subagent. This bypassed acceptEdits mode, caused VSCode "Make this edit" dialogs to appear, and allowed source file edits that the write-tests rules prohibit.
+Changes: Added "Pre-commit check" section to commit-push/SKILL.md instructing Claude to never write tests directly in the main conversation — invoke /write-tests first, then resume commit-push.
+
+
+### BUGFIX: session-sync reset: pipefail early-exit fix (2026-04-11, (pending))
+Background: `reset` (and `pull`) exited before "Reset to remote state." due to two `set -euo pipefail` pitfalls: (1) `ts=$(... | grep | ...)` in the mtime loop exits 1 when grep finds no match in JSONL files lacking a timestamp field — primary early-exit cause; (2) `cat .history.jsonl history.jsonl` exits 1 when `history.jsonl` is absent on a fresh follower machine. `2>/dev/null` suppresses stderr but not the exit code. The outer test script also had unguarded reset calls, masking failures as test-suite aborts.
+Changes: Added `|| true` to both `ts=$(...)` lines in the mtime restoration loop. Added `[ -f history.jsonl ]` existence check before `cat` in both `reset` and `pull`. Added `|| true` guards to 4 reset calls in `tests/main-session-sync.sh`. Added test "[reset] Reset succeeds when local history.jsonl is absent". All 37 tests PASS.
+
+
+### FEATURE: session-sync: macOS toast notification (2026-04-11, 2882723)
+Background: Toast notification on push/pull completion existed for Windows (PowerShell) and Linux (notify-send) but not macOS.
+Changes: Added osascript branch to _toast() in session-sync.sh, placed between the Windows and Linux paths.
+
+
+### FEATURE: pre-commit: auto-unstage model field in settings.json (2026-04-11, pending)
+Background: Claude Code writes "model" to settings.json dynamically (same as effortLevel), causing it to appear in git diff across sessions and prompting unnecessary commit confirmations.
+Changes: Added `delete j.model` to STRIP_EFFORT in pre-commit hook alongside `delete j.effortLevel`. Added 5 test cases to tests/main-effort-level-unstage.sh (model addition, value change, removal, combined effortLevel+model, mixed with real change). Fixed pre-existing test bug: setup_repo now sets `core.hooksPath /dev/null` to prevent global hook from interfering with intermediate test commits.
+
+
+### CONFIG: session-sync: notification timing and quiet-mode suppression (2026-04-11, pending)
+Background: Two notification issues in session-sync: (1) WARNING message was printed even in --quiet mode (auto-runs), polluting terminal output. (2) "push complete" notification appeared even when VS Code was still open — specifically when closing one of multiple simultaneously open windows, or because the VS Code process lingers after window close, causing a process-based check (_vscode_running) to give false positives.
+Changes: Added --quiet guard to WARNING in session-sync.sh. Replaced process-based _vscode_running check with a --toast opt-in flag. Added _any_vscode_window() to .profile_common (osascript on macOS, xdotool/wmctrl on Linux) that checks open windows, not processes. codes() now checks for remaining VS Code windows before push and only passes --toast when none are open. Updated tests/main-session-sync.sh.
+

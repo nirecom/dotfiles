@@ -49,4 +49,5 @@ docker-compose.yml:172\.24\.0
 # Docker official Node.js base image home directory (not a real user path)
 docker-compose.yml:/home/node
 */generate-web-access-section.sh:/home/node
-docs/history.md:/home/node
+docs/history*.md:/home/node
+docs/history/**:/home/node
