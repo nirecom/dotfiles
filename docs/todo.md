@@ -6,7 +6,7 @@
 - [x] Step 1: GitHub nirecom/agents 空 repo 作成
 - [x] Step 2: $AGENTS_CONFIG_DIR 抽象層導入 — Verifying
 - [x] Step 3: hook 相対 path 調整（pre-commit, commit-msg, scan-outbound.sh）— Verifying
-- [ ] Step 4: session-sync path 抽象化（.profile_common）
+- [x] Step 4: session-sync path 抽象化（.profile_common）— Verifying
 - [ ] Step 5: tests 仕分け準備（tests/split-plan.md）
 - [ ] Step 6: docs/history.md 分類（history-classification.md + split-history.py）
 - [ ] Steps 7–17: framework repo 初期化〜awesome-lists 投稿（docs/plan.md 参照）

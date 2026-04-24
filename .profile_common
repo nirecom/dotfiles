@@ -238,9 +238,9 @@ codes() {
         code --new-window "$@"
         "$DOTFILES_DIR/bin/wait-vscode-window.sh" "$name"
         if _any_vscode_window; then
-            "$DOTFILES_DIR/bin/session-sync.sh" push --quiet
+            "${AGENTS_DIR:-$DOTFILES_DIR}/bin/session-sync.sh" push --quiet
         else
-            "$DOTFILES_DIR/bin/session-sync.sh" push --quiet --toast
+            "${AGENTS_DIR:-$DOTFILES_DIR}/bin/session-sync.sh" push --quiet --toast
         fi
     ) &
     disown
