@@ -18,6 +18,16 @@ $ErrorActionPreference = "Stop"
 
 $DotfilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+function Invoke-ScriptIsolated {
+    param([string]$Path)
+    $bin = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+    if (Test-Path $bin) {
+        & $bin -NoProfile -ExecutionPolicy Bypass -File $Path
+    } else {
+        & $Path
+    }
+}
+
 Write-Host "=== dotfiles installer (Windows) ===" -ForegroundColor Cyan
 
 # Set DOTFILES_DIR as persistent user environment variable (used by Claude Code hooks)
@@ -28,7 +38,9 @@ $env:DOTFILES_DIR = $DotfilesDir
 function Wait-MsiMutex {
     $maxWait = 120
     $waited = 0
-    while (Get-Process msiexec -ErrorAction SilentlyContinue) {
+    $mutex = $null
+    while ([System.Threading.Mutex]::TryOpenExisting('Global\_MSIExecute', [ref]$mutex)) {
+        if ($mutex) { $mutex.Dispose(); $mutex = $null }
         if ($waited -eq 0) {
             Write-Host "Waiting for another installer to finish..." -ForegroundColor Yellow
         }
@@ -50,7 +62,7 @@ Write-Host "--- Creating symlinks ---"
 # Step 2: Install Claude Code and Node.js (required for hooks)
 Write-Host ""
 Write-Host "--- Installing Claude Code ---"
-& "$DotfilesDir\install\win\claude-code.ps1"
+Invoke-ScriptIsolated "$DotfilesDir\install\win\claude-code.ps1"
 if (Get-Command claude -ErrorAction SilentlyContinue) {
     Write-Host ""
     Write-Host "--- Initializing Claude Code session sync ---"
@@ -58,7 +70,7 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 }
 Write-Host ""
 Write-Host "--- Installing fnm (Node.js) ---"
-& "$DotfilesDir\install\win\fnm.ps1"
+Invoke-ScriptIsolated "$DotfilesDir\install\win\fnm.ps1"
 
 # Step 3: Clean up obsolete files
 Write-Host ""
@@ -97,19 +109,14 @@ Write-Host ""
 Write-Host "--- Installing PowerShell Core ---"
 # Run in a fresh subprocess to isolate from WinHTTP state corruption caused by
 # prior winget calls in this session (winget can leave Invoke-RestMethod broken).
-$pwshBin = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-if (Test-Path $pwshBin) {
-    & $pwshBin -NoProfile -ExecutionPolicy Bypass -File "$DotfilesDir\install\win\pwsh.ps1"
-} else {
-    & "$DotfilesDir\install\win\pwsh.ps1"
-}
+Invoke-ScriptIsolated "$DotfilesDir\install\win\pwsh.ps1"
 
 if ($Base -or $Develop -or $Toolchain -or $Full) {
     # Step 8: Install base packages
     Write-Host ""
     Write-Host "--- Installing base packages ---"
     & "$DotfilesDir\install\win\starship.ps1"
-    & "$DotfilesDir\install\win\uv.ps1"
+    Invoke-ScriptIsolated "$DotfilesDir\install\win\uv.ps1"
     & "$DotfilesDir\install\win\google-japanese-input.ps1"
     & "$DotfilesDir\install\win\autohotkey.ps1"
     & "$DotfilesDir\install\win\powertoys.ps1"
@@ -117,19 +124,19 @@ if ($Base -or $Develop -or $Toolchain -or $Full) {
     # Step 9: Install Claude Usage Widget
     Write-Host ""
     Write-Host "--- Installing Claude Usage Widget ---"
-    & "$DotfilesDir\install\win\claude-usage-widget.ps1"
+    Invoke-ScriptIsolated "$DotfilesDir\install\win\claude-usage-widget.ps1"
 
     # Step 10: Install Claude Tabs
     Write-Host ""
     Write-Host "--- Installing Claude Tabs ---"
-    & "$DotfilesDir\install\win\claude-tabs.ps1"
+    Invoke-ScriptIsolated "$DotfilesDir\install\win\claude-tabs.ps1"
 }
 
 if ($Develop -or $Toolchain -or $Full) {
     # Step 11: Install development tools
     Write-Host ""
     Write-Host "--- Installing development tools ---"
-    & "$DotfilesDir\install\win\awscli.ps1"
+    Invoke-ScriptIsolated "$DotfilesDir\install\win\awscli.ps1"
 
     # Step 12: Install VS Code and extensions
     Write-Host ""
@@ -141,7 +148,7 @@ if ($Toolchain -or $Full) {
     # Step 13: Install toolchain
     Write-Host ""
     Write-Host "--- Installing toolchain ---"
-    & "$DotfilesDir\install\win\vs-cpp.ps1"
+    Invoke-ScriptIsolated "$DotfilesDir\install\win\vs-cpp.ps1"
 }
 
 # Run dotfiles-private installer if available
