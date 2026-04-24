@@ -176,6 +176,18 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# N10: .profile_common session-sync uses AGENTS_DIR fallback
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== N10: .profile_common — session-sync uses AGENTS_DIR ==="
+
+if grep -q 'AGENTS_DIR.*DOTFILES_DIR.*bin/session-sync' "$PROFILE_COMMON"; then
+    pass "N10. .profile_common session-sync uses \${AGENTS_DIR:-\$DOTFILES_DIR}/bin/session-sync.sh"
+else
+    fail "N10. .profile_common session-sync does not use AGENTS_DIR fallback"
+fi
+
+# ---------------------------------------------------------------------------
 # Results
 # ---------------------------------------------------------------------------
 echo ""
