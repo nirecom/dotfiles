@@ -282,3 +282,9 @@ Changes: workflow-gate.js: replaced the isDocsOnlyStaged predicate from startsWi
 Background: update-docs/SKILL.md listed README.md as a target in the header (line 11) but step 2 (Read current docs), step 3 (Identify gaps), and the Completion git add command did not reinforce it. In practice the README was read-passed only when Claude remembered to, leading to standalone catchup commits like d4b0f55. The skill also lacked a clear statement of what a README should achieve.
 Changes: step 2: added explicit note to always include root README.md in the read pass. step 3: added README.md goal ('make the reader think I want to use this — key features in crisp abstract terms') and update trigger criteria. Completion: git add changed from 'git add docs/' to 'git add docs/ README.md' with a note to omit the path when no README exists.
 
+### FEATURE: docs/history.md classification -- history-classification.md + split-history.py (2026-04-25, pending)
+
+Background: Step 6 of the agents repo split. Classified all 71 history.md entries into @claude (agents repo), @dotfiles (keep in dotfiles repo), or @both, then built a machine-driven split script to produce the two output files.
+
+Changes: Created docs/history-classification.md (71 entries: @claude=58, @dotfiles=13, @both=0). Created bin/split-history.py: reads history.md + classification table, writes history-agents.md (@claude+@both) and history-dotfiles.md (@dotfiles+@both). Normalization: strips trailing date suffix like (2026-04-12, abc1234); normalizes INCIDENT: #N: -> INCIDENT #N: for fuzzy match. 0 unmatched entries on current history.md. Added 11 tests (N11-N15, E4-E6, I1, ER1-ER2) to tests/feature-agents-repo-split.sh.
+
