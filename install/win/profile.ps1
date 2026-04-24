@@ -19,6 +19,10 @@ if ($loadedKeys -match 'no identities|agent.*not running|error') {
 # Auto-pull dotfiles on startup
 $DotfilesDir = "C:\git\dotfiles"
 $env:DOTFILES_DIR = $DotfilesDir
+# --- BEGIN temporary: dotfiles → agents migration ---
+if (-not $env:AGENTS_CONFIG_DIR) { $env:AGENTS_CONFIG_DIR = "$DotfilesDir\claude-global" }
+if (-not $env:AGENTS_DIR)        { $env:AGENTS_DIR        = $DotfilesDir }
+# --- END temporary: dotfiles → agents migration ---
 if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
     Write-Host "git fetch $DotfilesDir ..."
     $fetchProcess = Start-Process -FilePath git -ArgumentList "-C $DotfilesDir fetch" -NoNewWindow -PassThru

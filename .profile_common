@@ -3,6 +3,11 @@
 # Dotfiles directory (platform-specific, used by Claude Code hooks via $DOTFILES_DIR)
 export DOTFILES_DIR="$HOME/dotfiles"
 
+# --- BEGIN temporary: dotfiles → agents migration ---
+export AGENTS_CONFIG_DIR="${AGENTS_CONFIG_DIR:-$DOTFILES_DIR/claude-global}"
+export AGENTS_DIR="${AGENTS_DIR:-$DOTFILES_DIR}"
+# --- END temporary: dotfiles → agents migration ---
+
 source "$DOTFILES_DIR/bin/detectos.sh"
 
 # Locale
