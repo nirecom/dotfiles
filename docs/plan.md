@@ -7,15 +7,33 @@
 **ブランチ**: dotfiles → `feature/agents-repo-split` / agents → `main`（直 push）  
 **残り**: Steps 16–17（下の実装ステップ参照）。次は Step 16 から。
 
-### Step 14 の参考
-dotfiles-private の sibling 呼び出しパターンをそのまま踏襲する:
-- `install.ps1` L147–157（`$PrivateInstaller` 判定ブロック）→ agents 版を同じ位置に追加
-- `install.sh` の末尾 dotfiles-private ブロック → agents 版を同様に追加
+### Step 16 の追加スコープ（セッション中に発覚）
+
+dotfiles の `install/win/profile.ps1` の symlink 修復ロジックに問題がある:
+
+```powershell
+# 現状（line 99）— dotfiles 側なのに agents 管理ファイルを含んでいる
+$symlinkFiles = @("$HOME\.bash_profile", "$HOME\.editorconfig",
+                  "$HOME\.claude\CLAUDE.md", "$HOME\.claude\settings.json")
+```
+
+CLAUDE.md / settings.json は agents の責任範囲。dotfiles が関知すべきでない。
+**Step 16 で同時に直すこと**（compat ブロック除去と合わせて整合性が取れる）:
+
+1. **dotfiles `profile.ps1`**:
+   - `$symlinkFiles` から CLAUDE.md / settings.json を削除
+   - `if (Test-Path "$HOME\.agents_profile.ps1") { . "$HOME\.agents_profile.ps1" }` を追加（agents プロファイルの optional source）
+
+2. **agents `install/win/dotfileslink.ps1` または `install.ps1`**:
+   - `~/.agents_profile.ps1` を生成する処理を追加
+   - 内容: `$env:AGENTS_CONFIG_DIR` / `$env:AGENTS_DIR` の export（compat ブロック除去後の正規定義）+ CLAUDE.md / settings.json の修復ロジック
+
+これにより dotfiles のみ / agents のみ / 両方 の3シナリオすべてで独立動作する。
 
 ### 既知の pre-existing テスト失敗（自分の変更とは無関係）
 - `main-remove-master-migration.sh`: 4 件
 - `main-installer-idempotency.sh`: 7 件
-- `main-git-fetch-sync.sh`: 1 件（Step 15 で agents fetch 追加後に修正予定）
+- `main-git-fetch-sync.sh`: Step 15 で修正済み（0 件）
 - `main-vscode.sh`: 1 件（case-insensitive 拡張子 issue）
 
 ### 注意点
@@ -151,7 +169,7 @@ dotfiles-private の sibling 呼び出しパターンをそのまま踏襲する
     - bash `.profile_common` に 4 つ目（agents）の fetch ブロック追加。既存 3 つと合わせて並列 fetch（`&` + `wait`）に書き換え、latency 抑制。
     - pwsh `install/win/profile.ps1` に dotfiles-private + agents の fetch 追加（bash と parity 回復）。Start-Job または ForEach-Object -Parallel で並列化。
     - `tests/main-git-fetch-sync.sh` と pwsh 等価物を新 fetch 対象含めて更新（dotfiles 側テスト）。
-- [ ] 16. **一時互換ブロック除去**: step 2-4 の `BEGIN/END temporary` を全削除。`$AGENTS_CONFIG_DIR` と `$AGENTS_DIR` は framework install が独立定義する状態へ収束。
+- [ ] 16. **一時互換ブロック除去**: step 2-4 の `BEGIN/END temporary` を全削除。`$AGENTS_CONFIG_DIR` と `$AGENTS_DIR` は framework install が独立定義する状態へ収束。上記「追加スコープ」の profile.ps1 修正 + agents `~/.agents_profile.ps1` 生成も同時実施。
 - [ ] 17. **awesome-lists 投稿**: [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code), [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit), [travisvn/awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills), [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) へエントリ追加 PR。
 
 ## 主要変更ファイル
