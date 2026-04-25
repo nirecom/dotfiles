@@ -3,10 +3,10 @@
 # Dotfiles directory (platform-specific, used by Claude Code hooks via $DOTFILES_DIR)
 export DOTFILES_DIR="$HOME/dotfiles"
 
-# --- BEGIN temporary: dotfiles → agents migration ---
-export AGENTS_CONFIG_DIR="${AGENTS_CONFIG_DIR:-$DOTFILES_DIR/claude-global}"
-export AGENTS_DIR="${AGENTS_DIR:-$DOTFILES_DIR}"
-# --- END temporary: dotfiles → agents migration ---
+# Optional: agents profile (sibling repo, defines AGENTS_CONFIG_DIR, AGENTS_DIR)
+_agents_dir="$(dirname "$DOTFILES_DIR")/agents"
+[ -f "$_agents_dir/profile-snippet.sh" ] && . "$_agents_dir/profile-snippet.sh"
+unset _agents_dir
 
 source "$DOTFILES_DIR/bin/detectos.sh"
 
