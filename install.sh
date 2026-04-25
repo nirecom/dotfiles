@@ -1,7 +1,7 @@
 #!/bin/bash
 # Unified installer for dotfiles (Linux/macOS)
 # Usage:
-#   ./install.sh            # Symlinks + Claude Code + nvm
+#   ./install.sh            # Symlinks + keychain + nvm
 #   ./install.sh --base     # Symlinks + base packages
 #   ./install.sh --develop  # Symlinks + dev tools (awscli, vscode)
 #   ./install.sh --full     # Symlinks + base + dev tools
@@ -31,17 +31,7 @@ echo ""
 echo "--- Creating symlinks ---"
 ~/dotfiles/install/linux/dotfileslink.sh
 
-# Step 2: Install Claude Code
-echo ""
-echo "--- Installing Claude Code ---"
-~/dotfiles/install/linux/claude-code.sh
-if type claude >/dev/null 2>&1; then
-    echo ""
-    echo "--- Initializing Claude Code session sync ---"
-    ~/dotfiles/install/linux/session-sync-init.sh
-fi
-
-# Step 3: Install keychain (SSH agent manager)
+# Step 2: Install keychain (SSH agent manager)
 echo ""
 echo "--- Installing keychain ---"
 ~/dotfiles/install/linux/keychain.sh

@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../my-private-repo"
+		},
+		{
+			"path": "../agents"
 		}
 	],
 	"settings": {}
