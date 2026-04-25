@@ -19,12 +19,9 @@ if ($loadedKeys -match 'no identities|agent.*not running|error') {
 # Auto-pull dotfiles on startup
 $DotfilesDir = "C:\git\dotfiles"
 $env:DOTFILES_DIR = $DotfilesDir
-# --- BEGIN temporary: dotfiles → agents migration ---
-if (-not $env:AGENTS_CONFIG_DIR) { $env:AGENTS_CONFIG_DIR = "$DotfilesDir\claude-global" }
-if (-not $env:AGENTS_DIR)        { $env:AGENTS_DIR        = $DotfilesDir }
-# --- END temporary: dotfiles → agents migration ---
 $PrivateDir = "C:\git\dotfiles-private"
-$AgentsDir = "C:\git\agents"
+$AgentsDir = Join-Path (Split-Path -Parent $DotfilesDir) "agents"
+if (Test-Path "$AgentsDir\profile-snippet.ps1") { . "$AgentsDir\profile-snippet.ps1" }
 $SessionDir = "$HOME\.claude\projects"
 
 if (Get-Command git -ErrorAction SilentlyContinue) {
@@ -96,7 +93,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
 }
 
 # Repair broken symlinks (Windows atomic save replaces symlinks with regular files)
-$symlinkFiles = @("$HOME\.bash_profile", "$HOME\.editorconfig", "$HOME\.claude\CLAUDE.md", "$HOME\.claude\settings.json")
+$symlinkFiles = @("$HOME\.bash_profile", "$HOME\.editorconfig")
 $broken = $symlinkFiles | Where-Object { (Test-Path $_) -and -not ((Get-Item $_ -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) }
 if ($broken) {
     Write-Host "Repairing $($broken.Count) broken symlink(s)..." -ForegroundColor Yellow
