@@ -288,3 +288,27 @@ Background: Step 6 of the agents repo split. Classified all 71 history.md entrie
 
 Changes: Created docs/history-classification.md (71 entries: @claude=58, @dotfiles=13, @both=0). Created bin/split-history.py: reads history.md + classification table, writes history-agents.md (@claude+@both) and history-dotfiles.md (@dotfiles+@both). Normalization: strips trailing date suffix like (2026-04-12, abc1234); normalizes INCIDENT: #N: -> INCIDENT #N: for fuzzy match. 0 unmatched entries on current history.md. Added 11 tests (N11-N15, E4-E6, I1, ER1-ER2) to tests/feature-agents-repo-split.sh.
 
+### FEATURE: agents-split step 2: introduce AGENTS_CONFIG_DIR abstraction (2026-04-25, ca3ceec)
+
+Background: settings.json had 11 hardcoded $DOTFILES_DIR/claude-global/hooks/*.js paths. To enable the agents repo split, these needed to be abstracted behind a $AGENTS_CONFIG_DIR env var so the same settings.json works whether the hooks live in dotfiles or a standalone agents repo.
+
+Changes: Updated settings.json 11 hook paths from $DOTFILES_DIR/claude-global/hooks/* to $AGENTS_CONFIG_DIR/hooks/*. Added $AGENTS_CONFIG_DIR and $AGENTS_DIR (with BEGIN/END temporary compat defaults pointing to claude-global) to .profile_common and install/win/profile.ps1.
+
+### FEATURE: agents-split step 3: abstract hook scanner path via AGENTS_CONFIG_DIR (2026-04-25, e79cb06)
+
+Background: pre-commit and commit-msg hooks used relative paths (../../bin/scan-outbound.sh), which would break when the hook directory moves to the agents repo. scan-outbound.sh used a hardcoded dotfiles-private sibling path that would not exist in a standalone agents install.
+
+Changes: Updated pre-commit and commit-msg hooks to use $AGENTS_CONFIG_DIR/../bin/scan-outbound.sh. Updated scan-outbound.sh sibling path to use ${DOTFILES_PRIVATE_DIR:-$DOTFILES_DIR/../dotfiles-private} optional fallback — warns and continues with empty allowlist if unset.
+
+### FEATURE: agents-split step 4: abstract session-sync path via AGENTS_DIR (2026-04-25, 08bd2c4)
+
+Background: .profile_common referenced $DOTFILES_DIR/bin/session-sync.sh directly. After the split, session-sync.sh will live in the agents repo bin/, so the path needed to be driven by $AGENTS_DIR.
+
+Changes: Updated .profile_common session-sync calls to use ${AGENTS_DIR}/bin/session-sync.sh.
+
+### FEATURE: agents-split step 5: classify 76 tests for repo split (tests/split-plan.md) (2026-04-25, dd61833)
+
+Background: 76 test files in tests/ cover both dotfiles-specific and claude-framework-specific functionality. A classification table was needed before the split to ensure each test lands in the right repo.
+
+Changes: Created tests/split-plan.md with a per-file classification table (@claude/@dotfiles/@both) covering all 76 test files. Rationale is recorded for ambiguous entries.
+
