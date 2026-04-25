@@ -210,7 +210,7 @@ else fail "vscode.sh is $MODE (expected 100755)"; fi
 
 echo ""
 echo "=== Normal: pre-commit hook checks .sh execute permission ==="
-HOOK="claude-global/hooks/pre-commit"
+HOOK="$DOTFILES_DIR/../agents/hooks/pre-commit"
 if grep -q 'execute permission' "$HOOK" && grep -q '\.sh' "$HOOK"; then
     pass "pre-commit checks .sh execute permission"
 else fail "pre-commit missing .sh permission check"; fi

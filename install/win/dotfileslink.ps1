@@ -36,11 +36,6 @@ $links = @(
     @{ Source = ".editorconfig"; Dest = "$HOME\.editorconfig"; IsDir = $false }
     @{ Source = ".config\starship.toml"; Dest = "$HOME\.config\starship.toml"; IsDir = $false }
     @{ Source = ".config\starship-powershell.toml"; Dest = "$HOME\.config\starship-powershell.toml"; IsDir = $false }
-    @{ Source = "claude-global\CLAUDE.md"; Dest = "$HOME\.claude\CLAUDE.md"; IsDir = $false }
-    @{ Source = "claude-global\settings.json"; Dest = "$HOME\.claude\settings.json"; IsDir = $false }
-    @{ Source = "claude-global\skills"; Dest = "$HOME\.claude\skills"; IsDir = $true }
-    @{ Source = "claude-global\rules"; Dest = "$HOME\.claude\rules"; IsDir = $true }
-    @{ Source = "claude-global\agents"; Dest = "$HOME\.claude\agents"; IsDir = $true }
 )
 
 # Private context directory (gitignored)
@@ -118,11 +113,6 @@ if (-not (Test-Path $gitConfigLocal)) {
     Write-Host "Generated: $gitConfigLocal" -ForegroundColor Green
 }
 
-# Set hooksPath in config.local (OS-specific, not in shared config)
-# Shared .config/git/config has ~/dotfiles/... which works on Linux/macOS
-# but not on Windows where dotfiles is at C:\git\dotfiles
-git config --file $gitConfigLocal core.hooksPath "$DotfilesDir\claude-global\hooks"
-
 # Set execution policy for Windows PowerShell 5.x (defaults to Restricted)
 # Write directly to the PS5 registry key since PS7's Set-ExecutionPolicy won't affect PS5
 $ps5RegPath = "HKCU:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell"
@@ -189,22 +179,3 @@ if (Test-Path $profileSource) {
         Write-Host "Linked: $dest -> $profileSource" -ForegroundColor Green
     }
 }
-
-# Generate doc-append launcher
-$LocalBin = "$HOME\.local\bin"
-New-Item -ItemType Directory -Force -Path $LocalBin | Out-Null
-$cmdContent = @"
-@echo off
-set "_ARG1=%~1"
-if "%~1"=="" goto nopath
-if "%_ARG1:~0,1%"=="-" goto nopath
-goto haspath
-:nopath
-uv run "$DotfilesDir\bin\doc-append.py" docs/history.md %*
-goto end
-:haspath
-uv run "$DotfilesDir\bin\doc-append.py" %*
-:end
-"@
-[System.IO.File]::WriteAllText("$LocalBin\doc-append.cmd", $cmdContent, [System.Text.Encoding]::ASCII)
-Write-Host "Generated: $LocalBin\doc-append.cmd" -ForegroundColor Green
