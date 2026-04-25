@@ -37,7 +37,7 @@
 
 | Platform | Symlink targets |
 |:---|:---|
-| Linux/macOS | All files (shell, editor, tmux, Claude Code, git, starship) |
+| Linux/macOS | All files (shell, editor, tmux, git, starship) |
 | Windows | `.editorconfig`, `.config/git/`, Claude Code settings, starship |
 | QNAP NAS | Minimal set (`.bash_profile`, `.profile_common`, `.vimrc`, `.inputrc`, `.profile` → `.profile_qnap`) |
 
@@ -78,9 +78,9 @@ Variables set by `bin/detectos.sh`:
 
 ### Execution order
 
-`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `claude-code.sh` → `session-sync-init.sh` (if Claude Code installed) → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh` → `vscode.sh`)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh` → `vscode.sh`)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `claude-code.ps1` → `session-sync-init.ps1` (if Claude Code installed) → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Develop`/`-Toolchain`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Toolchain`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Develop`/`-Toolchain`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Toolchain`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
 
 See [README.md](../README.md) for full platform-specific installation instructions.
 
@@ -88,7 +88,7 @@ See [README.md](../README.md) for full platform-specific installation instructio
 
 ## 7. Claude Code Configuration
 
-See [architecture/claude-code.md](architecture/claude-code.md) for the workflow state machine, session sync, settings.json design, and test iteration workflow.
+The Claude Code workflow framework — state machine, session sync, settings.json, hooks, and test iteration — lives in the companion [nirecom/agents](https://github.com/nirecom/agents) repo. See its [architecture doc](https://github.com/nirecom/agents/blob/main/docs/architecture/claude-code.md) for details. When `~/agents/` is present as a sibling of `~/dotfiles/`, the dotfiles installer wires it in automatically.
 
 ---
 
@@ -114,8 +114,6 @@ Located in `.config/git/` (XDG-compliant, not `~/.gitconfig`).
 | QNAP Entware QPKG gets disabled | `autorun.sh` includes `setcfg Enable TRUE` fallback |
 | Windows symlinks require Developer Mode or admin | `dotfileslink.ps1` checks prerequisites and skips on failure |
 | `.profile_common` grows too large | OS-specific logic is consolidated in `case` blocks; new tools follow the same pattern |
-| `claude-global/settings.json` deny rule gaps | Review allow/deny rules when adding new tools |
-| `.env` leak via Claude Code | `block-dotenv.js` PreToolUse hook + deny rules (defense in depth). Static analysis limit: variable/subshell indirection not detectable |
 | `git auto-pull` merge conflict | Fast-forward only; on conflict, displays error and continues |
 | QNAP default shell resets to `/bin/sh` on reboot | `.profile_qnap` → `exec bash -l` handles this on every login |
 
@@ -123,26 +121,9 @@ Located in `.config/git/` (XDG-compliant, not `~/.gitconfig`).
 
 ## 10. Private Information Scanning
 
-Two checkpoints prevent private information from being committed:
+Two checkpoints prevent private information from reaching public repositories: a `git pre-commit` hook and a Claude Code PreToolUse hook — both provided by the companion [nirecom/agents](https://github.com/nirecom/agents) repo. They detect RFC 1918 IP addresses, email addresses, MAC addresses, absolute local paths, hard-coded secrets, PEM private keys, and Trojan Source Unicode. Private repositories (detected via `gh api`) are skipped automatically.
 
-| Checkpoint | Mechanism | Script |
-|:---|:---|:---|
-| Git commit | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Scans staged file content |
-| Git commit (effortLevel/model) | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Auto-unstages settings.json if only effortLevel and/or model changed |
-| Git commit (.sh perms) | `claude-global/hooks/pre-commit` (via `core.hooksPath`) | Blocks commit if `.sh` files lack execute permission (`100644`) |
-| Claude Code edit | `claude-global/hooks/scan-outbound.js` (PreToolUse) | Scans Edit/Write content |
-
-Both call `bin/scan-outbound.sh` (single source of truth for detection patterns).
-
-**Detection patterns**: RFC 1918 IPv4 (`10.x`, `172.16-31.x`, `192.168.x`), email addresses, MAC addresses, absolute local paths (`/Users/`, `/home/`, `C:\Users\`). Additional patterns via `.private-info-blocklist`.
-
-**Exception handling**: `.private-info-allowlist` for known-safe patterns (e.g., `git@github.com` SSH URLs, `noreply.github.com` email). Environment-specific exceptions can be added to `../dotfiles-private/.private-info-allowlist`. File-scoped patterns support glob matching (e.g., `tests/*:@example.com`).
-
-**Private repo detection**: non-GitHub hosts (GitLab, Bitbucket, GitHub Enterprise, etc.) are automatically treated as private and skip scanning entirely. For `github.com` remotes, visibility is checked via `gh api repos/{owner}/{repo}`. Private repos are not scanned. If `gh` is unavailable or the API call fails, scanning proceeds (fail-open, safe default). Shared logic in `claude-global/hooks/lib/is-private-repo.js` (Node.js hooks) and inline host extraction (git hooks).
-
-**Additional patterns** (personal information, hardware model numbers, hostnames, etc.) can be detected by adding regex patterns to `.private-info-blocklist`.
-
-For detailed usage, see [scan-outbound.md](scan-outbound.md).
+See [nirecom/agents: docs/scan-outbound.md](https://github.com/nirecom/agents/blob/main/docs/scan-outbound.md) for detection patterns, exception handling, and configuration.
 
 ---
 
