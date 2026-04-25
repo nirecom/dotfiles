@@ -156,5 +156,13 @@ if (Test-Path $PrivateInstaller) {
     & $PrivateInstaller @privateArgs
 }
 
+# Run agents installer if available
+$AgentsInstaller = Join-Path (Split-Path -Parent $DotfilesDir) "agents\install.ps1"
+if (Test-Path $AgentsInstaller) {
+    Write-Host ""
+    Write-Host "--- Running agents installer ---"
+    & $AgentsInstaller
+}
+
 Write-Host ""
 Write-Host "=== Done ===" -ForegroundColor Cyan
