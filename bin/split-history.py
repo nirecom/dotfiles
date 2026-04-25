@@ -168,8 +168,10 @@ def process_pair(
         for u in unmatched:
             print(f"  {u}", file=sys.stderr)
 
-    write_output(out_agents, preamble, agents_entries, f"agents/{label}")
-    write_output(out_dotfiles, preamble, dotfiles_entries, f"dotfiles/{label}")
+    agents_label = "agents" if label == "history" else f"agents/{label}"
+    dotfiles_label = "dotfiles" if label == "history" else f"dotfiles/{label}"
+    write_output(out_agents, preamble, agents_entries, agents_label)
+    write_output(out_dotfiles, preamble, dotfiles_entries, dotfiles_label)
 
     print(f"{label} agents:   {out_agents} ({len(agents_entries)} entries)")
     print(f"{label} dotfiles: {out_dotfiles} ({len(dotfiles_entries)} entries)")
