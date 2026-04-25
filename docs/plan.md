@@ -2,6 +2,26 @@
 
 > 旧 Security Enhancement Plan は `docs/plan-security.md` に退避（Phase 5 未着手）。
 
+## 申し送り（次セッション向け）
+
+**ブランチ**: dotfiles → `feature/agents-repo-split` / agents → `main`（直 push）  
+**残り**: Steps 14–17（下の実装ステップ参照）。次は Step 14 から。
+
+### Step 14 の参考
+dotfiles-private の sibling 呼び出しパターンをそのまま踏襲する:
+- `install.ps1` L147–157（`$PrivateInstaller` 判定ブロック）→ agents 版を同じ位置に追加
+- `install.sh` の末尾 dotfiles-private ブロック → agents 版を同様に追加
+
+### 既知の pre-existing テスト失敗（自分の変更とは無関係）
+- `main-remove-master-migration.sh`: 4 件
+- `main-installer-idempotency.sh`: 7 件
+- `main-git-fetch-sync.sh`: 1 件（Step 15 で agents fetch 追加後に修正予定）
+- `main-vscode.sh`: 1 件（case-insensitive 拡張子 issue）
+
+### 注意点
+- `$AGENTS_CONFIG_DIR` / `$AGENTS_DIR` は現在 compat ブロック（`.profile_common` / `profile.ps1`）により旧 dotfiles/claude-global を指している。Step 16 で除去するまで env var に依存するテストは誤った値を見る。
+- `tests/main-vscode.sh` の hook パスは `$DOTFILES_DIR/../agents/hooks/pre-commit`（sibling 直接参照）に修正済み。
+
 ## Context
 
 現在の `c:\git\dotfiles` は一般 dotfiles（shell, vim, tmux, installer）と Claude Code framework（`claude-global/`: CLAUDE.md, settings.json, rules/, skills/, hooks/, agents/）が同居している。後者を独立した公開 repo **`nirecom/agents`** として切り出す。
