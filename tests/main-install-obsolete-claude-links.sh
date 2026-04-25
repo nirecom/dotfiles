@@ -30,6 +30,18 @@ remove_claude_global_symlinks() {
     done
 }
 
+# Removes leftover dotfiles/claude-global/ directory only when HEAD confirms
+# claude-global/ is no longer tracked (post-agents-split).
+remove_claude_global_dir() {
+    local home_dir="$1"
+    local cg_dir="$home_dir/dotfiles/claude-global"
+    if [ -d "$cg_dir" ] && [ -d "$home_dir/dotfiles/.git" ]; then
+        if ! git -C "$home_dir/dotfiles" ls-tree -r HEAD claude-global 2>/dev/null | grep -q .; then
+            rm -rf "$cg_dir"
+        fi
+    fi
+}
+
 # --- Test harness ---
 PASS=0
 FAIL=0
@@ -241,6 +253,97 @@ test_idempotent() {
     rm -rf "$tmp"
 }
 
+# --- Helper for C-tests: build a repo with optional tracked claude-global/ ---
+make_repo_with_claude_global() {
+    local home_dir="$1" tracked="$2"
+    local repo="$home_dir/dotfiles"
+    mkdir -p "$repo"
+    git -C "$repo" init -q
+    git -C "$repo" config user.email "test@example.com"
+    git -C "$repo" config user.name "Test"
+    echo "init" > "$repo/README.md"
+    git -C "$repo" add README.md
+    git -C "$repo" commit -q -m "initial"
+    if [ "$tracked" = "1" ]; then
+        mkdir -p "$repo/claude-global/rules"
+        echo "tracked" > "$repo/claude-global/CLAUDE.md"
+        echo "tracked" > "$repo/claude-global/rules/language.md"
+        git -C "$repo" add claude-global
+        git -C "$repo" commit -q -m "add claude-global"
+    fi
+}
+
+# --- Test C1: untracked claude-global/ post-agents-split → removed ---
+test_C1_untracked_removed() {
+    local tmp rc=0
+    tmp=$(make_tmpdir)
+    make_repo_with_claude_global "$tmp" 0
+    # Manually create untracked claude-global/ leftover
+    mkdir -p "$tmp/dotfiles/claude-global"
+    echo "leftover" > "$tmp/dotfiles/claude-global/settings.json"
+
+    remove_claude_global_dir "$tmp"
+    [ -d "$tmp/dotfiles/claude-global" ] && rc=1
+    assert "C1. untracked claude-global/ removed" "$rc"
+    rm -rf "$tmp"
+}
+
+# --- Test C2: tracked claude-global/ (pre-split state) → kept ---
+test_C2_tracked_kept() {
+    local tmp rc=0
+    tmp=$(make_tmpdir)
+    make_repo_with_claude_global "$tmp" 1
+
+    remove_claude_global_dir "$tmp"
+    [ -d "$tmp/dotfiles/claude-global" ] || rc=1
+    [ -f "$tmp/dotfiles/claude-global/CLAUDE.md" ] || rc=1
+    assert "C2. tracked claude-global/ kept" "$rc"
+    rm -rf "$tmp"
+}
+
+# --- Test C3: claude-global/ does not exist → no-op, no error ---
+test_C3_missing_dir_no_error() {
+    local tmp rc
+    tmp=$(make_tmpdir)
+    make_repo_with_claude_global "$tmp" 0
+    # No claude-global/ directory created
+
+    remove_claude_global_dir "$tmp"
+    rc=$?
+    assert "C3. missing claude-global/ does not error" "$rc"
+    rm -rf "$tmp"
+}
+
+# --- Test C4: dotfiles/.git absent (non-git dir) → kept ---
+test_C4_non_git_kept() {
+    local tmp rc=0
+    tmp=$(make_tmpdir)
+    mkdir -p "$tmp/dotfiles/claude-global"
+    echo "leftover" > "$tmp/dotfiles/claude-global/settings.json"
+    # No .git dir
+
+    remove_claude_global_dir "$tmp"
+    [ -d "$tmp/dotfiles/claude-global" ] || rc=1
+    assert "C4. non-git dotfiles → claude-global/ kept" "$rc"
+    rm -rf "$tmp"
+}
+
+# --- Test C5: nested untracked content → recursive removal ---
+test_C5_nested_removed() {
+    local tmp rc=0
+    tmp=$(make_tmpdir)
+    make_repo_with_claude_global "$tmp" 0
+    mkdir -p "$tmp/dotfiles/claude-global/rules" "$tmp/dotfiles/claude-global/hooks/lib"
+    echo "x" > "$tmp/dotfiles/claude-global/settings.json"
+    echo "x" > "$tmp/dotfiles/claude-global/rules/language.md"
+    echo "x" > "$tmp/dotfiles/claude-global/hooks/lib/workflow-state.js"
+
+    remove_claude_global_dir "$tmp"
+    [ -d "$tmp/dotfiles/claude-global" ] && rc=1
+    assert "C5. nested untracked content removed" "$rc"
+    rm -rf "$tmp"
+}
+
 # --- Run all ---
 test_dotfiles_symlink_removed
 test_all_five_removed
@@ -250,6 +353,11 @@ test_regular_file_kept
 test_missing_dir_no_error
 test_broken_symlink_pattern_match_removed
 test_idempotent
+test_C1_untracked_removed
+test_C2_tracked_kept
+test_C3_missing_dir_no_error
+test_C4_non_git_kept
+test_C5_nested_removed
 
 echo ""
 echo "---- Summary ----"
