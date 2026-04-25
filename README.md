@@ -43,6 +43,43 @@ Two checkpoints prevent private information from reaching public repositories: a
 - Windows (native, for git config and editorconfig)
 - QNAP NAS (minimal set via Entware)
 
+## Requirements
+
+### Required (Linux / macOS)
+
+| Tool | Purpose |
+|------|---------|
+| `bash` | `install.sh` and all `install/linux/*.sh` scripts |
+| `git` | Repo clone; symlinks reference repo paths |
+| `curl` | Bootstrap fetches (nvm, uv, starship, awscli installers) |
+
+> sudo access is required for apt/Homebrew installs (`--base` and above).
+
+### Required (Windows)
+
+| Tool | Purpose |
+|------|---------|
+| PowerShell 5+ (7+ recommended) | `install.ps1` and all `install/win/*.ps1` |
+| `winget` | All Windows package installs (fnm, pwsh, starship, uv, vscode, …) |
+
+> Symlink creation requires Developer Mode (Settings → System → For developers) or Administrator privileges.
+
+### Required (QNAP NAS)
+
+| Tool | Purpose |
+|------|---------|
+| Entware (`opkg`) | Install `git`, `bash`, `vim-full`, `curl` before clone (see Install § QNAP) |
+
+### Optional
+
+| Linux | Windows | Adds |
+|-------|---------|------|
+| `--base` | `-Base` | zsh, vim, tmux, starship, source-highlight, AWS CLI v2, Google Japanese Input, AutoHotkey v2, PowerToys |
+| `--develop` | `-Develop` | uv (Python), VS Code + extensions, Claude Tabs, Claude Usage Widget |
+| `--full` | `-Full` | All of the above + Visual Studio C++ build tools (Windows) |
+
+Note: no-flag install also sets up Node.js (nvm on Linux/macOS, fnm on Windows). nvm is pinned to v0.40.4 (`install/linux/nvm.sh`).
+
 ## Install
 
 ### Linux / macOS
