@@ -83,6 +83,14 @@ if [ -x "$PRIVATE_INSTALLER" ]; then
     "$PRIVATE_INSTALLER" "$@"
 fi
 
+# Run agents installer if available
+AGENTS_INSTALLER="$(dirname "$0")/../agents/install.sh"
+if [ -x "$AGENTS_INSTALLER" ]; then
+    echo ""
+    echo "--- Running agents installer ---"
+    "$AGENTS_INSTALLER"
+fi
+
 echo ""
 echo "=== Done ==="
 exec $SHELL -l
