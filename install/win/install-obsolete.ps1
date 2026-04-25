@@ -46,6 +46,19 @@ foreach ($name in $obsoleteClaudeLinks) {
     }
 }
 
+# --- Remove leftover dotfiles\claude-global\ directory (post-agents-split) ---
+# Only when HEAD confirms claude-global\ is no longer tracked. Untracked leftover
+# files survive `git reset --hard` and need explicit cleanup.
+$cgDir = Join-Path $DotfilesDir 'claude-global'
+$dfGit = Join-Path $DotfilesDir '.git'
+if ((Test-Path $cgDir) -and (Test-Path $dfGit)) {
+    $tracked = git -C $DotfilesDir ls-tree -r HEAD claude-global 2>$null
+    if (-not $tracked) {
+        Write-Host "Removing obsolete dotfiles\claude-global\ (post-agents-split leftover)" -ForegroundColor Yellow
+        Remove-Item -Recurse -Force $cgDir
+    }
+}
+
 # --- Remove obsolete doc-append.cmd (bin/doc-append.py moved to agents repo) ---
 $docAppendCmd = "$HOME\.local\bin\doc-append.cmd"
 if (Test-Path $docAppendCmd) {
