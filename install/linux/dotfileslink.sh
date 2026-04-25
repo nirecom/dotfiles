@@ -38,31 +38,6 @@ if [ ! -e ~/.config/starship.toml ]; then
     ln -sf ~/dotfiles/.config/starship.toml ~/.config/
 fi
 
-# Claude Code global config
-mkdir -p ~/.claude
-if [ -d ~/.claude/.git ]; then
-    echo "WARNING: ~/.claude is a git repo (dotclaude). Remove .git dir to enable symlinks."
-else
-    ln -sf ~/dotfiles/claude-global/CLAUDE.md ~/.claude/
-    ln -sf ~/dotfiles/claude-global/settings.json ~/.claude/
-    # Back up regular directories before symlinking (Claude Code may auto-create them)
-    for dir in skills rules agents; do
-        if [ -d ~/.claude/$dir ] && [ ! -L ~/.claude/$dir ]; then
-            echo "Backing up ~/.claude/$dir -> ~/.claude/$dir.bak"
-            rm -rf ~/.claude/$dir.bak
-            mv ~/.claude/$dir ~/.claude/$dir.bak
-        fi
-    done
-    # Clean up obsolete commands symlink (renamed to skills)
-    if [ -L ~/.claude/commands ]; then
-        echo "Removing obsolete symlink: ~/.claude/commands"
-        rm -f ~/.claude/commands
-    fi
-    ln -snf ~/dotfiles/claude-global/skills ~/.claude/skills
-    ln -snf ~/dotfiles/claude-global/rules ~/.claude/rules
-    ln -snf ~/dotfiles/claude-global/agents ~/.claude/agents
-fi
-
 # Emacs
 mkdir -p ~/.emacs.d
 ln -sf ~/dotfiles/.emacs.d/init.el ~/.emacs.d/
@@ -76,15 +51,3 @@ mkdir -p ~/.emacs_backup
 if [ -e ~/.ssh/ssh-add-all ]; then
     chmod +x ~/.ssh/ssh-add-all
 fi
-
-# Generate doc-append launcher
-mkdir -p ~/.local/bin
-cat > ~/.local/bin/doc-append << EOF
-#!/usr/bin/env bash
-if [[ -z "\${1:-}" || "\${1:-}" == --* ]]; then
-  exec uv run "$HOME/dotfiles/bin/doc-append.py" "docs/history.md" "\$@"
-else
-  exec uv run "$HOME/dotfiles/bin/doc-append.py" "\$@"
-fi
-EOF
-chmod +x ~/.local/bin/doc-append
