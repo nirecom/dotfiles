@@ -2,14 +2,7 @@
 
 ## Current Work
 
-### agents repo split (feature/agents-repo-split)
-- [x] Step 1: GitHub nirecom/agents 空 repo 作成
-- [x] Step 2: $AGENTS_CONFIG_DIR 抽象層導入 — Done
-- [x] Step 3: hook 相対 path 調整（pre-commit, commit-msg, scan-outbound.sh）— Done
-- [x] Step 4: session-sync path 抽象化（.profile_common）— Done
-- [x] Step 5: tests 仕分け準備（tests/split-plan.md）— Done
-- [x] Step 6: docs/history.md 分類（history-classification.md + split-history.py + archive対応）— Done
-- [ ] Steps 7–17: framework repo 初期化〜awesome-lists 投稿（docs/plan.md 参照）
+- [ ] agents repo split（詳細は [docs/plan.md](plan.md) 参照）
 
 ### scan-inbound 拡張候補 — 要検討
 - [ ] **Read** 対象追加: git clone した悪意ファイルの injection 検出。誤検知（HTML/XML/コード）とのトレードオフを評価してから判断

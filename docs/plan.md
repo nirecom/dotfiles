@@ -94,8 +94,8 @@
 
 各ステップは独立 commit、過渡互換は `BEGIN/END temporary` マーカーで明示。
 
-1. **GitHub 上に `nirecom/agents` 空 repo 作成**（public, MIT）。clone は後工程。
-2. **`$AGENTS_CONFIG_DIR` 抽象層導入（dotfiles 単体で）**: `claude-global/settings.json` の 11 箇所を `$DOTFILES_DIR/claude-global/hooks/*` → `$AGENTS_CONFIG_DIR/hooks/*` にリネーム。`.profile_common` と `install/win/profile.ps1` に:
+- [x] 1. **GitHub 上に `nirecom/agents` 空 repo 作成**（public, MIT）。clone は後工程。
+- [x] 2. **`$AGENTS_CONFIG_DIR` 抽象層導入（dotfiles 単体で）**: `claude-global/settings.json` の 11 箇所を `$DOTFILES_DIR/claude-global/hooks/*` → `$AGENTS_CONFIG_DIR/hooks/*` にリネーム。`.profile_common` と `install/win/profile.ps1` に:
    ```
    # --- BEGIN temporary: agents 分離前 compat ---
    export AGENTS_CONFIG_DIR="${AGENTS_CONFIG_DIR:-$DOTFILES_DIR/claude-global}"
@@ -103,38 +103,36 @@
    # --- END temporary ---
    ```
    1 repo のまま動作継続を確認。全テスト green。
-3. **hook 相対 path 調整**: `claude-global/hooks/pre-commit` と `commit-msg` の `../../bin/scan-outbound.sh` → `"$AGENTS_CONFIG_DIR/../bin/scan-outbound.sh"`（過渡期。step 7 以降は `$AGENTS_CONFIG_DIR/bin/` 配下）。`bin/scan-outbound.sh` L14-15 を `${DOTFILES_PRIVATE_DIR:-$DOTFILES_DIR/../dotfiles-private}` に。
-4. **session-sync path 抽象化**: `.profile_common` L236,238 の `$DOTFILES_DIR/bin/session-sync.sh` → `${AGENTS_DIR}/bin/session-sync.sh`。
-5. **tests 仕分け準備**: 76 本中 claude 関連約 36 本を特定する判定を列挙した table を作成（別ファイル `tests/split-plan.md`、レビュー用）。
-6. **docs/history.md 分類**: 上記「docs/history.md 分離手順」step 1-3 を実施。`docs/history-classification.md` と `bin/split-history.py` を dotfiles 側で作成・コミット。出力 2 file をレビューし、分類確定まで反復。
-7. **framework repo 初期化（history 保全）**:
+- [x] 3. **hook 相対 path 調整**: `claude-global/hooks/pre-commit` と `commit-msg` の `../../bin/scan-outbound.sh` → `"$AGENTS_CONFIG_DIR/../bin/scan-outbound.sh"`（過渡期。step 7 以降は `$AGENTS_CONFIG_DIR/bin/` 配下）。`bin/scan-outbound.sh` L14-15 を `${DOTFILES_PRIVATE_DIR:-$DOTFILES_DIR/../dotfiles-private}` に。
+- [x] 4. **session-sync path 抽象化**: `.profile_common` L236,238 の `$DOTFILES_DIR/bin/session-sync.sh` → `${AGENTS_DIR}/bin/session-sync.sh`。
+- [x] 5. **tests 仕分け準備**: 76 本中 claude 関連約 36 本を特定する判定を列挙した table を作成（別ファイル `tests/split-plan.md`、レビュー用）。
+- [x] 6. **docs/history.md 分類**: 上記「docs/history.md 分離手順」step 1-3 を実施。`docs/history-classification.md` と `bin/split-history.py` を dotfiles 側で作成・コミット。出力 2 file をレビューし、分類確定まで反復。
+- [x] 7. **framework repo 初期化（history 保全）**:
    - dotfiles 上で `git subtree split --prefix=claude-global -b agents-split`
    - `nirecom/agents` clone → `git pull <dotfiles-path> agents-split`
    - これで claude-global の commit 史が framework repo に移植される
-8. **framework root 昇格**: framework 内で `git mv claude-global/* .` 相当。1 commit で済ませる。
-9. **framework bin/ 作成**: dotfiles の `bin/` から下記を framework `bin/` に **移動**（dotfiles 側からは削除）:
+- [x] 8. **framework root 昇格**: framework 内で `git mv claude-global/* .` 相当。1 commit で済ませる。
+- [x] 9. **framework bin/ 作成**: dotfiles の `bin/` から下記を framework `bin/` に **移動**（dotfiles 側からは削除）:
    - `doc-append.py`, `doc-rotate.py`, `sort-history.py`, `translate-history.py`, `convert-history-table.py`, `migrate-history-categories.py`, `scan-outbound.sh`, `session-sync.sh`, `session-sync.ps1`, `split-history.py`
-10. **framework install 作成**: `install.sh`, `install.ps1`, `install/{win,linux}/dotfileslink.{ps1,sh}`, `install/{win,linux}/session-sync-init.{sh,ps1}` を新規作成。dotfileslink は framework root の `CLAUDE.md, settings.json, rules, skills, agents` → `~/.claude/` 配下 symlink + `core.hooksPath = $AGENTS_CONFIG_DIR\hooks`。install は `$AGENTS_CONFIG_DIR` と `$AGENTS_DIR` を profile に export するロジックも持つ。加えて `~/.local/bin/doc-append` の symlink 作成。
-11. **framework docs/tests 移送**: step 6 で生成した `docs/history-agents.md` → framework `docs/history.md`。`docs/architecture/claude-code.md`, `docs/scan-outbound.md`, `docs/hook-block-tests-direct.md` を framework `docs/` へ。step 5 の list に従い claude 関連テスト（約 36 本）を framework `tests/` へ移動（dotfiles 側からは削除）。
-12. **framework README**: "Personal Agent Configuration" として Features / Install / Hooks / Skills / Agents の概要を英語で記載。AGENTS.md universal trend との関係性、将来 Codex / Cursor 対応の方向性にも触れる。
-13. **dotfiles 側 cleanup**:
+- [x] 10. **framework install 作成**: `install.sh`, `install.ps1`, `install/{win,linux}/dotfileslink.{ps1,sh}`, `install/{win,linux}/session-sync-init.{sh,ps1}` を新規作成。dotfileslink は framework root の `CLAUDE.md, settings.json, rules, skills, agents` → `~/.claude/` 配下 symlink + `core.hooksPath = $AGENTS_CONFIG_DIR\hooks`。install は `$AGENTS_CONFIG_DIR` と `$AGENTS_DIR` を profile に export するロジックも持つ。加えて `~/.local/bin/doc-append` の symlink 作成。
+- [x] 11. **framework docs/tests 移送**: step 6 で生成した `docs/history-agents.md` → framework `docs/history.md`。`docs/architecture/claude-code.md`, `docs/scan-outbound.md`, `docs/hook-block-tests-direct.md` を framework `docs/` へ。step 5 の list に従い claude 関連テスト（約 36 本）を framework `tests/` へ移動（dotfiles 側からは削除）。
+- [x] 12. **framework README**: "Personal Agent Configuration" として Features / Install / Hooks / Skills / Agents の概要を英語で記載。AGENTS.md universal trend との関係性、将来 Codex / Cursor 対応の方向性にも触れる。
+- [x] 13. **dotfiles 側 cleanup**:
     - `claude-global/` ディレクトリ **完全削除**
     - dotfiles `bin/` から step 9 で移送したファイルを削除
-    - `install.sh` L37 の `claude-code.sh` 呼び出し削除、L41 の `session-sync-init.sh` 削除
-    - `install.ps1` L65 の `claude-code.ps1` 削除、L69 の `session-sync-init.ps1` 削除
-      - **L127 の `claude-usage-widget.ps1`, L132 の `claude-tabs.ps1` は残す**
-    - `install/win/dotfileslink.ps1` L39-43 の claude-global symlink 削除、L124 の `core.hooksPath` 設定削除
-    - `install/linux/dotfileslink.sh` L41-63 の claude-global symlink 削除
-    - `install/win/claude-code.ps1`, `session-sync-init.ps1` を削除（framework 側に移送済み）
-    - dotfiles `docs/history.md` を step 6 出力の `history-dotfiles.md` に置換
+    - `install.sh` / `install.ps1` の `claude-code.*` / `session-sync-init.*` 呼び出し削除
+    - `install/win/dotfileslink.ps1` の claude-global symlink・`core.hooksPath` 設定削除
+    - `install/linux/dotfileslink.sh` の claude-global symlink 削除
+    - dotfiles `docs/history.md` を `history-dotfiles.md` の内容に置換
     - dotfiles `docs/scan-outbound.md`, `docs/architecture/claude-code.md`, `docs/hook-block-tests-direct.md` 削除
-14. **dotfiles install に sibling hook 追加**: `install.sh` / `install.ps1` 末尾に dotfiles-private 呼び出しと同じパターンで `agents/install.{sh,ps1}` optional 呼び出しを追加。
-15. **shell profile の fetch 追加**:
+    - `.private-info-allowlist` 削除（scanner は agents 側の allowlist を使用）
+- [ ] 14. **dotfiles install に sibling hook 追加**: `install.sh` / `install.ps1` 末尾に dotfiles-private 呼び出しと同じパターンで `agents/install.{sh,ps1}` optional 呼び出しを追加。
+- [ ] 15. **shell profile の fetch 追加**:
     - bash `.profile_common` に 4 つ目（agents）の fetch ブロック追加。既存 3 つと合わせて並列 fetch（`&` + `wait`）に書き換え、latency 抑制。
     - pwsh `install/win/profile.ps1` に dotfiles-private + agents の fetch 追加（bash と parity 回復）。Start-Job または ForEach-Object -Parallel で並列化。
     - `tests/main-git-fetch-sync.sh` と pwsh 等価物を新 fetch 対象含めて更新（dotfiles 側テスト）。
-16. **一時互換ブロック除去**: step 2-4 の `BEGIN/END temporary` を全削除。`$AGENTS_CONFIG_DIR` と `$AGENTS_DIR` は framework install が独立定義する状態へ収束。
-17. **awesome-lists 投稿**: [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code), [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit), [travisvn/awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills), [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) へエントリ追加 PR。
+- [ ] 16. **一時互換ブロック除去**: step 2-4 の `BEGIN/END temporary` を全削除。`$AGENTS_CONFIG_DIR` と `$AGENTS_DIR` は framework install が独立定義する状態へ収束。
+- [ ] 17. **awesome-lists 投稿**: [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code), [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit), [travisvn/awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills), [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) へエントリ追加 PR。
 
 ## 主要変更ファイル
 
