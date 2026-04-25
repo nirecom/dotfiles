@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../dotfiles-private"
+		},
+		{
+			"path": "../agents"
 		}
 	],
 	"settings": {}

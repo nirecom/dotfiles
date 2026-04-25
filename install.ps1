@@ -59,15 +59,7 @@ Write-Host ""
 Write-Host "--- Creating symlinks ---"
 & "$DotfilesDir\install\win\dotfileslink.ps1"
 
-# Step 2: Install Claude Code and Node.js (required for hooks)
-Write-Host ""
-Write-Host "--- Installing Claude Code ---"
-Invoke-ScriptIsolated "$DotfilesDir\install\win\claude-code.ps1"
-if (Get-Command claude -ErrorAction SilentlyContinue) {
-    Write-Host ""
-    Write-Host "--- Initializing Claude Code session sync ---"
-    & "$DotfilesDir\install\win\session-sync-init.ps1"
-}
+# Step 2: Install fnm (Node.js)
 Write-Host ""
 Write-Host "--- Installing fnm (Node.js) ---"
 Invoke-ScriptIsolated "$DotfilesDir\install\win\fnm.ps1"
