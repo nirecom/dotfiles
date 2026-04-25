@@ -77,12 +77,16 @@ Tags: `@claude` = move to agents repo | `@dotfiles` = keep in dotfiles repo | `@
 | 70 | BUGFIX: install.ps1: fix Wait-MsiMutex to check Global\_MSIExecute mutex instead of process presence | @dotfiles |
 | 71 | BUGFIX: autohotkey.ps1: suppress WinPSCompat warning when loading International module | @dotfiles |
 | 72 | FEATURE: docs/history.md classification -- history-classification.md + split-history.py | @claude |
+| 73 | FEATURE: agents-split step 2: introduce AGENTS_CONFIG_DIR abstraction | @claude |
+| 74 | FEATURE: agents-split step 3: abstract hook scanner path via AGENTS_CONFIG_DIR | @claude |
+| 75 | FEATURE: agents-split step 4: abstract session-sync path via AGENTS_DIR | @claude |
+| 76 | FEATURE: agents-split step 5: classify 76 tests for repo split (tests/split-plan.md) | @claude |
 
 ## Summary
 
 | Tag | Count |
 |-----|-------|
-| @claude | 59 |
+| @claude | 63 |
 | @dotfiles | 13 |
 | @both | 0 |
-| **Total** | **72** |
+| **Total** | **76** |
