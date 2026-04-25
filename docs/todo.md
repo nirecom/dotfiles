@@ -2,7 +2,11 @@
 
 ## Current Work
 
-- [ ] agents repo split（詳細は [docs/plan.md](plan.md) 参照）
+### awesome-lists 投稿（agents repo split プロジェクトの残作業）
+- [ ] [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) へエントリ追加 PR
+- [ ] [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit) へエントリ追加 PR
+- [ ] [travisvn/awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills) へエントリ追加 PR
+- [ ] [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) へエントリ追加 PR
 
 ### scan-inbound 拡張候補 — 要検討
 - [ ] **Read** 対象追加: git clone した悪意ファイルの injection 検出。誤検知（HTML/XML/コード）とのトレードオフを評価してから判断
