@@ -167,8 +167,40 @@ if type git > /dev/null 2>&1; then # if git is installed
     PID=`pgrep -fo bash`
     fi
     if [ -n "$PID" ] && [ $$ != "$PID" ]; then # if first bash process
+        _dotfiles_private_dir="$HOME/dotfiles-private"
+        _agents_dir="$HOME/git/agents"
+        _session_dir="$HOME/.claude/projects"
+
+        # Launch all fetches in parallel
         echo "git fetch $DOTFILES_DIR ..."
-        if timeout 3 git -C "$DOTFILES_DIR" fetch 2>/dev/null; then
+        timeout 3 git -C "$DOTFILES_DIR" fetch 2>/dev/null & _pid_df=$!
+
+        _pid_prv= _rc_prv=1
+        if [ -d "$_dotfiles_private_dir/.git" ]; then
+            echo "git fetch dotfiles-private ..."
+            timeout 3 git -C "$_dotfiles_private_dir" fetch 2>/dev/null & _pid_prv=$!
+        fi
+
+        _pid_ag= _rc_ag=1
+        if [ -d "$_agents_dir/.git" ]; then
+            echo "git fetch agents ..."
+            timeout 3 git -C "$_agents_dir" fetch 2>/dev/null & _pid_ag=$!
+        fi
+
+        _pid_ss= _rc_ss=1
+        if [ -d "$_session_dir/.git" ]; then
+            echo "git fetch Claude session sync ..."
+            timeout 3 git -C "$_session_dir" fetch 2>/dev/null & _pid_ss=$!
+        fi
+
+        # Wait for all fetches
+        wait $_pid_df; _rc_df=$?
+        [ -n "$_pid_prv" ] && { wait $_pid_prv; _rc_prv=$?; }
+        [ -n "$_pid_ag"  ] && { wait $_pid_ag;  _rc_ag=$?;  }
+        [ -n "$_pid_ss"  ] && { wait $_pid_ss;  _rc_ss=$?;  }
+
+        # Merge dotfiles
+        if [ "$_rc_df" -eq 0 ]; then
             if ! git -C "$DOTFILES_DIR" merge --ff-only FETCH_HEAD 2>/dev/null; then
                 # ff-only failed — check if diverged (force push scenario)
                 if ! git -C "$DOTFILES_DIR" merge-base --is-ancestor HEAD FETCH_HEAD 2>/dev/null; then
@@ -187,28 +219,14 @@ if type git > /dev/null 2>&1; then # if git is installed
                 fi
             fi
         fi
-    fi
-fi
+        [ "$_rc_prv" -eq 0 ] && git -C "$_dotfiles_private_dir" merge --ff-only FETCH_HEAD 2>/dev/null
+        [ "$_rc_ag"  -eq 0 ] && git -C "$_agents_dir" merge --ff-only FETCH_HEAD 2>/dev/null
+        [ "$_rc_ss"  -eq 0 ] && git -C "$_session_dir" merge --ff-only FETCH_HEAD 2>/dev/null
 
-# Pull dotfiles-private on startup
-_dotfiles_private_dir="$HOME/dotfiles-private"
-if [ -d "$_dotfiles_private_dir/.git" ] && type git >/dev/null 2>&1; then
-    echo "git fetch dotfiles-private ..."
-    if timeout 3 git -C "$_dotfiles_private_dir" fetch 2>/dev/null; then
-        git -C "$_dotfiles_private_dir" merge --ff-only FETCH_HEAD 2>/dev/null
+        unset _dotfiles_private_dir _agents_dir _session_dir
+        unset _pid_df _pid_prv _pid_ag _pid_ss _rc_df _rc_prv _rc_ag _rc_ss _ans
     fi
 fi
-unset _dotfiles_private_dir
-
-# Pull Claude session sync on startup (from other machines)
-_session_dir="$HOME/.claude/projects"
-if [ -d "$_session_dir/.git" ] && type git >/dev/null 2>&1; then
-    echo "git fetch Claude session sync ..."
-    if timeout 3 git -C "$_session_dir" fetch 2>/dev/null; then
-        git -C "$_session_dir" merge --ff-only FETCH_HEAD 2>/dev/null
-    fi
-fi
-unset _session_dir
 
 # Returns true if any VS Code window is currently open
 _any_vscode_window() {

@@ -23,48 +23,75 @@ $env:DOTFILES_DIR = $DotfilesDir
 if (-not $env:AGENTS_CONFIG_DIR) { $env:AGENTS_CONFIG_DIR = "$DotfilesDir\claude-global" }
 if (-not $env:AGENTS_DIR)        { $env:AGENTS_DIR        = $DotfilesDir }
 # --- END temporary: dotfiles → agents migration ---
-if ((Get-Command git -ErrorAction SilentlyContinue) -and (Test-Path "$DotfilesDir\.git")) {
-    Write-Host "git fetch $DotfilesDir ..."
-    $fetchProcess = Start-Process -FilePath git -ArgumentList "-C $DotfilesDir fetch" -NoNewWindow -PassThru
-    if (-not $fetchProcess.WaitForExit(3000)) {
-        $fetchProcess.Kill()
-        Write-Warning "git fetch timed out after 3s — skipped"
-    } elseif ($fetchProcess.ExitCode -eq 0) {
-        git -C $DotfilesDir merge --ff-only --no-summary FETCH_HEAD 2>$null
-        if ($LASTEXITCODE -ne 0) {
-            # ff-only failed — check if diverged (force push scenario)
-            git -C $DotfilesDir merge-base --is-ancestor HEAD FETCH_HEAD 2>$null
+$PrivateDir = "C:\git\dotfiles-private"
+$AgentsDir = "C:\git\agents"
+$SessionDir = "$HOME\.claude\projects"
+
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    # Launch all fetches in parallel
+    $fetchDf = $null
+    if (Test-Path "$DotfilesDir\.git") {
+        Write-Host "git fetch $DotfilesDir ..."
+        $fetchDf = Start-Process -FilePath git -ArgumentList "-C $DotfilesDir fetch" -NoNewWindow -PassThru
+    }
+    $fetchPrv = $null
+    if (Test-Path "$PrivateDir\.git") {
+        Write-Host "git fetch dotfiles-private ..."
+        $fetchPrv = Start-Process -FilePath git -ArgumentList "-C $PrivateDir fetch" -NoNewWindow -PassThru
+    }
+    $fetchAg = $null
+    if (Test-Path "$AgentsDir\.git") {
+        Write-Host "git fetch agents ..."
+        $fetchAg = Start-Process -FilePath git -ArgumentList "-C $AgentsDir fetch" -NoNewWindow -PassThru
+    }
+    $fetchSs = $null
+    if (Test-Path "$SessionDir\.git") {
+        Write-Host "git fetch Claude session sync ..."
+        $fetchSs = Start-Process -FilePath git -ArgumentList "-C $SessionDir fetch" -NoNewWindow -PassThru
+    }
+
+    # Wait for dotfiles fetch and merge
+    if ($fetchDf) {
+        if (-not $fetchDf.WaitForExit(3000)) {
+            $fetchDf.Kill()
+            Write-Warning "git fetch timed out after 3s — skipped"
+        } elseif ($fetchDf.ExitCode -eq 0) {
+            git -C $DotfilesDir merge --ff-only --no-summary FETCH_HEAD 2>$null
             if ($LASTEXITCODE -ne 0) {
-                if (Test-Path "$HOME\.dotfiles-no-auto-reset") {
-                    Write-Warning "dotfiles diverged from origin. Run: git -C $DotfilesDir reset --hard origin/main"
-                } elseif ([Environment]::UserInteractive) {
-                    Write-Host "dotfiles diverged from origin (force push detected)."
-                    Write-Host "Reset to origin/main? Local changes will be lost. [y/N]"
-                    $ans = $null
-                    $task = [System.Threading.Tasks.Task]::Run([Func[string]]{ [Console]::ReadLine() })
-                    if ($task.Wait(10000)) {
-                        $ans = $task.Result
-                    }
-                    if ($ans -match '^[Yy]$') {
-                        git -C $DotfilesDir reset --hard origin/main
-                    } else {
-                        Write-Host "Skipped. Run manually: git -C $DotfilesDir reset --hard origin/main"
+                # ff-only failed — check if diverged (force push scenario)
+                git -C $DotfilesDir merge-base --is-ancestor HEAD FETCH_HEAD 2>$null
+                if ($LASTEXITCODE -ne 0) {
+                    if (Test-Path "$HOME\.dotfiles-no-auto-reset") {
+                        Write-Warning "dotfiles diverged from origin. Run: git -C $DotfilesDir reset --hard origin/main"
+                    } elseif ([Environment]::UserInteractive) {
+                        Write-Host "dotfiles diverged from origin (force push detected)."
+                        Write-Host "Reset to origin/main? Local changes will be lost. [y/N]"
+                        $ans = $null
+                        $task = [System.Threading.Tasks.Task]::Run([Func[string]]{ [Console]::ReadLine() })
+                        if ($task.Wait(10000)) { $ans = $task.Result }
+                        if ($ans -match '^[Yy]$') {
+                            git -C $DotfilesDir reset --hard origin/main
+                        } else {
+                            Write-Host "Skipped. Run manually: git -C $DotfilesDir reset --hard origin/main"
+                        }
                     }
                 }
             }
         }
     }
-}
 
-# Pull session sync on startup (from other PCs)
-$SessionDir = "$HOME\.claude\projects"
-if ((Test-Path "$SessionDir\.git") -and (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Host "git fetch Claude session sync ..."
-    $fetchProc = Start-Process -FilePath git -ArgumentList "-C $SessionDir fetch" -NoNewWindow -PassThru
-    if (-not $fetchProc.WaitForExit(3000)) {
-        $fetchProc.Kill()
-    } elseif ($fetchProc.ExitCode -eq 0) {
-        git -C $SessionDir merge --ff-only --no-summary FETCH_HEAD 2>$null
+    # Wait for optional fetches and merge
+    if ($fetchPrv) {
+        if (-not $fetchPrv.WaitForExit(3000)) { $fetchPrv.Kill() }
+        elseif ($fetchPrv.ExitCode -eq 0) { git -C $PrivateDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
+    }
+    if ($fetchAg) {
+        if (-not $fetchAg.WaitForExit(3000)) { $fetchAg.Kill() }
+        elseif ($fetchAg.ExitCode -eq 0) { git -C $AgentsDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
+    }
+    if ($fetchSs) {
+        if (-not $fetchSs.WaitForExit(3000)) { $fetchSs.Kill() }
+        elseif ($fetchSs.ExitCode -eq 0) { git -C $SessionDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
     }
 }
 

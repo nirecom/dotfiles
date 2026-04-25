@@ -5,7 +5,7 @@
 ## 申し送り（次セッション向け）
 
 **ブランチ**: dotfiles → `feature/agents-repo-split` / agents → `main`（直 push）  
-**残り**: Steps 14–17（下の実装ステップ参照）。次は Step 14 から。
+**残り**: Steps 16–17（下の実装ステップ参照）。次は Step 16 から。
 
 ### Step 14 の参考
 dotfiles-private の sibling 呼び出しパターンをそのまま踏襲する:
@@ -146,8 +146,8 @@ dotfiles-private の sibling 呼び出しパターンをそのまま踏襲する
     - dotfiles `docs/history.md` を `history-dotfiles.md` の内容に置換
     - dotfiles `docs/scan-outbound.md`, `docs/architecture/claude-code.md`, `docs/hook-block-tests-direct.md` 削除
     - `.private-info-allowlist` 削除（scanner は agents 側の allowlist を使用）
-- [ ] 14. **dotfiles install に sibling hook 追加**: `install.sh` / `install.ps1` 末尾に dotfiles-private 呼び出しと同じパターンで `agents/install.{sh,ps1}` optional 呼び出しを追加。
-- [ ] 15. **shell profile の fetch 追加**:
+- [x] 14. **dotfiles install に sibling hook 追加**: `install.sh` / `install.ps1` 末尾に dotfiles-private 呼び出しと同じパターンで `agents/install.{sh,ps1}` optional 呼び出しを追加。
+- [x] 15. **shell profile の fetch 追加**:
     - bash `.profile_common` に 4 つ目（agents）の fetch ブロック追加。既存 3 つと合わせて並列 fetch（`&` + `wait`）に書き換え、latency 抑制。
     - pwsh `install/win/profile.ps1` に dotfiles-private + agents の fetch 追加（bash と parity 回復）。Start-Job または ForEach-Object -Parallel で並列化。
     - `tests/main-git-fetch-sync.sh` と pwsh 等価物を新 fetch 対象含めて更新（dotfiles 側テスト）。

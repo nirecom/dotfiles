@@ -22,10 +22,10 @@ else
     pass ".profile_common: sync block has no 'git pull'"
 fi
 
-if grep -q 'git -C ~/dotfiles fetch' "$DOTFILES_DIR/.profile_common"; then
-    pass ".profile_common: uses 'git fetch'"
+if grep -qE 'git -C "\$DOTFILES_DIR" fetch' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: uses 'git fetch' for dotfiles"
 else
-    fail ".profile_common: missing 'git fetch'"
+    fail ".profile_common: missing 'git fetch' for dotfiles"
 fi
 
 if grep -q 'merge --ff-only' "$DOTFILES_DIR/.profile_common"; then
@@ -46,19 +46,20 @@ fi
 echo ""
 echo "--- Normal: .profile_common checks fetch exit code before merge ---"
 
-# fetch and merge should be conditional (if/then or &&)
-# The merge line should NOT run unconditionally after fetch
-FETCH_LINE=$(grep -n 'git -C ~/dotfiles fetch' "$DOTFILES_DIR/.profile_common" | head -1 | cut -d: -f1)
-if [ -n "$FETCH_LINE" ]; then
-    # Check that fetch is inside an if-condition or uses && to gate merge
-    CONTEXT=$(sed -n "$((FETCH_LINE-1)),$((FETCH_LINE+3))p" "$DOTFILES_DIR/.profile_common")
-    if echo "$CONTEXT" | grep -q 'if\|&&'; then
-        pass ".profile_common: merge is gated on fetch success"
-    else
-        fail ".profile_common: merge runs unconditionally after fetch"
-    fi
+# Parallel pattern: fetch exit code captured in _rc_df, merge gated on it
+if grep -q '_rc_df' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: merge is gated on fetch exit code (_rc_df)"
 else
-    fail ".profile_common: could not find fetch line for context check"
+    fail ".profile_common: merge not gated on fetch exit code"
+fi
+
+echo ""
+echo "--- Normal: .profile_common fetches agents ---"
+
+if grep -q 'git/agents' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: fetches agents repo"
+else
+    fail ".profile_common: missing agents fetch"
 fi
 
 # --- profile.ps1 (Windows) ---
@@ -84,6 +85,21 @@ if grep -q 'ExitCode' "$DOTFILES_DIR/install/win/profile.ps1"; then
     pass "profile.ps1: checks ExitCode"
 else
     fail "profile.ps1: missing ExitCode check"
+fi
+
+echo ""
+echo "--- Normal: profile.ps1 fetches dotfiles-private and agents ---"
+
+if grep -q 'dotfiles-private' "$DOTFILES_DIR/install/win/profile.ps1"; then
+    pass "profile.ps1: fetches dotfiles-private"
+else
+    fail "profile.ps1: missing dotfiles-private fetch"
+fi
+
+if grep -q 'AgentsDir' "$DOTFILES_DIR/install/win/profile.ps1"; then
+    pass "profile.ps1: fetches agents repo"
+else
+    fail "profile.ps1: missing agents fetch"
 fi
 
 # --- Edge: no bare 'git pull' in sync blocks ---
