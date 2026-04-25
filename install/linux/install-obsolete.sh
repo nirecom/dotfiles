@@ -52,6 +52,21 @@ if [ -L ~/dotfiles/claude-code ]; then
     rm ~/dotfiles/claude-code
 fi
 
+# Remove obsolete ~/.claude/* symlinks that pointed to dotfiles/claude-global
+# (claude-global moved to the agents repo in agents-split refactor)
+for _name in CLAUDE.md settings.json skills rules agents; do
+    _link="$HOME/.claude/$_name"
+    if [ -L "$_link" ]; then
+        _target=$(readlink "$_link")
+        case "$_target" in
+            */dotfiles/claude-global/*)
+                echo "Removing obsolete symlink: $_link (was: $_target)"
+                rm "$_link"
+                ;;
+        esac
+    fi
+done
+
 # fnm (replaced by nvm on WSL2/macOS/Linux; Windows keeps fnm)
 if [ -d "$HOME/.local/share/fnm" ]; then
     echo "Removing fnm directory: ~/.local/share/fnm (replaced by nvm)"

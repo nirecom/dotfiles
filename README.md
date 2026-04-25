@@ -1,40 +1,22 @@
 # dotfiles
 
-Cross-platform dotfiles and a custom [Claude Code](https://docs.anthropic.com/en/docs/claude-code) framework — shipped together as a single installer.
+Cross-platform dotfiles and install scripts for shell, editor, git, and prompt configuration — Ubuntu (WSL2), macOS, Windows, and QNAP NAS.
 
 ## What You Get
 
-**Dotfiles** — `install.sh` / `install.ps1` sets up shell, editor, git, and prompt configuration across Ubuntu (native and WSL2), macOS (Intel and Apple Silicon), Windows, and even QNAP NAS. A single `~/.profile_common` drives all Unix variants; OS detection branches automatically with no hardcoded platform paths.
+`install.sh` / `install.ps1` sets up shell, editor, git, and prompt configuration across Ubuntu (native and WSL2), macOS (Intel and Apple Silicon), Windows, and even QNAP NAS. A single `~/.profile_common` drives all Unix variants; OS detection branches automatically with no hardcoded platform paths.
 
-**Claude Code framework** — `claude-global/` adds a structured AI-assisted development workflow on top of Claude Code: hook-enforced step tracking from research to commit, cross-machine session continuity, standards-backed test and security guidance, and TDD via subagent isolation.
+## Companion: Claude Code Framework
 
-## Claude Code Framework
+**[nirecom/agents](https://github.com/nirecom/agents)** is a standalone [Claude Code](https://docs.anthropic.com/en/docs/claude-code) framework that pairs naturally with this repo:
 
-The `claude-global/` directory is a custom Claude Code framework installed as symlinks under `~/.claude/` by the platform-specific `dotfileslink` script. See [docs/architecture/claude-code.md](docs/architecture/claude-code.md) for implementation details.
+- **Hook-enforced workflow** — encodes research → plan → write-tests → code → run-tests → security-review → docs → user-verification as a per-session state machine; a PreToolUse hook physically blocks `git commit` until every step completes.
+- **Cross-machine session continuity** — normalizes project paths to drive-root form and syncs `~/.claude/projects/` through a private GitHub repo, so a conversation started on Windows resumes on macOS/Linux.
+- **Standards-backed testing and security** — concrete test categories (Normal, Error, Edge, Idempotency, Security) with explicit OWASP ASVS V8, CWE Top 25, OWASP LLM Top 10 citations; test-layer selection follows Martin Fowler's narrow/broad integration distinction.
+- **TDD via subagent isolation** — test writing runs in an autonomous `mode: "auto"` subagent restricted to test files only; confirmations drop from O(N) edits to two.
+- **Private information scanning** — dual-checkpoint (pre-commit hook + Claude Code PreToolUse hook) scanning for IP addresses, secrets, local paths, and Trojan Source Unicode.
 
-### Hook-enforced end-to-end workflow
-
-Most agent frameworks rely on the model to remember process steps. This framework encodes the dev workflow — research → plan → write-tests → code → run-tests → security-review → docs → user-verification — as a per-session state machine, and a PreToolUse hook physically blocks `git commit` until every required step completes or is explicitly skipped with a reason.
-
-- **Evidence-based completion**: staged `tests/` and `docs/*.md` files automatically satisfy their corresponding steps — no manual marker required.
-- **State inheritance**: after context compaction or a fresh session on the same cwd+branch, prior workflow state is inherited so progress is not lost.
-- **Docs-only short-circuit**: when every staged file is human-facing documentation (any `.md` under `docs/`, or root `README.md`/`CHANGELOG.md`/`CONTRIBUTING.md`/`LICENSE.md`), steps 1–6 are bypassed automatically for documentation-only commits.
-
-### Cross-machine session continuity
-
-Claude Code indexes projects by absolute path, which normally breaks session resume across machines with different usernames. This framework normalizes project paths to drive-root form (`C:\git\`, `/git/`) and syncs `~/.claude/projects/` through a private GitHub repo — so a conversation started on Windows can be resumed on macOS/Linux, and vice versa. Session history is pulled automatically on terminal startup and pushed after VS Code window close.
-
-### Standards-backed testing and security
-
-Rather than generic "write tests" guidance, the framework provides concrete test categories — Normal, Error, Edge, Idempotency, and Security — with explicit citations: OWASP ASVS V8, OWASP WSTG Input Validation, CWE Top 25, OWASP LLM Top 10, and MCP Top 10. Test layer selection (unit / narrow integration / broad integration / smoke) follows Martin Fowler's narrow/broad integration distinction and Kent C. Dodds' Testing Trophy. Security skills apply the same references at both design time (`/review-plan-security`) and implementation time (`/review-code-security`).
-
-### TDD via subagent isolation
-
-Test writing runs in a `mode: "auto"` subagent that loops write → run → fix autonomously, restricted to test files only. This reduces user confirmations from O(N) per-edit approvals to exactly two: test plan approval and final review.
-
-### Private information scanning
-
-Two checkpoints prevent private information from reaching public repositories: a `git pre-commit` hook and a Claude Code PreToolUse hook. Both detect RFC 1918 IP addresses, email addresses, MAC addresses, absolute local paths, hard-coded secrets (AWS, Anthropic, OpenAI, GitHub, Slack, and others), PEM private keys, and Trojan Source hidden Unicode characters. Repositories identified as private via `gh api` are skipped automatically. See [docs/scan-outbound.md](docs/scan-outbound.md) for details.
+When `~/agents/` is present as a sibling of `~/dotfiles/`, the dotfiles installer wires it in automatically.
 
 ## Supported Platforms
 
@@ -134,10 +116,9 @@ dotfiles/
 │   ├── starship.toml        # Starship prompt (Linux/macOS)
 │   └── starship-powershell.toml  # Starship prompt (Windows)
 ├── .emacs.d/                # Emacs config
-├── bin/                     # Utility scripts (detectos.sh, etc.)
+├── bin/                     # OS detection, tmux launch, VS Code window utilities
 ├── config/
 │   └── vscode-extensions.txt  # VS Code extensions (shared across platforms)
-├── claude-global/             # Claude Code framework
 ├── docs/                    # Architecture and history documentation
 ├── source-highlight/        # GNU source-highlight config
 ├── install/

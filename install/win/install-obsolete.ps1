@@ -30,6 +30,42 @@ if ((Test-Path $oldClaude) -and ((Get-Item $oldClaude -Force).Attributes -band [
     Remove-Item $oldClaude -Force
 }
 
+# --- Remove obsolete ~/.claude/* symlinks (claude-global moved to agents repo) ---
+$obsoleteClaudeLinks = @("CLAUDE.md", "settings.json", "skills", "rules", "agents")
+foreach ($name in $obsoleteClaudeLinks) {
+    $link = Join-Path "$HOME\.claude" $name
+    if (Test-Path $link -PathType Any) {
+        $item = Get-Item $link -Force
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            $target = $item.Target
+            if ($target -like "*\dotfiles\claude-global\*" -or $target -like "*/dotfiles/claude-global/*") {
+                Write-Host "Removing obsolete symlink: $link (was: $target)" -ForegroundColor Yellow
+                Remove-Item $link -Force
+            }
+        }
+    }
+}
+
+# --- Remove obsolete doc-append.cmd (bin/doc-append.py moved to agents repo) ---
+$docAppendCmd = "$HOME\.local\bin\doc-append.cmd"
+if (Test-Path $docAppendCmd) {
+    $content = Get-Content $docAppendCmd -Raw -ErrorAction SilentlyContinue
+    if ($content -like "*dotfiles\bin\doc-append.py*") {
+        Write-Host "Removing obsolete doc-append.cmd (bin/ moved to agents repo)" -ForegroundColor Yellow
+        Remove-Item $docAppendCmd -Force
+    }
+}
+
+# --- Unset obsolete core.hooksPath in config.local (claude-global removed) ---
+$gitConfigLocal = Join-Path $DotfilesDir ".config\git\config.local"
+if (Test-Path $gitConfigLocal) {
+    $hooksPath = git config --file $gitConfigLocal core.hooksPath 2>$null
+    if ($hooksPath -like "*\dotfiles\claude-global\hooks" -or $hooksPath -like "*/dotfiles/claude-global/hooks") {
+        git config --file $gitConfigLocal --unset core.hooksPath 2>$null | Out-Null
+        Write-Host "Removed obsolete core.hooksPath from config.local (claude-global removed)" -ForegroundColor Yellow
+    }
+}
+
 # --- Remove ~/.gitconfig if it overrides dotfiles git config ---
 $gitconfig = "$HOME\.gitconfig"
 if ((Test-Path $gitconfig) -and -not ((Get-Item $gitconfig -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {

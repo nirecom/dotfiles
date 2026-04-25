@@ -1,6 +1,4 @@
 # This is Git's per-user configuration file.
-[core]
-    hooksPath = ~/dotfiles/claude-global/hooks
 [color]
     ui = auto
 [alias]
