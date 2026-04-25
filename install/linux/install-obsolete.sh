@@ -67,6 +67,19 @@ for _name in CLAUDE.md settings.json skills rules agents; do
     fi
 done
 
+# Remove leftover dotfiles/claude-global/ directory only when HEAD confirms
+# claude-global/ is no longer tracked (post-agents-split). Untracked leftover
+# files (e.g. from prior `git reset --hard` over the split commit) survive
+# normal git operations and need explicit cleanup.
+_cg_dir="$HOME/dotfiles/claude-global"
+if [ -d "$_cg_dir" ] && [ -d "$HOME/dotfiles/.git" ]; then
+    if ! git -C "$HOME/dotfiles" ls-tree -r HEAD claude-global 2>/dev/null | grep -q .; then
+        echo "Removing obsolete dotfiles/claude-global/ (post-agents-split leftover)"
+        rm -rf "$_cg_dir"
+    fi
+fi
+unset _cg_dir
+
 # fnm (replaced by nvm on WSL2/macOS/Linux; Windows keeps fnm)
 if [ -d "$HOME/.local/share/fnm" ]; then
     echo "Removing fnm directory: ~/.local/share/fnm (replaced by nvm)"

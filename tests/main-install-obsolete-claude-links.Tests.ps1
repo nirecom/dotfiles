@@ -38,6 +38,20 @@ BeforeAll {
             git config --file $ConfigLocalPath --unset core.hooksPath 2>$null | Out-Null
         }
     }
+
+    # Removes leftover dotfiles\claude-global\ directory only when HEAD confirms
+    # claude-global\ is no longer tracked (post-agents-split).
+    function Remove-ObsoleteClaudeGlobalDir {
+        param([string]$DotfilesDir)
+        $cgDir = Join-Path $DotfilesDir 'claude-global'
+        $dfGit = Join-Path $DotfilesDir '.git'
+        if ((Test-Path $cgDir) -and (Test-Path $dfGit)) {
+            $tracked = git -C $DotfilesDir ls-tree -r HEAD claude-global 2>$null
+            if (-not $tracked) {
+                Remove-Item -Recurse -Force $cgDir
+            }
+        }
+    }
 }
 
 Describe "Remove-ObsoleteClaudeLinks" {
@@ -293,5 +307,96 @@ Describe "Remove-ObsoleteHooksPath" {
         { Remove-ObsoleteHooksPath -ConfigLocalPath $script:ConfigLocal } | Should -Not -Throw
         $after = git config --file $script:ConfigLocal core.hooksPath 2>$null
         $after | Should -BeNullOrEmpty
+    }
+}
+
+Describe "Remove-ObsoleteClaudeGlobalDir" {
+    BeforeAll {
+        $script:GitAvailable = $null -ne (Get-Command git -ErrorAction SilentlyContinue)
+    }
+
+    BeforeEach {
+        $script:TempDir = Join-Path $env:TEMP "claude-global-dir-test-$(Get-Random)"
+        New-Item -ItemType Directory -Path $script:TempDir -Force | Out-Null
+        $script:DotfilesDir = Join-Path $script:TempDir "dotfiles"
+    }
+
+    AfterEach {
+        Remove-Item -Recurse -Force $script:TempDir -ErrorAction SilentlyContinue
+    }
+
+    function New-DotfilesRepo {
+        param([string]$Dir, [bool]$WithTrackedClaudeGlobal)
+        New-Item -ItemType Directory -Path $Dir -Force | Out-Null
+        git -C $Dir init -q | Out-Null
+        git -C $Dir config user.email "test@example.com" | Out-Null
+        git -C $Dir config user.name "Test" | Out-Null
+        Set-Content -Path (Join-Path $Dir "README.md") -Value "init"
+        git -C $Dir add README.md | Out-Null
+        git -C $Dir commit -q -m "initial" | Out-Null
+        if ($WithTrackedClaudeGlobal) {
+            $cg = Join-Path $Dir "claude-global"
+            New-Item -ItemType Directory -Path (Join-Path $cg "rules") -Force | Out-Null
+            Set-Content -Path (Join-Path $cg "CLAUDE.md") -Value "tracked"
+            Set-Content -Path (Join-Path $cg "rules\language.md") -Value "tracked"
+            git -C $Dir add claude-global | Out-Null
+            git -C $Dir commit -q -m "add claude-global" | Out-Null
+        }
+    }
+
+    It "C1. removes untracked claude-global/ when HEAD does not track it" {
+        if (-not $script:GitAvailable) { Set-ItResult -Skipped -Because "git not available"; return }
+        New-DotfilesRepo -Dir $script:DotfilesDir -WithTrackedClaudeGlobal $false
+        $cg = Join-Path $script:DotfilesDir "claude-global"
+        New-Item -ItemType Directory -Path $cg -Force | Out-Null
+        Set-Content -Path (Join-Path $cg "settings.json") -Value "leftover"
+
+        Remove-ObsoleteClaudeGlobalDir -DotfilesDir $script:DotfilesDir
+
+        Test-Path $cg | Should -BeFalse
+    }
+
+    It "C2. keeps claude-global/ when tracked by HEAD (pre-split state)" {
+        if (-not $script:GitAvailable) { Set-ItResult -Skipped -Because "git not available"; return }
+        New-DotfilesRepo -Dir $script:DotfilesDir -WithTrackedClaudeGlobal $true
+        $cg = Join-Path $script:DotfilesDir "claude-global"
+
+        Remove-ObsoleteClaudeGlobalDir -DotfilesDir $script:DotfilesDir
+
+        Test-Path $cg | Should -BeTrue
+        Test-Path (Join-Path $cg "CLAUDE.md") | Should -BeTrue
+    }
+
+    It "C3. does not error when claude-global/ does not exist" {
+        if (-not $script:GitAvailable) { Set-ItResult -Skipped -Because "git not available"; return }
+        New-DotfilesRepo -Dir $script:DotfilesDir -WithTrackedClaudeGlobal $false
+
+        { Remove-ObsoleteClaudeGlobalDir -DotfilesDir $script:DotfilesDir } | Should -Not -Throw
+    }
+
+    It "C4. keeps claude-global/ when dotfiles is not a git repo" {
+        New-Item -ItemType Directory -Path $script:DotfilesDir -Force | Out-Null
+        $cg = Join-Path $script:DotfilesDir "claude-global"
+        New-Item -ItemType Directory -Path $cg -Force | Out-Null
+        Set-Content -Path (Join-Path $cg "settings.json") -Value "leftover"
+
+        Remove-ObsoleteClaudeGlobalDir -DotfilesDir $script:DotfilesDir
+
+        Test-Path $cg | Should -BeTrue
+    }
+
+    It "C5. recursively removes nested untracked content" {
+        if (-not $script:GitAvailable) { Set-ItResult -Skipped -Because "git not available"; return }
+        New-DotfilesRepo -Dir $script:DotfilesDir -WithTrackedClaudeGlobal $false
+        $cg = Join-Path $script:DotfilesDir "claude-global"
+        New-Item -ItemType Directory -Path (Join-Path $cg "rules") -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $cg "hooks\lib") -Force | Out-Null
+        Set-Content -Path (Join-Path $cg "settings.json") -Value "x"
+        Set-Content -Path (Join-Path $cg "rules\language.md") -Value "x"
+        Set-Content -Path (Join-Path $cg "hooks\lib\workflow-state.js") -Value "x"
+
+        Remove-ObsoleteClaudeGlobalDir -DotfilesDir $script:DotfilesDir
+
+        Test-Path $cg | Should -BeFalse
     }
 }
