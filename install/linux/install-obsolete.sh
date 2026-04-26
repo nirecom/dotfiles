@@ -16,14 +16,6 @@ if [ -L $HOME/.gitconfig ]; then
     rm $HOME/.gitconfig
 fi
 
-if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
-    echo "~/.gitconfig exists and overrides dotfiles git config (XDG)."
-    read -rp "Delete it? [y/N] " response
-    if [[ "$response" =~ ^[Yy]$ ]]; then
-        rm "$HOME/.gitconfig"
-        echo "Deleted ~/.gitconfig"
-    fi
-fi
 
 GDIR=$HOME/.emacs.d/git
 if [ -d $GDIR ]; then
