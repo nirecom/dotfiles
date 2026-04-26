@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install Starship prompt
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 if type starship >/dev/null 2>&1; then
     echo "starship is already installed: $(starship --version)"

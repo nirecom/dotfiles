@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install emacs
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 if [ "$OSDIST" = "amazon" ]; then
         echo "Amazon Linux supports older emacs only. Abort."
         exit 1
@@ -28,7 +29,7 @@ echo "Creating tmp / backup folders ..."
 [ ! -d ~/tmp ] && mkdir ~/tmp
 [ ! -d ~/.emacs_backup ] && mkdir ~/.emacs_backup
 
-INSTALLER="$HOME/dotfiles/.emacs.d/package-install.el"
+INSTALLER="$DOTFILES_DIR/.emacs.d/package-install.el"
 if [ -f $INSTALLER ]; then
     echo "Installing packages ..."
     emacs --script $INSTALLER
