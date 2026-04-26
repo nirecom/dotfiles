@@ -56,8 +56,8 @@ fi
 echo ""
 echo "--- Normal: .profile_common fetches agents ---"
 
-if grep -q 'git/agents' "$DOTFILES_DIR/.profile_common"; then
-    pass ".profile_common: fetches agents repo"
+if grep -qE 'dirname "\$DOTFILES_DIR"\)/agents|/agents"' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: fetches agents repo (sibling)"
 else
     fail ".profile_common: missing agents fetch"
 fi

@@ -5,7 +5,8 @@
 #   Hardware -> Boot-up User Defined Processes -> /share/CACHEDEV1_DATA/autorun.sh
 # Or copy to /tmp/config/autorun.sh via QTS web console.
 
-DOTFILES_DIR="$HOME/dotfiles"
+# QNAP boot location for the dotfiles repo. Override via env if relocating.
+: "${DOTFILES_DIR:=$HOME/dotfiles}"
 DOTFILES_REPO="https://github.com/nirecom/dotfiles.git"
 
 # Restore Entware if /opt/bin is missing

@@ -1,5 +1,6 @@
 #!/bin/bash
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 # Install tenv (version manager for Terraform/OpenTofu/Terragrunt)
 if type tenv >/dev/null 2>&1; then
