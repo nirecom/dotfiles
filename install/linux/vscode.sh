@@ -2,7 +2,8 @@
 # Install Visual Studio Code and extensions
 # Usage: Called by install.sh --develop
 
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 # Install VS Code
 if ! type code >/dev/null 2>&1; then
@@ -47,7 +48,7 @@ else
 fi
 
 # Install extensions
-EXT_FILE=~/dotfiles/config/vscode-extensions.txt
+EXT_FILE="$DOTFILES_DIR"/config/vscode-extensions.txt
 if [ ! -f "$EXT_FILE" ]; then
     echo "Extension list not found: $EXT_FILE"
     return 0 2>/dev/null || exit 0

@@ -8,8 +8,8 @@ if [ "$OSDIST" = "ubuntu" ] || [ "$OSDIST" = "amazon" ]; then
         chmod +x ~/.ssh/ssh-add-all
     fi
 fi
-if [ ! -d ~/dotfiles ]; then
+if [ ! -d "${DOTFILES_DIR:-$HOME/dotfiles}" ]; then
     cd
     git clone git@github.com:nirecom/dotfiles.git
-    dotfiles/install/linux/dotfileslink.sh
+    "${DOTFILES_DIR:-$HOME/dotfiles}/install/linux/dotfileslink.sh"
 fi

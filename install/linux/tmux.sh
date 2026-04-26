@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install tmux
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 if type tmux >/dev/null 2>&1; then
     echo "tmux is already installed: $(tmux -V)"

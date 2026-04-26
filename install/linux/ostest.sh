@@ -1,5 +1,6 @@
 #!/bin/bash
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 echo OSDIST=$OSDIST
 echo ISWSL=$ISWSL

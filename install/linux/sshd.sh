@@ -1,5 +1,6 @@
 #!/bin/bash
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 if [ "$OSDIST" = "mingw" ] || [ "$OSDIST" = "macos" ] || [ -n "${ISWSL:-}" ]; then
     echo "Not necessary to configure /etc/sshd_config because it's client. Abort."

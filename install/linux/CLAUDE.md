@@ -26,7 +26,7 @@ Any script can also be run independently.
 
 ## Architecture
 
-**OS Detection**: All scripts source `~/dotfiles/bin/detectos.sh` which sets:
+**OS Detection**: All scripts source `"$DOTFILES_DIR/bin/detectos.sh"` which sets:
 - `OSDIST` (macos, ubuntu, centos, amazon, mingw)
 - `ISWSL` (1 if WSL2)
 - `ISM1` (1 if ARM64 Mac)
@@ -43,7 +43,12 @@ Any script can also be run independently.
 ## Shell Script Conventions
 
 - Shebang: `#!/bin/bash`
-- Source OS detection at top: `source ~/dotfiles/bin/detectos.sh`
+- Resolve `DOTFILES_DIR` and source OS detection at top:
+  ```bash
+  : "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+  source "$DOTFILES_DIR/bin/detectos.sh"
+  ```
+  This lets each script run standalone regardless of where the repo was cloned.
 - Uppercase variable names (USERNAME, OSDIST, BUCKET)
 - Script names: lowercase with hyphens (e.g., `install-base.sh`, `fnm.sh`)
 - Some scripts use `set -e` for fail-fast

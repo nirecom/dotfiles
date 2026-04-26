@@ -1,6 +1,7 @@
 #!/bin/bash
 # Initializa User: nire
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 USERNAME=nire
 BUCKET=nirecom-home
@@ -11,16 +12,16 @@ if [ `whoami` != "$USERNAME" ]; then
 fi
 
 # Install brew and git on macos (if not macos, will be skipped)
-~/dotfiles/install/linux/brew-git.sh
+"$DOTFILES_DIR"/install/linux/brew-git.sh
 # Install aws cli
-~/dotfiles/install/linux/awscli.sh
-~/dotfiles/install/linux/keychain.sh
-~/dotfiles/install/linux/dotfiles.sh
-~/dotfiles/install/linux/zsh.sh
-~/dotfiles/install/linux/starship.sh
-~/dotfiles/install/linux/git-completion.sh
-~/dotfiles/install/linux/google-japanese-input.sh
-~/dotfiles/install/linux/vim.sh
-~/dotfiles/install/linux/tmux.sh
+"$DOTFILES_DIR"/install/linux/awscli.sh
+"$DOTFILES_DIR"/install/linux/keychain.sh
+"$DOTFILES_DIR"/install/linux/dotfiles.sh
+"$DOTFILES_DIR"/install/linux/zsh.sh
+"$DOTFILES_DIR"/install/linux/starship.sh
+"$DOTFILES_DIR"/install/linux/git-completion.sh
+"$DOTFILES_DIR"/install/linux/google-japanese-input.sh
+"$DOTFILES_DIR"/install/linux/vim.sh
+"$DOTFILES_DIR"/install/linux/tmux.sh
 # source-highlight.sh customizes the color table
-~/dotfiles/install/linux/source-highlight.sh
+"$DOTFILES_DIR"/install/linux/source-highlight.sh

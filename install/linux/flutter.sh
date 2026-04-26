@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install flutter
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 # ref. https://qiita.com/tomy0610/items/896dc8ec9ba95c33194f
 if [ ! "$OSDIST" = "macos" ]; then
