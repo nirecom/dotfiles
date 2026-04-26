@@ -2,6 +2,26 @@
 
 ## Current Work
 
+### dotfiles relocatable 化 — 移動作業待ち (Verifying)
+commit `82852bc` push 済み。次セッションで実際に移動して動作確認する。
+
+**移動手順:**
+```bash
+mv ~/dotfiles ~/git/dotfiles
+mv ~/dotfiles-private ~/git/dotfiles-private   # すでに移動済みの可能性あり(要確認)
+~/git/dotfiles/install.sh
+```
+`install.sh` が `~/.dotfiles_env` を `~/git/dotfiles` で再生成し symlink を張り直す。
+新シェルで `echo $DOTFILES_DIR` → `~/git/dotfiles` (の絶対パス) になれば完了。
+
+**確認ポイント:**
+- [ ] `echo $DOTFILES_DIR` が `~/git/dotfiles` の絶対パスを返す
+- [ ] `~/.bash_profile` symlink が `~/git/dotfiles/.bash_profile` を指している
+- [ ] `~/.dotfiles_env` の内容が新パスになっている
+- [ ] agents fetch が `~/git/agents` を参照している (`echo $_agents_dir` or ログ確認)
+- [ ] `bash tests/main-relocatable.sh` pass (新パスで実行)
+- [ ] 動作確認後に次セッションで本 todo エントリを history.md へ移動
+
 ### awesome-lists 投稿（agents repo split プロジェクトの残作業）
 - [ ] [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) へエントリ追加 PR
 - [ ] [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit) へエントリ追加 PR
