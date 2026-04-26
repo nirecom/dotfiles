@@ -39,9 +39,9 @@ if [ -d $HOME/.tfenv ]; then
     sudo rm -f /usr/local/bin/tfenv /usr/local/bin/terraform
 fi
 
-if [ -L ~/dotfiles/claude-code ]; then
-    echo "Removing obsolete symlink: ~/dotfiles/claude-code (renamed to claude-global)"
-    rm ~/dotfiles/claude-code
+if [ -L "$DOTFILES_DIR/claude-code" ]; then
+    echo "Removing obsolete symlink: $DOTFILES_DIR/claude-code (renamed to claude-global)"
+    rm "$DOTFILES_DIR/claude-code"
 fi
 
 # Remove obsolete ~/.claude/* symlinks that pointed to dotfiles/claude-global
@@ -63,9 +63,9 @@ done
 # claude-global/ is no longer tracked (post-agents-split). Untracked leftover
 # files (e.g. from prior `git reset --hard` over the split commit) survive
 # normal git operations and need explicit cleanup.
-_cg_dir="$HOME/dotfiles/claude-global"
-if [ -d "$_cg_dir" ] && [ -d "$HOME/dotfiles/.git" ]; then
-    if ! git -C "$HOME/dotfiles" ls-tree -r HEAD claude-global 2>/dev/null | grep -q .; then
+_cg_dir="$DOTFILES_DIR/claude-global"
+if [ -d "$_cg_dir" ] && [ -d "$DOTFILES_DIR/.git" ]; then
+    if ! git -C "$DOTFILES_DIR" ls-tree -r HEAD claude-global 2>/dev/null | grep -q .; then
         echo "Removing obsolete dotfiles/claude-global/ (post-agents-split leftover)"
         rm -rf "$_cg_dir"
     fi

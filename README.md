@@ -16,7 +16,7 @@ Cross-platform dotfiles and install scripts for shell, editor, git, and prompt c
 - **TDD via subagent isolation** — test writing runs in an autonomous `mode: "auto"` subagent restricted to test files only; confirmations drop from O(N) edits to two.
 - **Private information scanning** — dual-checkpoint (pre-commit hook + Claude Code PreToolUse hook) scanning for IP addresses, secrets, local paths, and Trojan Source Unicode.
 
-When `~/agents/` is present as a sibling of `~/dotfiles/`, the dotfiles installer wires it in automatically.
+When the `agents` repo is cloned as a sibling of the dotfiles repo (e.g. `~/git/dotfiles` and `~/git/agents`), the dotfiles installer wires it in automatically. The `dotfiles-private` repo follows the same sibling convention.
 
 ## Supported Platforms
 
@@ -67,13 +67,17 @@ Note: no-flag install also sets up Node.js (nvm on Linux/macOS, fnm on Windows).
 ### Linux / macOS
 
 ```bash
-git clone git@github.com:nirecom/dotfiles.git ~/dotfiles
-cd ~/dotfiles
+# Clone anywhere (e.g. ~/dotfiles, ~/git/dotfiles, ~/work/dotfiles).
+# The `agents` and `dotfiles-private` repos must be siblings of this one.
+git clone git@github.com:nirecom/dotfiles.git ~/git/dotfiles
+cd ~/git/dotfiles
 ./install.sh            # Symlinks only
 ./install.sh --base     # Symlinks + base packages
 ./install.sh --develop  # Symlinks + dev tools
 ./install.sh --full     # Symlinks + base + dev tools
 ```
+
+`install.sh` resolves its own location and writes `~/.dotfiles_env` so login shells (`.bash_profile`, `.zshrc`) can find the repo regardless of where it was cloned.
 
 ### Windows (PowerShell)
 
@@ -94,7 +98,7 @@ Requires Developer Mode (Settings > System > For developers) or Administrator pr
 
 1. Install Entware from QNAP App Center
 2. Install required packages: `opkg install git git-http bash vim-full curl`
-3. Clone and install:
+3. Clone and install (any location works; QNAP defaults to `~/dotfiles`):
    ```bash
    git clone git@github.com:nirecom/dotfiles.git ~/dotfiles
    cd ~/dotfiles

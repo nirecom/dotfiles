@@ -1,6 +1,7 @@
 #!/bin/bash
 # Initialize Ubuntu
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 # Check current user name
 USERNAME=nire

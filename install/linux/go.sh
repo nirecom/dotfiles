@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install go
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 if type go >/dev/null 2>&1; then
     echo "go is installed."

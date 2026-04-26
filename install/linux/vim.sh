@@ -15,4 +15,4 @@ cd ~/.vim/bundle
 
 # vim-json
 [ ! -d ./vim-json ] && git clone git@github.com:elzr/vim-json.git
-ln -sf ~/dotfiles/filetype.vim ~/.vim/
+ln -sf "$DOTFILES_DIR"/filetype.vim ~/.vim/

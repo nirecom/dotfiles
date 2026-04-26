@@ -1,6 +1,7 @@
 #!/bin/bash
 # Source Highlighting for less command
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 if type source-highlight >/dev/null 2>&1; then
     echo "source-highlight is already installed."
@@ -42,7 +43,7 @@ esac
 export LESS='-R'
 
 echo "Customizing color table ..."
-LOCALDIR=$HOME/dotfiles/source-highlight
+LOCALDIR="$DOTFILES_DIR"/source-highlight
 if [ -f $LOCALDIR/esc.style ]; then
     sudo mv $SHAREDIR/esc.style $SHAREDIR/esc.style.orig
     sudo cp $LOCALDIR/esc.style $SHAREDIR

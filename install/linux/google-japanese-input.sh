@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install Google Japanese Input
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 case "$OSDIST" in
     "macos" )

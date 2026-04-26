@@ -5,7 +5,8 @@
 set -e
 PASS=0
 FAIL=0
-SCRIPT_DIR=~/dotfiles/install/linux
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/.." && pwd)}"
+SCRIPT_DIR="$DOTFILES_DIR/install/linux"
 
 fail() {
     echo "FAIL: $1"
@@ -80,7 +81,7 @@ else
 fi
 
 # install.sh: base block must not have macOS special case (orthogonality with install.ps1)
-INSTALL_SH=~/dotfiles/install.sh
+INSTALL_SH="$DOTFILES_DIR/install.sh"
 if grep -q 'OSDIST.*macos' "$INSTALL_SH"; then
     fail "install.sh has macOS special case in base block (breaks orthogonality)"
 else

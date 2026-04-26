@@ -1,5 +1,6 @@
 #!/bin/bash
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 FILENAME="/etc/sudoers.d/nirecom-users"
 if [ ! -f /etc/sudoers.d/nirecom-users ]; then

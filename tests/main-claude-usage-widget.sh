@@ -22,7 +22,7 @@ else
 fi
 
 # Test: script sources detectos.sh
-grep -q "source ~/dotfiles/bin/detectos.sh" "$SCRIPT" && pass "sources detectos.sh" || fail "does not source detectos.sh"
+grep -q 'source "\$DOTFILES_DIR/bin/detectos.sh"' "$SCRIPT" && pass "sources detectos.sh" || fail "does not source detectos.sh"
 
 # Test: script uses case statement for OS branching
 grep -q 'case "$OSDIST"' "$SCRIPT" && pass "uses OSDIST case branching" || fail "missing OSDIST case branching"

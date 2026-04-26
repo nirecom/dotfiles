@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install brew and git
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 if [ "$OSDIST" != "macos" ]; then
     echo "Skipping brew / git installation only for macos..."

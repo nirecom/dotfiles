@@ -1,7 +1,8 @@
 #!/bin/bash
 # Install Claude Usage Widget
 # Source: https://github.com/SlavomirDurej/claude-usage-widget
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 # Get latest release tag from GitHub API (strips leading 'v' so output is a bare version)
 get_latest_version() {

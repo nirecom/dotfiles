@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install rbenv and ruby
-source ~/dotfiles/bin/detectos.sh
+: "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
+source "$DOTFILES_DIR/bin/detectos.sh"
 
 if ! type rbenv >/dev/null 2>&1; then
     case "$OSDIST" in
@@ -9,7 +10,7 @@ if ! type rbenv >/dev/null 2>&1; then
             # Necessary packages for rbenv
             # ref. https://github.com/rbenv/ruby-build/wiki
             sudo apt install -y autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev
-            cd ~/dotfiles/install/linux
+            cd "$DOTFILES_DIR"/install/linux
             git clone https://github.com/rbenv/rbenv.git ~/.rbenv
             git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
             #export PATH="$HOME/.rbenv/bin:$PATH

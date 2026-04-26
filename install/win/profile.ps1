@@ -16,10 +16,15 @@ if ($loadedKeys -match 'no identities|agent.*not running|error') {
         ForEach-Object { ssh-add $_.FullName 2>&1 | Out-Null }
 }
 
-# Auto-pull dotfiles on startup
-$DotfilesDir = "C:\git\dotfiles"
-$env:DOTFILES_DIR = $DotfilesDir
-$PrivateDir = "C:\git\dotfiles-private"
+# Auto-pull dotfiles on startup.
+# Honor $env:DOTFILES_DIR if set (e.g. by install/win/dotfileslink.ps1); fall back to C:\git\dotfiles.
+if ($env:DOTFILES_DIR) {
+    $DotfilesDir = $env:DOTFILES_DIR
+} else {
+    $DotfilesDir = "C:\git\dotfiles"
+    $env:DOTFILES_DIR = $DotfilesDir
+}
+$PrivateDir = Join-Path (Split-Path -Parent $DotfilesDir) "dotfiles-private"
 $AgentsDir = Join-Path (Split-Path -Parent $DotfilesDir) "agents"
 if (Test-Path "$AgentsDir\profile-snippet.ps1") { . "$AgentsDir\profile-snippet.ps1" }
 $SessionDir = "$HOME\.claude\projects"
