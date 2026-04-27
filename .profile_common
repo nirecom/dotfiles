@@ -173,33 +173,51 @@ if type git > /dev/null 2>&1; then # if git is installed
         _agents_dir="$(dirname "$DOTFILES_DIR")/agents"
         _session_dir="$HOME/.claude/projects"
 
-        # Launch all fetches in parallel
-        echo "git fetch $DOTFILES_DIR ..."
-        timeout 3 git -C "$DOTFILES_DIR" fetch 2>/dev/null & _pid_df=$!
+        # Suppress zsh job-control output ([N] PID / [N] exit N) via NO_MONITOR
+        _dotfiles_fetch_all() {
+            [ -n "$ZSH_VERSION" ] && setopt LOCAL_OPTIONS NO_MONITOR
+            # Portable timeout: timeout (Linux) → gtimeout (macOS coreutils) → none
+            local _tc
+            if command -v timeout >/dev/null 2>&1; then
+                _tc="timeout 3"
+            elif command -v gtimeout >/dev/null 2>&1; then
+                _tc="gtimeout 3"
+            fi
 
-        _pid_prv= _rc_prv=1
-        if [ -d "$_dotfiles_private_dir/.git" ]; then
-            echo "git fetch dotfiles-private ..."
-            timeout 3 git -C "$_dotfiles_private_dir" fetch 2>/dev/null & _pid_prv=$!
-        fi
+            # Launch all fetches in parallel
+            echo "git fetch $DOTFILES_DIR ..."
+            # shellcheck disable=SC2086
+            $_tc git -C "$DOTFILES_DIR" fetch 2>/dev/null & _pid_df=$!
 
-        _pid_ag= _rc_ag=1
-        if [ -d "$_agents_dir/.git" ]; then
-            echo "git fetch agents ..."
-            timeout 3 git -C "$_agents_dir" fetch 2>/dev/null & _pid_ag=$!
-        fi
+            _pid_prv= _rc_prv=1
+            if [ -d "$_dotfiles_private_dir/.git" ]; then
+                echo "git fetch dotfiles-private ..."
+                # shellcheck disable=SC2086
+                $_tc git -C "$_dotfiles_private_dir" fetch 2>/dev/null & _pid_prv=$!
+            fi
 
-        _pid_ss= _rc_ss=1
-        if [ -d "$_session_dir/.git" ]; then
-            echo "git fetch Claude session sync ..."
-            timeout 3 git -C "$_session_dir" fetch 2>/dev/null & _pid_ss=$!
-        fi
+            _pid_ag= _rc_ag=1
+            if [ -d "$_agents_dir/.git" ]; then
+                echo "git fetch agents ..."
+                # shellcheck disable=SC2086
+                $_tc git -C "$_agents_dir" fetch 2>/dev/null & _pid_ag=$!
+            fi
 
-        # Wait for all fetches
-        wait $_pid_df; _rc_df=$?
-        [ -n "$_pid_prv" ] && { wait $_pid_prv; _rc_prv=$?; }
-        [ -n "$_pid_ag"  ] && { wait $_pid_ag;  _rc_ag=$?;  }
-        [ -n "$_pid_ss"  ] && { wait $_pid_ss;  _rc_ss=$?;  }
+            _pid_ss= _rc_ss=1
+            if [ -d "$_session_dir/.git" ]; then
+                echo "git fetch Claude session sync ..."
+                # shellcheck disable=SC2086
+                $_tc git -C "$_session_dir" fetch 2>/dev/null & _pid_ss=$!
+            fi
+
+            # Wait for all fetches
+            wait $_pid_df; _rc_df=$?
+            [ -n "$_pid_prv" ] && { wait $_pid_prv; _rc_prv=$?; }
+            [ -n "$_pid_ag"  ] && { wait $_pid_ag;  _rc_ag=$?;  }
+            [ -n "$_pid_ss"  ] && { wait $_pid_ss;  _rc_ss=$?;  }
+        }
+        _dotfiles_fetch_all
+        unset -f _dotfiles_fetch_all 2>/dev/null
 
         # Merge dotfiles
         if [ "$_rc_df" -eq 0 ]; then
