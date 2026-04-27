@@ -87,4 +87,8 @@ Changes: install/linux/install-obsolete.sh と install/win/install-obsolete.ps1 
 
 ### CONFIG: install-obsolete: remove ~/.gitconfig deletion prompt (agents uses it for hooksPath) (2026-04-26, pending)
 Background: commit 6caa366 (2026-04-11) added a prompt in install-obsolete to delete ~/.gitconfig because it was overriding the dotfiles-managed XDG git config and causing private emails to leak into commits. Later, the agents installer (commit d8b7ee7) intentionally changed core.hooksPath write destination to ~/.gitconfig. Reason: config.local is a symlink to dotfiles-private/config.local.linux (tracked), so writing an absolute path there dirties a tracked file; --global falls back to ~/.config/git/config (dotfiles-managed, also tracked) under XDG precedence. ~/.gitconfig is untracked by any repo and is the correct place for machine-local per-user config. This created a conflict: dotfiles install-obsolete would delete what agents intentionally wrote.
-Changes: Removed the ~/.gitconfig deletion prompt block from install-obsolete.ps1 and install-obsolete.sh. Deleted tests/main-install-obsolete-gitconfig.Tests.ps1 (the logic it tested no longer exists).
+Changes: Removed the ~/.gitconfig deletion prompt block from install-obsolete.ps1 and install-obsolete.sh. Deleted tests/main-install-obsolete-gitconfig.Tests.ps1 (the logic it tested no longer exists).
+
+### FEATURE: dotfiles relocatable 化 — ~/git/dotfiles へ移動完了 (2026-04-27, 82852bc)
+Background: dotfiles を ~/dotfiles から ~/git/dotfiles へ移動。82852bc で relocatable 化（ハードコードパス除去）を実施済み。移動後に install.sh が ~/.dotfiles_env を新パスで再生成し symlink を張り直す設計。
+Changes: ~/dotfiles → ~/git/dotfiles へ移動完了。DOTFILES_DIR, ~/.bash_profile symlink, ~/.dotfiles_env すべて新パスに更新。tests/main-installer-idempotency.sh 10/10 pass 確認。
