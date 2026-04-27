@@ -91,4 +91,8 @@ Changes: Removed the ~/.gitconfig deletion prompt block from install-obsolete.ps
 
 ### FEATURE: dotfiles relocatable 化 — ~/git/dotfiles へ移動完了 (2026-04-27, 82852bc)
 Background: dotfiles を ~/dotfiles から ~/git/dotfiles へ移動。82852bc で relocatable 化（ハードコードパス除去）を実施済み。移動後に install.sh が ~/.dotfiles_env を新パスで再生成し symlink を張り直す設計。
-Changes: ~/dotfiles → ~/git/dotfiles へ移動完了。DOTFILES_DIR, ~/.bash_profile symlink, ~/.dotfiles_env すべて新パスに更新。tests/main-installer-idempotency.sh 10/10 pass 確認。
+Changes: ~/dotfiles → ~/git/dotfiles へ移動完了。DOTFILES_DIR, ~/.bash_profile symlink, ~/.dotfiles_env すべて新パスに更新。tests/main-installer-idempotency.sh 10/10 pass 確認。
+
+### CONFIG: install.sh: add ANSI color output (2026-04-27, pending)
+Background: On macOS/Linux, install.sh used plain echo with no color formatting, while the Windows install.ps1 already used Write-Host -ForegroundColor. The visual gap made the macOS installer harder to follow at a glance.
+Changes: Added TTY-detected ANSI color variables (C_CYAN, C_GREEN, C_YELLOW, C_BOLD, C_RESET) to install.sh. === headers print in cyan, --- section markers in bold, === Done === in green, error/warning messages in yellow. No escape codes emitted when stdout is not a terminal (pipe/log safe).
