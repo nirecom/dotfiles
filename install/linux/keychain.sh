@@ -2,9 +2,10 @@
 # Install keychain (SSH/GPG agent manager)
 : "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
 source "$DOTFILES_DIR/bin/detectos.sh"
+source "$DOTFILES_DIR/bin/colors.sh"
 
 if command -v keychain &> /dev/null; then
-    echo "keychain is already installed: $(keychain --version 2>&1 | head -1)"
+    printf "${C_GRAY}keychain is already installed: $(keychain --version 2>&1 | head -1)${C_RESET}\n"
     exit 0
 fi
 

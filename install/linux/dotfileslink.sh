@@ -4,6 +4,29 @@
 DOTFILES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 export DOTFILES_DIR
 
+source "$DOTFILES_DIR/bin/colors.sh"
+
+link_file() {
+    local source="$1" dest="$2"
+    if [ -L "$dest" ]; then
+        local current_target
+        current_target="$(readlink "$dest")"
+        if [ "$current_target" = "$source" ]; then
+            printf "${C_GRAY}Already linked: $dest${C_RESET}\n"
+            return
+        fi
+        printf "${C_YELLOW}Relinking: $dest${C_RESET}\n"
+        printf "${C_GRAY}  was: $current_target${C_RESET}\n"
+        printf "${C_GRAY}  now: $source${C_RESET}\n"
+    elif [ -e "$dest" ]; then
+        local backup="$dest.bak"
+        printf "${C_YELLOW}Backing up: $dest -> $backup${C_RESET}\n"
+        mv "$dest" "$backup"
+    fi
+    ln -sf "$source" "$dest"
+    printf "${C_GREEN}Linked: $dest -> $source${C_RESET}\n"
+}
+
 # Generate ~/.dotfiles_env so shell rc files (.bash_profile, .zshrc) can locate the repo
 # regardless of where it has been cloned.
 cat > "$HOME/.dotfiles_env" <<EOF
@@ -11,24 +34,22 @@ cat > "$HOME/.dotfiles_env" <<EOF
 export DOTFILES_DIR="$DOTFILES_DIR"
 EOF
 
-#ln -sf "$DOTFILES_DIR/.bashrc" ~/ # Ubuntu has .bashrc by default
-ln -sf "$DOTFILES_DIR/.bash_profile" ~/
-#ln -sf "$DOTFILES_DIR/.bash_logout" ~/
-ln -sf "$DOTFILES_DIR/.zshrc" ~/
-ln -sf "$DOTFILES_DIR/.vimrc" ~/
-#ln -sf "$DOTFILES_DIR/.vim" ~/
-ln -sf "$DOTFILES_DIR/.editorconfig" ~/
-ln -sf "$DOTFILES_DIR/.tmux.conf" ~/
-ln -sf "$DOTFILES_DIR/.inputrc" ~/
+#link_file "$DOTFILES_DIR/.bashrc" ~/ # Ubuntu has .bashrc by default
+link_file "$DOTFILES_DIR/.bash_profile" "$HOME/.bash_profile"
+#link_file "$DOTFILES_DIR/.bash_logout" "$HOME/.bash_logout"
+link_file "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
+link_file "$DOTFILES_DIR/.vimrc" "$HOME/.vimrc"
+#link_file "$DOTFILES_DIR/.vim" "$HOME/.vim"
+link_file "$DOTFILES_DIR/.editorconfig" "$HOME/.editorconfig"
+link_file "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+link_file "$DOTFILES_DIR/.inputrc" "$HOME/.inputrc"
 
 # Private context directory (gitignored)
 mkdir -p "$DOTFILES_DIR/.context-private"
 
 # Git config
 mkdir -p ~/.config
-if [ ! -e ~/.config/git ]; then
-    ln -sf "$DOTFILES_DIR/.config/git" ~/.config/
-fi
+link_file "$DOTFILES_DIR/.config/git" "$HOME/.config/git"
 
 # Generate OS-specific git config.local
 GIT_CONFIG_LOCAL="$DOTFILES_DIR/.config/git/config.local"
@@ -46,16 +67,14 @@ fi
 
 
 # Starship config
-if [ ! -e ~/.config/starship.toml ]; then
-    ln -sf "$DOTFILES_DIR/.config/starship.toml" ~/.config/
-fi
+link_file "$DOTFILES_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
 
 # Emacs
 mkdir -p ~/.emacs.d
-ln -sf "$DOTFILES_DIR/.emacs.d/init.el" ~/.emacs.d/
-ln -sf "$DOTFILES_DIR/.emacs.d/inits" ~/.emacs.d/
-#ln -sf "$DOTFILES_DIR/.emacs.d/package-install.el" ~/.emacs.d/
-#ln -sf "$DOTFILES_DIR/.emacs.d/packages" ~/.emacs.d/
+link_file "$DOTFILES_DIR/.emacs.d/init.el" "$HOME/.emacs.d/init.el"
+link_file "$DOTFILES_DIR/.emacs.d/inits" "$HOME/.emacs.d/inits"
+#link_file "$DOTFILES_DIR/.emacs.d/package-install.el" "$HOME/.emacs.d/package-install.el"
+#link_file "$DOTFILES_DIR/.emacs.d/packages" "$HOME/.emacs.d/packages"
 mkdir -p ~/tmp
 mkdir -p ~/.emacs_backup
 
