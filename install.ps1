@@ -103,8 +103,13 @@ Write-Host "--- Installing PowerShell Core ---"
 # prior winget calls in this session (winget can leave Invoke-RestMethod broken).
 Invoke-ScriptIsolated "$DotfilesDir\install\win\pwsh.ps1"
 
+# Step 8: Install GitHub CLI (gh) — required for hooks (private repo detection)
+Write-Host ""
+Write-Host "--- Installing gh (GitHub CLI) ---"
+Invoke-ScriptIsolated "$DotfilesDir\install\win\gh.ps1"
+
 if ($Base -or $Develop -or $Toolchain -or $Full) {
-    # Step 8: Install base packages
+    # Step 9: Install base packages
     Write-Host ""
     Write-Host "--- Installing base packages ---"
     & "$DotfilesDir\install\win\starship.ps1"
