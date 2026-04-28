@@ -52,18 +52,23 @@ echo ""
 printf "${C_BOLD}--- Cleaning up obsolete files ---${C_RESET}\n"
 "$DOTFILES_DIR/install/linux/install-obsolete.sh"
 
+# Step 6: Install GitHub CLI (gh) — required for hooks (private repo detection)
+echo ""
+printf "${C_BOLD}--- Installing gh (GitHub CLI) ---${C_RESET}\n"
+"$DOTFILES_DIR/install/linux/gh.sh"
+
 if [ "$1" = "--base" ] || [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
-    # Step 6: Install base packages
+    # Step 7: Install base packages
     echo ""
     printf "${C_BOLD}--- Installing base packages ---${C_RESET}\n"
     "$DOTFILES_DIR/install/linux/install-base.sh"
 
-    # Step 7: Install uv (Python package manager)
+    # Step 8: Install uv (Python package manager)
     echo ""
     printf "${C_BOLD}--- Installing uv ---${C_RESET}\n"
     "$DOTFILES_DIR/install/linux/uv.sh"
 
-    # Step 8: Install Claude Usage Widget
+    # Step 9: Install Claude Usage Widget
     echo ""
     printf "${C_BOLD}--- Installing Claude Usage Widget ---${C_RESET}\n"
     "$DOTFILES_DIR/install/linux/claude-usage-widget.sh"
