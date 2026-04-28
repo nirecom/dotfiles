@@ -8,16 +8,11 @@
 
 set -e
 
-# Colors (only when stdout is a terminal)
-if [ -t 1 ]; then
-    C_CYAN='\033[0;36m'; C_GREEN='\033[0;32m'; C_YELLOW='\033[0;33m'; C_BOLD='\033[1m'; C_RESET='\033[0m'
-else
-    C_CYAN=''; C_GREEN=''; C_YELLOW=''; C_BOLD=''; C_RESET=''
-fi
-
 # Resolve DOTFILES_DIR from this script's location so the repo can live anywhere.
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 export DOTFILES_DIR
+
+source "$DOTFILES_DIR/bin/colors.sh"
 
 source "$DOTFILES_DIR/bin/detectos.sh"
 

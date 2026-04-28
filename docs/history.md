@@ -95,4 +95,8 @@ Changes: ~/dotfiles → ~/git/dotfiles へ移動完了。DOTFILES_DIR, ~/.bash_p
 
 ### CONFIG: install.sh: add ANSI color output (2026-04-27, pending)
 Background: On macOS/Linux, install.sh used plain echo with no color formatting, while the Windows install.ps1 already used Write-Host -ForegroundColor. The visual gap made the macOS installer harder to follow at a glance.
-Changes: Added TTY-detected ANSI color variables (C_CYAN, C_GREEN, C_YELLOW, C_BOLD, C_RESET) to install.sh. === headers print in cyan, --- section markers in bold, === Done === in green, error/warning messages in yellow. No escape codes emitted when stdout is not a terminal (pipe/log safe).
+Changes: Added TTY-detected ANSI color variables (C_CYAN, C_GREEN, C_YELLOW, C_BOLD, C_RESET) to install.sh. === headers print in cyan, --- section markers in bold, === Done === in green, error/warning messages in yellow. No escape codes emitted when stdout is not a terminal (pipe/log safe).
+
+### CONFIG: installer: gray color for already-installed/linked messages on Linux/WSL (2026-04-27, pending)
+Background: On Windows, already-handled items (Already linked, already installed) appear in DarkGray via Write-Host, reducing visual noise. On Linux/WSL, these were plain white echo — making re-runs harder to scan.
+Changes: Added bin/colors.sh shared color utility (C_GRAY=\033[0;90m, TTY-detected). install.sh now sources it instead of inline definitions. dotfileslink.sh gains a link_file() function that prints Already linked in gray, Relinking in yellow, and Linked in green, replacing blind ln -sf calls. keychain.sh and nvm.sh print already installed messages in gray. dotfiles-private/install/linux/dotfileslink.sh updated to use the same color scheme via sourced colors.sh.
