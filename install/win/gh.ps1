@@ -12,7 +12,12 @@ if (Get-Command gh -ErrorAction SilentlyContinue) {
 Write-Host "Installing gh (GitHub CLI)..."
 winget install GitHub.cli --accept-source-agreements --accept-package-agreements
 if ($LASTEXITCODE -ne 0) {
-    Write-Warning "gh installation failed (exit code $LASTEXITCODE). Re-run install.ps1 to retry."
-    exit 1
+    if (Get-Command gh -ErrorAction SilentlyContinue) {
+        Write-Host "gh installed." -ForegroundColor Green
+    } else {
+        Write-Warning "gh installation failed (exit code $LASTEXITCODE). Re-run install.ps1 to retry."
+        exit 1
+    }
+} else {
+    Write-Host "gh installed." -ForegroundColor Green
 }
-Write-Host "gh installed." -ForegroundColor Green
