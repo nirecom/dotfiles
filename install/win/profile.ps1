@@ -52,6 +52,22 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
         $fetchSs = Start-Process -FilePath git -ArgumentList "-C $SessionDir fetch" -NoNewWindow -PassThru
     }
 
+    # Extra repos from ~/.config/dotfiles/fetch-repos (one path per line, # = comment)
+    $_extraFile = "$HOME\.config\dotfiles\fetch-repos"
+    $extraFetches = @()
+    if (Test-Path $_extraFile) {
+        Get-Content $_extraFile |
+            Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' } |
+            ForEach-Object {
+                $repo = $_.Trim()
+                if (Test-Path "$repo\.git") {
+                    Write-Host "git fetch $repo ..."
+                    $extraFetches += @{ Path = $repo; Proc = (Start-Process -FilePath git -ArgumentList "-C `"$repo`" fetch" -NoNewWindow -PassThru) }
+                }
+            }
+    }
+    Remove-Variable _extraFile
+
     # Wait for dotfiles fetch and merge
     if ($fetchDf) {
         if (-not $fetchDf.WaitForExit(3000)) {
@@ -94,6 +110,10 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
     if ($fetchSs) {
         if (-not $fetchSs.WaitForExit(3000)) { $fetchSs.Kill() }
         elseif ($fetchSs.ExitCode -eq 0) { git -C $SessionDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
+    }
+    foreach ($ef in $extraFetches) {
+        if (-not $ef.Proc.WaitForExit(3000)) { $ef.Proc.Kill() }
+        elseif ($ef.Proc.ExitCode -eq 0) { git -C $ef.Path merge --ff-only --no-summary FETCH_HEAD 2>$null }
     }
 }
 
@@ -153,3 +173,7 @@ function codes {
     Start-Process pwsh -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-Command",
         "code.cmd --new-window $codeArgs; & '$waitScript' '$name'; & '$syncScript' push -Quiet" -WindowStyle Hidden
 }
+
+# --- BEGIN agents profile sourcing ---
+. "C:\git\agents\profile-snippet.ps1"
+# --- END agents profile sourcing ---
