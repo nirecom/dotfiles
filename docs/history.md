@@ -107,4 +107,8 @@ Changes: Added install/linux/gh.sh (ubuntu: apt with GitHub keyring; macos: brew
 
 ### BUGFIX: Fix codes function: session-sync path pointed to dotfiles/bin instead of agents/bin (2026-04-29, pending)
 Background: The codes function in profile.ps1 set $syncScript to $DotfilesDir\bin\session-sync.ps1, but session-sync.ps1 lives in agents/bin. The background process failed silently (hidden window) and no toast notification appeared after VS Code was closed.
-Changes: Changed $syncScript to use $AgentsDir\bin\session-sync.ps1 in install/win/profile.ps1. Also removed a duplicate agents profile sourcing block at the bottom of profile.ps1 (already sourced conditionally at the top via $AgentsDir).
+Changes: Changed $syncScript to use $AgentsDir\bin\session-sync.ps1 in install/win/profile.ps1. Also removed a duplicate agents profile sourcing block at the bottom of profile.ps1 (already sourced conditionally at the top via $AgentsDir).
+
+### FEATURE: install-obsolete: remove stale core.hooksPath from config.local with y/n prompt (2026-04-29, pending)
+Background: core.hooksPath was moved from the dotfiles-tracked .config/git/config to ~/.gitconfig (written by agents installer). Machines that had hooksPath in config.local (untracked machine-local override) would retain the stale entry indefinitely since git pull does not update untracked files.
+Changes: install/linux/install-obsolete.sh and install/win/install-obsolete.ps1: added a block that detects hooksPath matching *agents/hooks* in config.local, explains it is now managed via ~/.gitconfig, and prompts y/N before removing.
