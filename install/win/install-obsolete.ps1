@@ -79,6 +79,24 @@ if (Test-Path $gitConfigLocal) {
     }
 }
 
+# --- Remove obsolete core.hooksPath from config.local (now managed by agents installer via ~/.gitconfig) ---
+$gitConfigLocal = Join-Path $DotfilesDir ".config\git\config.local"
+if (Test-Path $gitConfigLocal) {
+    $hooksPath = git config --file $gitConfigLocal core.hooksPath 2>$null
+    if ($hooksPath -like "*\agents\hooks" -or $hooksPath -like "*/agents/hooks") {
+        Write-Host ""
+        Write-Host "core.hooksPath is set in config.local: $hooksPath"
+        Write-Host "This is now written to ~/.gitconfig by the agents installer and is no longer needed here."
+        $ans = Read-Host "Remove core.hooksPath from config.local? [y/N]"
+        if ($ans -match '^[yY]') {
+            git config --file $gitConfigLocal --unset core.hooksPath 2>$null | Out-Null
+            Write-Host "Removed core.hooksPath from config.local." -ForegroundColor Yellow
+        } else {
+            Write-Host "Skipped."
+        }
+    }
+}
+
 # --- BEGIN temporary: ~/dotfiles,~/git → C:\git migration ---
 # Remove old dotfiles directories after migration to C:\git
 $migrationTargets = @(
