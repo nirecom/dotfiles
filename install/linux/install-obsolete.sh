@@ -111,3 +111,28 @@ while IFS= read -r -d '' d; do
     _salvage_git_workflow "$d"
 done < <(find "$HOME" -maxdepth 4 -name "workflow" -path "*/.git/workflow" -type d -print0 2>/dev/null)
 # --- END temporary: .git/workflow → ~/.claude/projects/workflow migration ---
+
+# Remove obsolete core.hooksPath from config.local (now managed by agents installer via ~/.gitconfig)
+_git_config_local="$DOTFILES_DIR/.config/git/config.local"
+if [ -f "$_git_config_local" ]; then
+    _hp=$(git config --file "$_git_config_local" core.hooksPath 2>/dev/null || true)
+    if [ -n "$_hp" ]; then
+        echo ""
+        echo "core.hooksPath is set in config.local: $_hp"
+        echo "This is now written to ~/.gitconfig by the agents installer and is no longer needed here."
+        printf "Remove core.hooksPath from config.local? [y/N] "
+        read -r _ans
+        case "$_ans" in
+            [yY]*)
+                git config --file "$_git_config_local" --unset core.hooksPath
+                echo "Removed core.hooksPath from config.local."
+                ;;
+            *)
+                echo "Skipped."
+                ;;
+        esac
+        unset _ans
+    fi
+    unset _hp
+fi
+unset _git_config_local
