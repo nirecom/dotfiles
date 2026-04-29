@@ -141,7 +141,7 @@ if (Get-Command fnm -ErrorAction SilentlyContinue) {
 
 # Launch VS Code with session sync (push on window close via title polling)
 function codes {
-    $syncScript = "$DotfilesDir\bin\session-sync.ps1"
+    $syncScript = "$AgentsDir\bin\session-sync.ps1"
     $waitScript = "$DotfilesDir\bin\wait-vscode-window.ps1"
     $target = if ($args.Count -gt 0) { $args[0] } else { '.' }
     $codeArgs = $args -join ' '
