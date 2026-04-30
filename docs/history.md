@@ -111,4 +111,8 @@ Changes: Changed $syncScript to use $AgentsDir\bin\session-sync.ps1 in install/w
 
 ### FEATURE: install-obsolete: remove stale core.hooksPath from config.local with y/n prompt (2026-04-29, pending)
 Background: core.hooksPath was moved from the dotfiles-tracked .config/git/config to ~/.gitconfig (written by agents installer). Machines that had hooksPath in config.local (untracked machine-local override) would retain the stale entry indefinitely since git pull does not update untracked files.
-Changes: install/linux/install-obsolete.sh and install/win/install-obsolete.ps1: added a block that detects hooksPath matching *agents/hooks* in config.local, explains it is now managed via ~/.gitconfig, and prompts y/N before removing.
+Changes: install/linux/install-obsolete.sh and install/win/install-obsolete.ps1: added a block that detects hooksPath matching *agents/hooks* in config.local, explains it is now managed via ~/.gitconfig, and prompts y/N before removing.
+
+### CONFIG: Move dotfiles.code-workspace to dotfiles-private (2026-04-30, -)
+Background: dotfiles.code-workspace existed in both repos; dotfiles-private had a stale 2-folder version
+Changes: Removed from dotfiles repo; dotfiles-private now has the canonical 4-folder layout (dotfiles, dotfiles-private, agents, fornix)
