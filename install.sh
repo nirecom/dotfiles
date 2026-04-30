@@ -86,22 +86,8 @@ if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
     "$DOTFILES_DIR/install/linux/vscode.sh"
 fi
 
-# Run dotfiles-private installer if available (sibling repo)
-PRIVATE_INSTALLER="$(dirname "$DOTFILES_DIR")/dotfiles-private/install.sh"
-if [ -x "$PRIVATE_INSTALLER" ]; then
-    echo ""
-    printf "${C_BOLD}--- Running dotfiles-private installer ---${C_RESET}\n"
-    "$PRIVATE_INSTALLER" "$@"
-fi
-
-# Run agents installer if available (sibling repo)
-AGENTS_INSTALLER="$(dirname "$DOTFILES_DIR")/agents/install.sh"
-if [ -x "$AGENTS_INSTALLER" ]; then
-    echo ""
-    printf "${C_BOLD}--- Running agents installer ---${C_RESET}\n"
-    "$AGENTS_INSTALLER"
-fi
-
 echo ""
 printf "${C_GREEN}=== Done ===${C_RESET}\n"
-exec $SHELL -l
+if [ -z "${IS_DOTFILES_SLAVE:-}" ]; then
+    exec $SHELL -l
+fi

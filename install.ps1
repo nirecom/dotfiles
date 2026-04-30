@@ -148,26 +148,5 @@ if ($Toolchain -or $Full) {
     Invoke-ScriptIsolated "$DotfilesDir\install\win\vs-cpp.ps1"
 }
 
-# Run dotfiles-private installer if available
-$PrivateInstaller = Join-Path (Split-Path -Parent $DotfilesDir) "dotfiles-private\install.ps1"
-if (Test-Path $PrivateInstaller) {
-    Write-Host ""
-    Write-Host "--- Running dotfiles-private installer ---"
-    $privateArgs = @{}
-    if ($Base) { $privateArgs['Base'] = $true }
-    if ($Develop) { $privateArgs['Develop'] = $true }
-    if ($Toolchain) { $privateArgs['Toolchain'] = $true }
-    if ($Full) { $privateArgs['Full'] = $true }
-    & $PrivateInstaller @privateArgs
-}
-
-# Run agents installer if available
-$AgentsInstaller = Join-Path (Split-Path -Parent $DotfilesDir) "agents\install.ps1"
-if (Test-Path $AgentsInstaller) {
-    Write-Host ""
-    Write-Host "--- Running agents installer ---"
-    & $AgentsInstaller
-}
-
 Write-Host ""
 Write-Host "=== Done ===" -ForegroundColor Cyan

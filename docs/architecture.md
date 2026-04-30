@@ -76,19 +76,21 @@ Variables set by `bin/detectos.sh`:
 
 ## 6. Installation Details
 
-### Execution order
+### Execution order (dotfiles only)
 
-`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → (`--base`/`--full`: `install-base.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh` → `vscode.sh`)
+`install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → `gh.sh` → (`--base`/`--develop`/`--full`: `install-base.sh` → `uv.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh` → `vscode.sh`)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → (`-Base`/`-Develop`/`-Toolchain`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Toolchain`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → `snipping-tool.ps1` → input language hotkeys → `pwsh.ps1` → `gh.ps1` → (`-Base`/`-Develop`/`-Toolchain`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Toolchain`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
 
-See [README.md](../README.md) for full platform-specific installation instructions.
+The full install chain (dotfiles → dotfiles-private → agents → fornix) is orchestrated by the sibling `dotfiles-private` hub installer. See its `docs/architecture.md` for the complete execution order and clone-if-missing design.
+
+See [README.md](../README.md) for platform-specific installation instructions.
 
 ---
 
 ## 7. Claude Code Configuration
 
-The Claude Code workflow framework — state machine, session sync, settings.json, hooks, and test iteration — lives in the companion [nirecom/agents](https://github.com/nirecom/agents) repo. See its [architecture doc](https://github.com/nirecom/agents/blob/main/docs/architecture/claude-code.md) for details. When `~/agents/` is present as a sibling of `~/dotfiles/`, the dotfiles installer wires it in automatically.
+The Claude Code workflow framework — state machine, session sync, settings.json, hooks, and test iteration — lives in the companion [nirecom/agents](https://github.com/nirecom/agents) repo. See its [architecture doc](https://github.com/nirecom/agents/blob/main/docs/architecture/claude-code.md) for details. Wiring agents into the environment is handled by the `dotfiles-private` hub installer.
 
 ---
 
