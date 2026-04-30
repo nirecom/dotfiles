@@ -115,4 +115,8 @@ Changes: install/linux/install-obsolete.sh and install/win/install-obsolete.ps1:
 
 ### CONFIG: Move dotfiles.code-workspace to my-private-repo (2026-04-30, -)
 Background: dotfiles.code-workspace existed in both repos; my-private-repo had a stale 2-folder version
-Changes: Removed from dotfiles repo; my-private-repo now has the canonical 4-folder layout (dotfiles, my-private-repo, agents, fornix)
+Changes: Removed from dotfiles repo; my-private-repo now has the canonical 4-folder layout (dotfiles, my-private-repo, agents, fornix)
+
+### FEATURE: installer: migrate install hub to my-private-repo (2026-04-30, pending)
+Background: dotfiles/install.{ps1,sh} was the install chain hub, calling my-private-repo and agents at the end. This inverted the ownership: the public repo was driving the private one. Migrated the hub role to my-private-repo/install.{ps1,sh}, which clones sibling repos (dotfiles, agents, fornix) via clone_if_missing / Initialize-Repo helpers if absent, then calls each installer in order. dotfiles/install.{ps1,sh} is now self-contained. IS_DOTFILES_SLAVE env var lets dotfiles/install.sh skip its own exec $SHELL -l when called from the hub, so the hub can continue to agents/fornix after dotfiles completes.
+Changes: Removed my-private-repo and agents chain calls from dotfiles/install.ps1 and install.sh. Added IS_DOTFILES_SLAVE guard around exec $SHELL -l in install.sh. Rewrote my-private-repo/install.{ps1,sh} as hub with Initialize-Repo / clone_if_missing helpers. Created my-private-repo/docs/architecture.md documenting the hub design.
