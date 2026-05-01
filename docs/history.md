@@ -119,4 +119,8 @@ Changes: Removed from dotfiles repo; dotfiles-private now has the canonical 4-fo
 
 ### FEATURE: installer: migrate install hub to dotfiles-private (2026-04-30, pending)
 Background: dotfiles/install.{ps1,sh} was the install chain hub, calling dotfiles-private and agents at the end. This inverted the ownership: the public repo was driving the private one. Migrated the hub role to dotfiles-private/install.{ps1,sh}, which clones sibling repos (dotfiles, agents, fornix) via clone_if_missing / Initialize-Repo helpers if absent, then calls each installer in order. dotfiles/install.{ps1,sh} is now self-contained. IS_DOTFILES_SLAVE env var lets dotfiles/install.sh skip its own exec $SHELL -l when called from the hub, so the hub can continue to agents/fornix after dotfiles completes.
-Changes: Removed dotfiles-private and agents chain calls from dotfiles/install.ps1 and install.sh. Added IS_DOTFILES_SLAVE guard around exec $SHELL -l in install.sh. Rewrote dotfiles-private/install.{ps1,sh} as hub with Initialize-Repo / clone_if_missing helpers. Created dotfiles-private/docs/architecture.md documenting the hub design.
+Changes: Removed dotfiles-private and agents chain calls from dotfiles/install.ps1 and install.sh. Added IS_DOTFILES_SLAVE guard around exec $SHELL -l in install.sh. Rewrote dotfiles-private/install.{ps1,sh} as hub with Initialize-Repo / clone_if_missing helpers. Created dotfiles-private/docs/architecture.md documenting the hub design.
+
+### BUGFIX: Fix session-sync file-tree links to point to agents repo (2026-05-01, 02680bc)
+Background: After the dotfiles-to-agents repo split, four file-tree.md entries for session-sync scripts still referenced nirecom/dotfiles URLs. The actual files had moved to nirecom/agents.
+Changes: docs/architecture/file-tree.md: updated session-sync-init.ps1, session-sync-init.sh, session-sync.ps1, session-sync.sh links from nirecom/dotfiles to nirecom/agents.
