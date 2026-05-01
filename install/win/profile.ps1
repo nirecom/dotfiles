@@ -26,6 +26,7 @@ if ($env:DOTFILES_DIR) {
 }
 $PrivateDir = Join-Path (Split-Path -Parent $DotfilesDir) "dotfiles-private"
 $AgentsDir = Join-Path (Split-Path -Parent $DotfilesDir) "agents"
+$FornixAgentDir = Join-Path (Split-Path -Parent $DotfilesDir) "fornix-agent"
 if (Test-Path "$AgentsDir\profile-snippet.ps1") { . "$AgentsDir\profile-snippet.ps1" }
 $SessionDir = "$HOME\.claude\projects"
 
@@ -45,6 +46,11 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
     if (Test-Path "$AgentsDir\.git") {
         Write-Host "git fetch agents ..."
         $fetchAg = Start-Process -FilePath git -ArgumentList "-C $AgentsDir fetch" -NoNewWindow -PassThru
+    }
+    $fetchFa = $null
+    if (Test-Path "$FornixAgentDir\.git") {
+        Write-Host "git fetch fornix-agent ..."
+        $fetchFa = Start-Process -FilePath git -ArgumentList "-C $FornixAgentDir fetch" -NoNewWindow -PassThru
     }
     $fetchSs = $null
     if (Test-Path "$SessionDir\.git") {
@@ -106,6 +112,10 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
     if ($fetchAg) {
         if (-not $fetchAg.WaitForExit(3000)) { $fetchAg.Kill() }
         elseif ($fetchAg.ExitCode -eq 0) { git -C $AgentsDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
+    }
+    if ($fetchFa) {
+        if (-not $fetchFa.WaitForExit(3000)) { $fetchFa.Kill() }
+        elseif ($fetchFa.ExitCode -eq 0) { git -C $FornixAgentDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
     }
     if ($fetchSs) {
         if (-not $fetchSs.WaitForExit(3000)) { $fetchSs.Kill() }

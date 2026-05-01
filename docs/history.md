@@ -128,3 +128,7 @@ Changes: docs/architecture/file-tree.md: updated session-sync-init.ps1, session-
 ### FEATURE: installer platform guards + test suite (install.sh/install.ps1) (2026-05-01, pending)
 Background: install.sh only blocked MINGW via detectos.sh ($OSDIST=mingw), leaving MSYS2 and Cygwin undetected. install.ps1 had no guard against being run on Linux/macOS via PowerShell Core 7+. Tests written TDD-first before implementation.
 Changes: install.sh: replaced OSDIST=mingw check with direct uname -s check covering MINGW*/MSYS*/CYGWIN* with printf %s format injection safety. install.ps1: added $IsWindows -eq $false guard before Set-StrictMode. New tests/main-install-guards.sh (36 cases: S syntax/G grep presence/B behavioral/I idempotency) and tests/main-install-guards.Tests.ps1 (14 Pester cases: S syntax/G guard presence/L logic/P placement), all PASS.
+
+### FEATURE: add fornix-agent to parallel git fetch on shell startup (2026-05-01, pending)
+Background: dotfiles-private install.ps1 clones fornix-agent as a sibling repo, but profile.ps1 did not include it in the parallel fetch list on PowerShell startup.
+Changes: install/win/profile.ps1: added $FornixAgentDir variable and fornix-agent fetch/merge block alongside dotfiles, dotfiles-private, agents, and session-sync.
