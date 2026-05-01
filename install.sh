@@ -24,10 +24,12 @@ if [ "$OSDIST" = "qnap" ]; then
     exit 0
 fi
 
-if [ "$OSDIST" = "mingw" ]; then
-    printf "${C_YELLOW}Windows detected. Use install/win/dotfileslink.ps1 instead.${C_RESET}\n"
+_uname_s="$(uname -s)"
+if [[ "$_uname_s" == MINGW* || "$_uname_s" == MSYS* || "$_uname_s" == CYGWIN* ]]; then
+    printf "${C_YELLOW}Windows shell environment detected (%s). Use install.ps1 instead.${C_RESET}\n" "$_uname_s"
     exit 1
 fi
+unset _uname_s
 
 printf "${C_CYAN}=== dotfiles installer ===${C_RESET}\n"
 echo "OS: $OSDIST (WSL=$ISWSL, M1=$ISM1)"

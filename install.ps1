@@ -13,6 +13,11 @@ param(
     [switch]$Full
 )
 
+if ($IsWindows -eq $false) {
+    Write-Host "Error: install.ps1 must not run on Linux/macOS. Use install.sh instead." -ForegroundColor Red
+    exit 1
+}
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
