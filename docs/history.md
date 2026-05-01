@@ -132,3 +132,7 @@ Changes: install.sh: replaced OSDIST=mingw check with direct uname -s check cove
 ### FEATURE: add fornix-agent to parallel git fetch on shell startup (2026-05-01, pending)
 Background: dotfiles-private install.ps1 clones fornix-agent as a sibling repo, but profile.ps1 did not include it in the parallel fetch list on PowerShell startup.
 Changes: install/win/profile.ps1: added $FornixAgentDir variable and fornix-agent fetch/merge block alongside dotfiles, dotfiles-private, agents, and session-sync.
+
+### FEATURE: gh: prompt auth login if not authenticated after install (2026-05-01, pending)
+Background: repo-visibility tool requires gh to be authenticated. Running install.sh without gh auth login caused silent misdetection of repo visibility.
+Changes: gh.sh and gh.ps1: skip exit 0 when gh is installed but not authenticated; fall through to gh auth login. Both platforms updated.
