@@ -85,42 +85,46 @@ Changes: Removed dotfiles/claude-global/rules/language.md symlink, dotfiles/clau
 Background: agents-split で claude-global/ がトラックから外れた後、git reset --hard では untracked files として残った dotfiles/claude-global/ ディレクトリが除去されない。commit 6ceb67e の install-obsolete 修正は ~/.claude/ のシンボリックリンク削除のみ対象で、dotfiles/claude-global/ 本体には触れていなかった。
 Changes: install/linux/install-obsolete.sh と install/win/install-obsolete.ps1 の両方に dotfiles/claude-global/ ディレクトリ削除ブロックを追加。安全性確保のため `git ls-tree HEAD claude-global` で HEAD トラック状態を検査し、トラックされていない場合のみ削除する。これにより agents-split 前の状態のマシン（まだ pull していない / 古い checkout）では誤削除を防止。dotfiles/.git が無い場合も no-op。tests/main-install-obsolete-claude-links.sh と tests/main-install-obsolete-claude-links.Tests.ps1 にケース C1〜C5 を追加（untracked 削除 / tracked 保持 / missing / non-git / nested 再帰）、Linux 13 ケース全 PASS。
 
-### CONFIG: install-obsolete: remove ~/.gitconfig deletion prompt (agents uses it for hooksPath) (2026-04-26, pending)
-Background: commit 6caa366 (2026-04-11) added a prompt in install-obsolete to delete ~/.gitconfig because it was overriding the dotfiles-managed XDG git config and causing private emails to leak into commits. Later, the agents installer (commit d8b7ee7) intentionally changed core.hooksPath write destination to ~/.gitconfig. Reason: config.local is a symlink to dotfiles-private/config.local.linux (tracked), so writing an absolute path there dirties a tracked file; --global falls back to ~/.config/git/config (dotfiles-managed, also tracked) under XDG precedence. ~/.gitconfig is untracked by any repo and is the correct place for machine-local per-user config. This created a conflict: dotfiles install-obsolete would delete what agents intentionally wrote.
+### CONFIG: install-obsolete: remove ~/.gitconfig deletion prompt (agents uses it for hooksPath) (2026-04-26, pending)
+Background: commit 6caa366 (2026-04-11) added a prompt in install-obsolete to delete ~/.gitconfig because it was overriding the dotfiles-managed XDG git config and causing private emails to leak into commits. Later, the agents installer (commit d8b7ee7) intentionally changed core.hooksPath write destination to ~/.gitconfig. Reason: config.local is a symlink to dotfiles-private/config.local.linux (tracked), so writing an absolute path there dirties a tracked file; --global falls back to ~/.config/git/config (dotfiles-managed, also tracked) under XDG precedence. ~/.gitconfig is untracked by any repo and is the correct place for machine-local per-user config. This created a conflict: dotfiles install-obsolete would delete what agents intentionally wrote.
 Changes: Removed the ~/.gitconfig deletion prompt block from install-obsolete.ps1 and install-obsolete.sh. Deleted tests/main-install-obsolete-gitconfig.Tests.ps1 (the logic it tested no longer exists).
 
-### FEATURE: dotfiles relocatable 化 — ~/git/dotfiles へ移動完了 (2026-04-27, 82852bc)
-Background: dotfiles を ~/dotfiles から ~/git/dotfiles へ移動。82852bc で relocatable 化（ハードコードパス除去）を実施済み。移動後に install.sh が ~/.dotfiles_env を新パスで再生成し symlink を張り直す設計。
+### FEATURE: dotfiles relocatable 化 — ~/git/dotfiles へ移動完了 (2026-04-27, 82852bc)
+Background: dotfiles を ~/dotfiles から ~/git/dotfiles へ移動。82852bc で relocatable 化（ハードコードパス除去）を実施済み。移動後に install.sh が ~/.dotfiles_env を新パスで再生成し symlink を張り直す設計。
 Changes: ~/dotfiles → ~/git/dotfiles へ移動完了。DOTFILES_DIR, ~/.bash_profile symlink, ~/.dotfiles_env すべて新パスに更新。tests/main-installer-idempotency.sh 10/10 pass 確認。
 
-### CONFIG: install.sh: add ANSI color output (2026-04-27, pending)
-Background: On macOS/Linux, install.sh used plain echo with no color formatting, while the Windows install.ps1 already used Write-Host -ForegroundColor. The visual gap made the macOS installer harder to follow at a glance.
+### CONFIG: install.sh: add ANSI color output (2026-04-27, pending)
+Background: On macOS/Linux, install.sh used plain echo with no color formatting, while the Windows install.ps1 already used Write-Host -ForegroundColor. The visual gap made the macOS installer harder to follow at a glance.
 Changes: Added TTY-detected ANSI color variables (C_CYAN, C_GREEN, C_YELLOW, C_BOLD, C_RESET) to install.sh. === headers print in cyan, --- section markers in bold, === Done === in green, error/warning messages in yellow. No escape codes emitted when stdout is not a terminal (pipe/log safe).
 
-### CONFIG: installer: gray color for already-installed/linked messages on Linux/WSL (2026-04-27, pending)
-Background: On Windows, already-handled items (Already linked, already installed) appear in DarkGray via Write-Host, reducing visual noise. On Linux/WSL, these were plain white echo — making re-runs harder to scan.
+### CONFIG: installer: gray color for already-installed/linked messages on Linux/WSL (2026-04-27, pending)
+Background: On Windows, already-handled items (Already linked, already installed) appear in DarkGray via Write-Host, reducing visual noise. On Linux/WSL, these were plain white echo — making re-runs harder to scan.
 Changes: Added bin/colors.sh shared color utility (C_GRAY=\033[0;90m, TTY-detected). install.sh now sources it instead of inline definitions. dotfileslink.sh gains a link_file() function that prints Already linked in gray, Relinking in yellow, and Linked in green, replacing blind ln -sf calls. keychain.sh and nvm.sh print already installed messages in gray. dotfiles-private/install/linux/dotfileslink.sh updated to use the same color scheme via sourced colors.sh.
 
-### FEATURE: installer: add gh (GitHub CLI) to default install steps (2026-04-28, pending)
-Background: hooks/check-japanese-in-docs.js and hooks/lib/is-private-repo.js use gh CLI to detect whether a repo is private via GitHub API. Without gh, isPrivateRepo() catches the error and returns false (fail-open), causing Japanese content to be blocked even in private repos. gh was missing from all installers.
+### FEATURE: installer: add gh (GitHub CLI) to default install steps (2026-04-28, pending)
+Background: hooks/check-japanese-in-docs.js and hooks/lib/is-private-repo.js use gh CLI to detect whether a repo is private via GitHub API. Without gh, isPrivateRepo() catches the error and returns false (fail-open), causing Japanese content to be blocked even in private repos. gh was missing from all installers.
 Changes: Added install/linux/gh.sh (ubuntu: apt with GitHub keyring; macos: brew install gh; gray already-installed output). Added install/win/gh.ps1 (winget install GitHub.cli; DarkGray already-installed output). Both placed in the default (no-flag) install step — not gated behind --base/-Base — so gh is available on every machine. Tests: tests/main-gh.sh (15 cases, all pass) and tests/main-gh.Tests.ps1 (static + dynamic Pester cases). Also fixed check-cross-platform.js error message to specify --short hash for the one-time skip marker.
 
-### BUGFIX: Fix codes function: session-sync path pointed to dotfiles/bin instead of agents/bin (2026-04-29, pending)
-Background: The codes function in profile.ps1 set $syncScript to $DotfilesDir\bin\session-sync.ps1, but session-sync.ps1 lives in agents/bin. The background process failed silently (hidden window) and no toast notification appeared after VS Code was closed.
+### BUGFIX: Fix codes function: session-sync path pointed to dotfiles/bin instead of agents/bin (2026-04-29, pending)
+Background: The codes function in profile.ps1 set $syncScript to $DotfilesDir\bin\session-sync.ps1, but session-sync.ps1 lives in agents/bin. The background process failed silently (hidden window) and no toast notification appeared after VS Code was closed.
 Changes: Changed $syncScript to use $AgentsDir\bin\session-sync.ps1 in install/win/profile.ps1. Also removed a duplicate agents profile sourcing block at the bottom of profile.ps1 (already sourced conditionally at the top via $AgentsDir).
 
-### FEATURE: install-obsolete: remove stale core.hooksPath from config.local with y/n prompt (2026-04-29, pending)
-Background: core.hooksPath was moved from the dotfiles-tracked .config/git/config to ~/.gitconfig (written by agents installer). Machines that had hooksPath in config.local (untracked machine-local override) would retain the stale entry indefinitely since git pull does not update untracked files.
+### FEATURE: install-obsolete: remove stale core.hooksPath from config.local with y/n prompt (2026-04-29, pending)
+Background: core.hooksPath was moved from the dotfiles-tracked .config/git/config to ~/.gitconfig (written by agents installer). Machines that had hooksPath in config.local (untracked machine-local override) would retain the stale entry indefinitely since git pull does not update untracked files.
 Changes: install/linux/install-obsolete.sh and install/win/install-obsolete.ps1: added a block that detects hooksPath matching *agents/hooks* in config.local, explains it is now managed via ~/.gitconfig, and prompts y/N before removing.
 
-### CONFIG: Move dotfiles.code-workspace to dotfiles-private (2026-04-30, -)
-Background: dotfiles.code-workspace existed in both repos; dotfiles-private had a stale 2-folder version
+### CONFIG: Move dotfiles.code-workspace to dotfiles-private (2026-04-30, -)
+Background: dotfiles.code-workspace existed in both repos; dotfiles-private had a stale 2-folder version
 Changes: Removed from dotfiles repo; dotfiles-private now has the canonical 4-folder layout (dotfiles, dotfiles-private, agents, fornix)
 
-### FEATURE: installer: migrate install hub to dotfiles-private (2026-04-30, pending)
-Background: dotfiles/install.{ps1,sh} was the install chain hub, calling dotfiles-private and agents at the end. This inverted the ownership: the public repo was driving the private one. Migrated the hub role to dotfiles-private/install.{ps1,sh}, which clones sibling repos (dotfiles, agents, fornix) via clone_if_missing / Initialize-Repo helpers if absent, then calls each installer in order. dotfiles/install.{ps1,sh} is now self-contained. IS_DOTFILES_SLAVE env var lets dotfiles/install.sh skip its own exec $SHELL -l when called from the hub, so the hub can continue to agents/fornix after dotfiles completes.
+### FEATURE: installer: migrate install hub to dotfiles-private (2026-04-30, pending)
+Background: dotfiles/install.{ps1,sh} was the install chain hub, calling dotfiles-private and agents at the end. This inverted the ownership: the public repo was driving the private one. Migrated the hub role to dotfiles-private/install.{ps1,sh}, which clones sibling repos (dotfiles, agents, fornix) via clone_if_missing / Initialize-Repo helpers if absent, then calls each installer in order. dotfiles/install.{ps1,sh} is now self-contained. IS_DOTFILES_SLAVE env var lets dotfiles/install.sh skip its own exec $SHELL -l when called from the hub, so the hub can continue to agents/fornix after dotfiles completes.
 Changes: Removed dotfiles-private and agents chain calls from dotfiles/install.ps1 and install.sh. Added IS_DOTFILES_SLAVE guard around exec $SHELL -l in install.sh. Rewrote dotfiles-private/install.{ps1,sh} as hub with Initialize-Repo / clone_if_missing helpers. Created dotfiles-private/docs/architecture.md documenting the hub design.
 
-### BUGFIX: Fix session-sync file-tree links to point to agents repo (2026-05-01, 02680bc)
-Background: After the dotfiles-to-agents repo split, four file-tree.md entries for session-sync scripts still referenced nirecom/dotfiles URLs. The actual files had moved to nirecom/agents.
-Changes: docs/architecture/file-tree.md: updated session-sync-init.ps1, session-sync-init.sh, session-sync.ps1, session-sync.sh links from nirecom/dotfiles to nirecom/agents.
+### BUGFIX: Fix session-sync file-tree links to point to agents repo (2026-05-01, 02680bc)
+Background: After the dotfiles-to-agents repo split, four file-tree.md entries for session-sync scripts still referenced nirecom/dotfiles URLs. The actual files had moved to nirecom/agents.
+Changes: docs/architecture/file-tree.md: updated session-sync-init.ps1, session-sync-init.sh, session-sync.ps1, session-sync.sh links from nirecom/dotfiles to nirecom/agents.
+
+### FEATURE: installer platform guards + test suite (install.sh/install.ps1) (2026-05-01, pending)
+Background: install.sh only blocked MINGW via detectos.sh ($OSDIST=mingw), leaving MSYS2 and Cygwin undetected. install.ps1 had no guard against being run on Linux/macOS via PowerShell Core 7+. Tests written TDD-first before implementation.
+Changes: install.sh: replaced OSDIST=mingw check with direct uname -s check covering MINGW*/MSYS*/CYGWIN* with printf %s format injection safety. install.ps1: added $IsWindows -eq $false guard before Set-StrictMode. New tests/main-install-guards.sh (36 cases: S syntax/G grep presence/B behavioral/I idempotency) and tests/main-install-guards.Tests.ps1 (14 Pester cases: S syntax/G guard presence/L logic/P placement), all PASS.
