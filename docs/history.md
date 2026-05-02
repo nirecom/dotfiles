@@ -136,3 +136,7 @@ Changes: install/win/profile.ps1: added $FornixAgentDir variable and fornix-agen
 ### FEATURE: gh: prompt auth login if not authenticated after install (2026-05-01, pending)
 Background: repo-visibility tool requires gh to be authenticated. Running install.sh without gh auth login caused silent misdetection of repo visibility.
 Changes: gh.sh and gh.ps1: skip exit 0 when gh is installed but not authenticated; fall through to gh auth login. Both platforms updated.
+
+### BUGFIX: profile.ps1: fnm init order fix + duplicate snippet sourcing removed (2026-05-02, pending)
+Background: dotfileslink.ps1 calls node to run assemble-settings.js. The agents profile-snippet sources dotfileslink.ps1 when symlinks need repair, but fnm was initialized after the snippet was sourced, so node was not in PATH on pwsh startup. Additionally, profile-snippet.ps1 was sourced twice (dynamic path near top + hardcoded BEGIN/END block at bottom), triggering double symlink repair and double settings assembly on every shell start.
+Changes: Moved fnm initialization in install/win/profile.ps1 to before the agents snippet sourcing. Removed the duplicate hardcoded BEGIN/END snippet sourcing block.

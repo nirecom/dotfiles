@@ -27,6 +27,29 @@ if ($env:DOTFILES_DIR) {
 $PrivateDir = Join-Path (Split-Path -Parent $DotfilesDir) "dotfiles-private"
 $AgentsDir = Join-Path (Split-Path -Parent $DotfilesDir) "agents"
 $FornixAgentDir = Join-Path (Split-Path -Parent $DotfilesDir) "fornix-agent"
+
+# Initialize fnm before sourcing agents snippet — dotfileslink.ps1 (called by the snippet
+# when symlinks are broken) invokes node, which requires fnm to have set up PATH first.
+if (Get-Command fnm -ErrorAction SilentlyContinue) {
+    try {
+        fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+        function global:Set-LocationWithFnm {
+            param($path)
+            if ($null -eq $path) {
+                Set-Location $HOME
+            } elseif (Test-Path -LiteralPath $path) {
+                Set-Location -LiteralPath $path
+            } else {
+                Write-Error "cd: no such directory: $path" -ErrorAction Continue
+                return
+            }
+            Set-FnmOnLoad
+        }
+    } catch {
+        Write-Warning "fnm: blocked by App Control policy — skipped"
+    }
+}
+
 if (Test-Path "$AgentsDir\profile-snippet.ps1") { . "$AgentsDir\profile-snippet.ps1" }
 $SessionDir = "$HOME\.claude\projects"
 
@@ -147,28 +170,6 @@ if (Get-Command starship -ErrorAction SilentlyContinue) {
     Invoke-Expression (&starship init powershell)
 }
 
-# Initialize fnm (Fast Node Manager) if installed
-if (Get-Command fnm -ErrorAction SilentlyContinue) {
-    try {
-        fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
-        # Override fnm's cd wrapper to produce clean error messages
-        function global:Set-LocationWithFnm {
-            param($path)
-            if ($null -eq $path) {
-                Set-Location $HOME
-            } elseif (Test-Path -LiteralPath $path) {
-                Set-Location -LiteralPath $path
-            } else {
-                Write-Error "cd: no such directory: $path" -ErrorAction Continue
-                return
-            }
-            Set-FnmOnLoad
-        }
-    } catch {
-        Write-Warning "fnm: blocked by App Control policy — skipped"
-    }
-}
-
 # Launch VS Code with session sync (push on window close via title polling)
 function codes {
     $syncScript = "$AgentsDir\bin\session-sync.ps1"
@@ -184,6 +185,10 @@ function codes {
         "code.cmd --new-window $codeArgs; & '$waitScript' '$name'; & '$syncScript' push -Quiet" -WindowStyle Hidden
 }
 
-# --- BEGIN agents profile sourcing ---
-. "C:\git\agents\profile-snippet.ps1"
-# --- END agents profile sourcing ---
+# fornix-agent
+$env:FORNIX_DIR            = 'C:\git\fornix-stream'
+$env:FORNIX_AGENT_DIR      = 'C:\git\fornix-agent'
+$env:FORNIX_OU             = 'nire-personal'
+$env:FORNIX_CLASSIFICATION = 'internal'
+$env:FLUSH_INTERVAL        = '10'
+$env:FORNIX_SYNC_INTERVAL  = '300'
