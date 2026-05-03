@@ -1,6 +1,6 @@
 # dotfiles
 
-Cross-platform dotfiles and install scripts for shell, editor, git, and prompt configuration — Ubuntu (WSL2), macOS, Windows, and QNAP NAS.
+Cross-platform dotfiles — one setup, every machine: Ubuntu (native and WSL2), macOS (Intel / Apple Silicon), Windows, and QNAP NAS. Most dotfiles repos stop at macOS.
 
 ## What You Get
 
