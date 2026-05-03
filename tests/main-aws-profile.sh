@@ -31,7 +31,6 @@ export OSDIST DOTFILES_DIR AWS_WORK_DIR
 aws() {
     case "\$*" in
         "configure get region --profile work")    echo "ap-northeast-1" ;;
-        "configure get region --profile personal") echo "us-east-1" ;;
         *) return 1 ;;
     esac
 }
@@ -39,20 +38,22 @@ aws() {
 # Paste the snippet inline (from spec)
 if type aws >/dev/null 2>&1 && [ "\$OSDIST" != "qnap" ] && [ -n "\${AWS_WORK_DIR:-}" ]; then
     _aws_select_profile() {
-        local _profile _work_dir
+        local _work_dir
         _work_dir="\${AWS_WORK_DIR%/}"
         if [ "\$PWD" = "\$_work_dir" ] || case "\$PWD" in "\$_work_dir"/*) true;; *) false;; esac; then
-            _profile="work"
+            if [ "\${AWS_PROFILE:-}" != "work" ]; then
+                export AWS_PROFILE="work"
+                local _region
+                _region=\$(aws configure get region --profile "work" 2>/dev/null)
+                if [ -n "\$_region" ]; then
+                    export AWS_DEFAULT_REGION="\$_region"
+                else
+                    unset AWS_DEFAULT_REGION
+                fi
+            fi
         else
-            _profile="personal"
-        fi
-        if [ "\${AWS_PROFILE:-}" != "\$_profile" ]; then
-            export AWS_PROFILE="\$_profile"
-            local _region
-            _region=\$(aws configure get region --profile "\$_profile" 2>/dev/null)
-            if [ -n "\$_region" ]; then
-                export AWS_DEFAULT_REGION="\$_region"
-            else
+            if [ -n "\${AWS_PROFILE:-}" ]; then
+                unset AWS_PROFILE
                 unset AWS_DEFAULT_REGION
             fi
         fi
@@ -126,15 +127,15 @@ profile=$(echo "$out" | grep 'AWS_PROFILE=' | cut -d= -f2)
 if [ "$profile" = "work" ]; then pass "N2: subdir → profile=work"; else fail "N2: subdir should give profile=work, got '$profile'"; fi
 
 echo ""
-echo "=== N3: PWD outside work_dir → AWS_PROFILE=personal, AWS_DEFAULT_REGION=us-east-1 ==="
+echo "=== N3: PWD outside work_dir → AWS_PROFILE=UNSET, AWS_DEFAULT_REGION=UNSET ==="
 out=$(_run_snippet "$WORK_DIR" "$OTHER_DIR")
 profile=$(echo "$out" | grep 'AWS_PROFILE=' | cut -d= -f2)
 region=$(echo "$out" | grep 'AWS_DEFAULT_REGION=' | cut -d= -f2)
-if [ "$profile" = "personal" ]; then pass "N3: outside → profile=personal"; else fail "N3: outside should give profile=personal, got '$profile'"; fi
-if [ "$region" = "us-east-1" ]; then pass "N3: outside → region=us-east-1"; else fail "N3: outside should give region=us-east-1, got '$region'"; fi
+if [ "$profile" = "UNSET" ]; then pass "N3: outside → AWS_PROFILE unset"; else fail "N3: outside should unset AWS_PROFILE, got '$profile'"; fi
+if [ "$region" = "UNSET" ]; then pass "N3: outside → AWS_DEFAULT_REGION unset"; else fail "N3: outside should unset AWS_DEFAULT_REGION, got '$region'"; fi
 
 echo ""
-echo "=== N4: switch work→personal → AWS_DEFAULT_REGION updates to personal region ==="
+echo "=== N4: switch work→outside → AWS_PROFILE unset, AWS_DEFAULT_REGION unset ==="
 out=$(bash --norc --noprofile - <<ENDSCRIPT
 OSDIST=ubuntu
 AWS_WORK_DIR="$WORK_DIR"
@@ -143,27 +144,28 @@ export OSDIST AWS_WORK_DIR
 aws() {
     case "\$*" in
         "configure get region --profile work")    echo "ap-northeast-1" ;;
-        "configure get region --profile personal") echo "us-east-1" ;;
         *) return 1 ;;
     esac
 }
 
 if type aws >/dev/null 2>&1 && [ "\$OSDIST" != "qnap" ] && [ -n "\${AWS_WORK_DIR:-}" ]; then
     _aws_select_profile() {
-        local _profile _work_dir
+        local _work_dir
         _work_dir="\${AWS_WORK_DIR%/}"
         if [ "\$PWD" = "\$_work_dir" ] || case "\$PWD" in "\$_work_dir"/*) true;; *) false;; esac; then
-            _profile="work"
+            if [ "\${AWS_PROFILE:-}" != "work" ]; then
+                export AWS_PROFILE="work"
+                local _region
+                _region=\$(aws configure get region --profile "work" 2>/dev/null)
+                if [ -n "\$_region" ]; then
+                    export AWS_DEFAULT_REGION="\$_region"
+                else
+                    unset AWS_DEFAULT_REGION
+                fi
+            fi
         else
-            _profile="personal"
-        fi
-        if [ "\${AWS_PROFILE:-}" != "\$_profile" ]; then
-            export AWS_PROFILE="\$_profile"
-            local _region
-            _region=\$(aws configure get region --profile "\$_profile" 2>/dev/null)
-            if [ -n "\$_region" ]; then
-                export AWS_DEFAULT_REGION="\$_region"
-            else
+            if [ -n "\${AWS_PROFILE:-}" ]; then
+                unset AWS_PROFILE
                 unset AWS_DEFAULT_REGION
             fi
         fi
@@ -173,7 +175,7 @@ fi
 # First: go to work dir
 cd "$WORK_DIR"
 _aws_select_profile
-# Now go to other dir (personal)
+# Now go to other dir (outside)
 cd "$OTHER_DIR"
 _aws_select_profile
 
@@ -183,8 +185,8 @@ ENDSCRIPT
 )
 profile=$(echo "$out" | grep 'AWS_PROFILE=' | cut -d= -f2)
 region=$(echo "$out" | grep 'AWS_DEFAULT_REGION=' | cut -d= -f2)
-if [ "$profile" = "personal" ]; then pass "N4: after switch → profile=personal"; else fail "N4: after switch should be personal, got '$profile'"; fi
-if [ "$region" = "us-east-1" ]; then pass "N4: after switch → region=us-east-1"; else fail "N4: region should update to us-east-1, got '$region'"; fi
+if [ "$profile" = "UNSET" ]; then pass "N4: after switch → AWS_PROFILE unset"; else fail "N4: after switch AWS_PROFILE should be unset, got '$profile'"; fi
+if [ "$region" = "UNSET" ]; then pass "N4: after switch → AWS_DEFAULT_REGION unset"; else fail "N4: after switch AWS_DEFAULT_REGION should be unset, got '$region'"; fi
 
 # ---------------------------------------------------------------------------
 # Edge cases
@@ -192,10 +194,10 @@ if [ "$region" = "us-east-1" ]; then pass "N4: after switch → region=us-east-1
 echo ""
 echo "--- Edge cases ---"
 
-echo "=== E1: false prefix: work_dir=/tmp/work, PWD=/tmp/workother → personal ==="
+echo "=== E1: false prefix: work_dir=/tmp/work, PWD=/tmp/workother → AWS_PROFILE unset ==="
 out=$(_run_snippet "$WORK_DIR" "$WORK_OTHER")
 profile=$(echo "$out" | grep 'AWS_PROFILE=' | cut -d= -f2)
-if [ "$profile" = "personal" ]; then pass "E1: false prefix → profile=personal"; else fail "E1: false prefix should give personal, got '$profile'"; fi
+if [ "$profile" = "UNSET" ]; then pass "E1: false prefix → AWS_PROFILE unset"; else fail "E1: false prefix should unset AWS_PROFILE, got '$profile'"; fi
 
 echo ""
 echo "=== E2: trailing slash in AWS_WORK_DIR (/tmp/work/) → same as /tmp/work ==="
@@ -217,20 +219,22 @@ aws() { echo ""; }
 
 if type aws >/dev/null 2>&1 && [ "\$OSDIST" != "qnap" ] && [ -n "\${AWS_WORK_DIR:-}" ]; then
     _aws_select_profile() {
-        local _profile _work_dir
+        local _work_dir
         _work_dir="\${AWS_WORK_DIR%/}"
         if [ "\$PWD" = "\$_work_dir" ] || case "\$PWD" in "\$_work_dir"/*) true;; *) false;; esac; then
-            _profile="work"
+            if [ "\${AWS_PROFILE:-}" != "work" ]; then
+                export AWS_PROFILE="work"
+                local _region
+                _region=\$(aws configure get region --profile "work" 2>/dev/null)
+                if [ -n "\$_region" ]; then
+                    export AWS_DEFAULT_REGION="\$_region"
+                else
+                    unset AWS_DEFAULT_REGION
+                fi
+            fi
         else
-            _profile="personal"
-        fi
-        if [ "\${AWS_PROFILE:-}" != "\$_profile" ]; then
-            export AWS_PROFILE="\$_profile"
-            local _region
-            _region=\$(aws configure get region --profile "\$_profile" 2>/dev/null)
-            if [ -n "\$_region" ]; then
-                export AWS_DEFAULT_REGION="\$_region"
-            else
+            if [ -n "\${AWS_PROFILE:-}" ]; then
+                unset AWS_PROFILE
                 unset AWS_DEFAULT_REGION
             fi
         fi
@@ -265,26 +269,29 @@ aws() {
 
 if type aws >/dev/null 2>&1 && [ "\$OSDIST" != "qnap" ] && [ -n "\${AWS_WORK_DIR:-}" ]; then
     _aws_select_profile() {
-        local _profile _work_dir
+        local _work_dir
         _work_dir="\${AWS_WORK_DIR%/}"
         if [ "\$PWD" = "\$_work_dir" ] || case "\$PWD" in "\$_work_dir"/*) true;; *) false;; esac; then
-            _profile="work"
+            if [ "\${AWS_PROFILE:-}" != "work" ]; then
+                export AWS_PROFILE="work"
+                local _region
+                _region=\$(aws configure get region --profile "work" 2>/dev/null)
+                if [ -n "\$_region" ]; then
+                    export AWS_DEFAULT_REGION="\$_region"
+                else
+                    unset AWS_DEFAULT_REGION
+                fi
+            fi
         else
-            _profile="personal"
-        fi
-        if [ "\${AWS_PROFILE:-}" != "\$_profile" ]; then
-            export AWS_PROFILE="\$_profile"
-            local _region
-            _region=\$(aws configure get region --profile "\$_profile" 2>/dev/null)
-            if [ -n "\$_region" ]; then
-                export AWS_DEFAULT_REGION="\$_region"
-            else
+            if [ -n "\${AWS_PROFILE:-}" ]; then
+                unset AWS_PROFILE
                 unset AWS_DEFAULT_REGION
             fi
         fi
     }
 fi
 
+# Test in-work repeated calls (aws should only be called once)
 cd "$WORK_DIR"
 _aws_select_profile
 _aws_select_profile
@@ -294,6 +301,58 @@ ENDSCRIPT
 count=$(cat "$E4_COUNTER_FILE")
 rm -f "$E4_COUNTER_FILE"
 if [ "$count" = "1" ]; then pass "E4: repeated same-profile call → aws called only once"; else fail "E4: aws should be called once (not $count times) when profile unchanged"; fi
+
+echo ""
+echo "=== E4b: already outside (unset) and staying outside → aws NOT called ==="
+E4B_COUNTER_FILE=$(mktemp /tmp/aws-e4b-counter-XXXXXX)
+echo "0" > "$E4B_COUNTER_FILE"
+out=$(bash --norc --noprofile - <<ENDSCRIPT
+OSDIST=ubuntu
+AWS_WORK_DIR="$WORK_DIR"
+export OSDIST AWS_WORK_DIR
+E4B_COUNTER_FILE="$E4B_COUNTER_FILE"
+
+aws() {
+    local n
+    n=\$(cat "\$E4B_COUNTER_FILE")
+    echo \$((n + 1)) > "\$E4B_COUNTER_FILE"
+    echo "ap-northeast-1"
+}
+
+if type aws >/dev/null 2>&1 && [ "\$OSDIST" != "qnap" ] && [ -n "\${AWS_WORK_DIR:-}" ]; then
+    _aws_select_profile() {
+        local _work_dir
+        _work_dir="\${AWS_WORK_DIR%/}"
+        if [ "\$PWD" = "\$_work_dir" ] || case "\$PWD" in "\$_work_dir"/*) true;; *) false;; esac; then
+            if [ "\${AWS_PROFILE:-}" != "work" ]; then
+                export AWS_PROFILE="work"
+                local _region
+                _region=\$(aws configure get region --profile "work" 2>/dev/null)
+                if [ -n "\$_region" ]; then
+                    export AWS_DEFAULT_REGION="\$_region"
+                else
+                    unset AWS_DEFAULT_REGION
+                fi
+            fi
+        else
+            if [ -n "\${AWS_PROFILE:-}" ]; then
+                unset AWS_PROFILE
+                unset AWS_DEFAULT_REGION
+            fi
+        fi
+    }
+fi
+
+# Already outside (AWS_PROFILE unset) — repeated calls should not invoke aws
+cd "$OTHER_DIR"
+_aws_select_profile
+_aws_select_profile
+_aws_select_profile
+ENDSCRIPT
+)
+count=$(cat "$E4B_COUNTER_FILE")
+rm -f "$E4B_COUNTER_FILE"
+if [ "$count" = "0" ]; then pass "E4b: already outside (unset) → aws never called"; else fail "E4b: aws should never be called when already outside/unset (called $count times)"; fi
 
 # ---------------------------------------------------------------------------
 # Error cases
@@ -324,7 +383,6 @@ unset ZSH_VERSION
 aws() {
     case "\$*" in
         "configure get region --profile work")    echo "ap-northeast-1" ;;
-        "configure get region --profile personal") echo "us-east-1" ;;
         *) return 1 ;;
     esac
 }
@@ -333,20 +391,22 @@ aws() {
 _source_block() {
     if type aws >/dev/null 2>&1 && [ "\$OSDIST" != "qnap" ] && [ -n "\${AWS_WORK_DIR:-}" ]; then
         _aws_select_profile() {
-            local _profile _work_dir
+            local _work_dir
             _work_dir="\${AWS_WORK_DIR%/}"
             if [ "\$PWD" = "\$_work_dir" ] || case "\$PWD" in "\$_work_dir"/*) true;; *) false;; esac; then
-                _profile="work"
+                if [ "\${AWS_PROFILE:-}" != "work" ]; then
+                    export AWS_PROFILE="work"
+                    local _region
+                    _region=\$(aws configure get region --profile "work" 2>/dev/null)
+                    if [ -n "\$_region" ]; then
+                        export AWS_DEFAULT_REGION="\$_region"
+                    else
+                        unset AWS_DEFAULT_REGION
+                    fi
+                fi
             else
-                _profile="personal"
-            fi
-            if [ "\${AWS_PROFILE:-}" != "\$_profile" ]; then
-                export AWS_PROFILE="\$_profile"
-                local _region
-                _region=\$(aws configure get region --profile "\$_profile" 2>/dev/null)
-                if [ -n "\$_region" ]; then
-                    export AWS_DEFAULT_REGION="\$_region"
-                else
+                if [ -n "\${AWS_PROFILE:-}" ]; then
+                    unset AWS_PROFILE
                     unset AWS_DEFAULT_REGION
                 fi
             fi

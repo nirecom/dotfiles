@@ -19,7 +19,6 @@ BeforeAll {
         if ($argList -contains 'configure' -and $argList -contains 'get' -and $argList -contains 'region') {
             switch ($profileName) {
                 'work'     { return 'ap-northeast-1' }
-                'personal' { return 'us-east-1' }
                 default    { return '' }
             }
         }
@@ -31,17 +30,20 @@ BeforeAll {
     # ---------------------------------------------------------------------------
     function global:Select-AwsProfile {
         $workDir = $env:AWS_WORK_DIR.TrimEnd('\', '/')
-        $awsProfile = if ($PWD.Path.StartsWith($workDir, [System.StringComparison]::OrdinalIgnoreCase) -and
-                         ($PWD.Path.Length -eq $workDir.Length -or $PWD.Path[$workDir.Length] -in '\', '/')) {
-            'work'
+        $inWorkDir = $PWD.Path.StartsWith($workDir, [System.StringComparison]::OrdinalIgnoreCase) -and
+                     ($PWD.Path.Length -eq $workDir.Length -or $PWD.Path[$workDir.Length] -in '\', '/')
+        if ($inWorkDir) {
+            if ($env:AWS_PROFILE -ne 'work') {
+                $env:AWS_PROFILE = 'work'
+                $region = aws configure get region --profile work 2>$null
+                if ($region) { $env:AWS_DEFAULT_REGION = $region }
+                else { Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue }
+            }
         } else {
-            'personal'
-        }
-        if ($env:AWS_PROFILE -ne $awsProfile) {
-            $env:AWS_PROFILE = $awsProfile
-            $region = aws configure get region --profile $awsProfile 2>$null
-            if ($region) { $env:AWS_DEFAULT_REGION = $region }
-            else { Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue }
+            if ($env:AWS_PROFILE) {
+                Remove-Item Env:AWS_PROFILE -ErrorAction SilentlyContinue
+                Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue
+            }
         }
     }
 
@@ -98,13 +100,13 @@ Describe "N: Normal cases" {
         $env:AWS_PROFILE | Should -Be 'work'
     }
 
-    It "N3: PWD outside work_dir → AWS_PROFILE=personal, AWS_DEFAULT_REGION=us-east-1" {
+    It "N3: PWD outside work_dir → AWS_PROFILE unset, AWS_DEFAULT_REGION unset" {
         Invoke-SelectAwsProfile -WorkDir $script:WorkDir -Cwd $script:OtherDir
-        $env:AWS_PROFILE        | Should -Be 'personal'
-        $env:AWS_DEFAULT_REGION | Should -Be 'us-east-1'
+        $env:AWS_PROFILE        | Should -BeNullOrEmpty
+        $env:AWS_DEFAULT_REGION | Should -BeNullOrEmpty
     }
 
-    It "N4: switch work → personal → AWS_DEFAULT_REGION updates" {
+    It "N4: switch work → outside → AWS_PROFILE unset, AWS_DEFAULT_REGION unset" {
         $env:AWS_WORK_DIR = $script:WorkDir
         Remove-Item Env:AWS_PROFILE        -ErrorAction SilentlyContinue
         Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue
@@ -115,8 +117,8 @@ Describe "N: Normal cases" {
 
         Set-Location $script:OtherDir
         Select-AwsProfile
-        $env:AWS_PROFILE        | Should -Be 'personal'
-        $env:AWS_DEFAULT_REGION | Should -Be 'us-east-1'
+        $env:AWS_PROFILE        | Should -BeNullOrEmpty
+        $env:AWS_DEFAULT_REGION | Should -BeNullOrEmpty
     }
 }
 
@@ -126,9 +128,9 @@ Describe "N: Normal cases" {
 
 Describe "E: Edge cases" {
 
-    It "E1: false prefix — C:\workother should be personal (not treated as subdir of work)" {
+    It "E1: false prefix — C:\workother should be unset (not treated as subdir of work)" {
         Invoke-SelectAwsProfile -WorkDir $script:WorkDir -Cwd $script:WorkOther
-        $env:AWS_PROFILE | Should -Be 'personal'
+        $env:AWS_PROFILE | Should -BeNullOrEmpty
     }
 
     It "E2: trailing backslash in AWS_WORK_DIR → treated same as without" {
@@ -174,7 +176,6 @@ Describe "E: Edge cases" {
             if ($argList -contains 'configure' -and $argList -contains 'get' -and $argList -contains 'region') {
                 switch ($profileName) {
                     'work'     { return 'ap-northeast-1' }
-                    'personal' { return 'us-east-1' }
                     default    { return '' }
                 }
             }
@@ -195,7 +196,6 @@ Describe "E: Edge cases" {
                 } else { '' }
                 switch ($profileName) {
                     'work'     { return 'ap-northeast-1' }
-                    'personal' { return 'us-east-1' }
                     default    { return '' }
                 }
             }
@@ -206,12 +206,25 @@ Describe "E: Edge cases" {
         Remove-Item Env:AWS_PROFILE        -ErrorAction SilentlyContinue
         Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue
 
+        # In-work repeated calls: aws should only be called once
         Set-Location $script:WorkDir
         Select-AwsProfile   # first call: profile changes → aws called
         Select-AwsProfile   # second call: profile same → no aws call
         Select-AwsProfile   # third call: profile same → no aws call
 
         $script:AwsCallCount | Should -Be 1
+
+        # Outside (unset) repeated calls: aws should never be called
+        $script:AwsCallCount = 0
+        Remove-Item Env:AWS_PROFILE        -ErrorAction SilentlyContinue
+        Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue
+
+        Set-Location $script:OtherDir
+        Select-AwsProfile   # already unset, staying outside → no aws call
+        Select-AwsProfile   # still outside → no aws call
+        Select-AwsProfile   # still outside → no aws call
+
+        $script:AwsCallCount | Should -Be 0
 
         # Restore original aws mock
         function global:aws {
@@ -223,7 +236,6 @@ Describe "E: Edge cases" {
             if ($argList -contains 'configure' -and $argList -contains 'get' -and $argList -contains 'region') {
                 switch ($profileName) {
                     'work'     { return 'ap-northeast-1' }
-                    'personal' { return 'us-east-1' }
                     default    { return '' }
                 }
             }
@@ -294,7 +306,7 @@ Describe "I: Idempotency cases" {
 
         Set-Location $script:OtherDir
         Select-AwsProfile
-        $env:AWS_PROFILE | Should -Be 'personal'
+        $env:AWS_PROFILE | Should -BeNullOrEmpty
 
         Set-Location $script:WorkDir
         Select-AwsProfile
@@ -302,7 +314,7 @@ Describe "I: Idempotency cases" {
 
         Set-Location $script:OtherDir
         Select-AwsProfile
-        $env:AWS_PROFILE | Should -Be 'personal'
+        $env:AWS_PROFILE | Should -BeNullOrEmpty
     }
 
     It "I3: provider path passthrough — non-filesystem path does not call Select-AwsProfile" {

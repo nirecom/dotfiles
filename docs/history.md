@@ -144,3 +144,7 @@ Changes: Moved fnm initialization in install/win/profile.ps1 to before the agent
 ### FEATURE: AWS profile auto-switch in bash/zsh and PowerShell profiles (2026-05-03, pending)
 Background: AWS personal/work profiles auto-switch based on directory prefix. When inside AWS_WORK_DIR the shell uses the work profile; otherwise personal. Block is skipped entirely if AWS_WORK_DIR is unset, leaving existing AWS_PROFILE untouched.
 Changes: .profile_common: added _aws_select_profile function with bash PROMPT_COMMAND / zsh chpwd_functions hook (idempotency guards on both). install/win/profile.ps1: added Select-AwsProfile + Set-LocationWithFnmAndAws (integrates fnm cd-hook). Trailing-slash normalization and false-prefix guard on both platforms. Tests: tests/main-aws-profile.sh (14 cases), tests/main-aws-profile-ps.Tests.ps1 (13 cases), all pass.
+
+### BUGFIX: AWS profile switch: unset AWS_PROFILE outside work dir instead of forcing personal (2026-05-03, pending)
+Background: Setting AWS_PROFILE=personal when outside AWS_WORK_DIR silently overrode any manually set profile (Codex concern #2). Using a fixed name also required users to create a named personal profile even if they only had the default profile.
+Changes: .profile_common and install/win/profile.ps1: changed outside-work-dir branch to unset AWS_PROFILE and AWS_DEFAULT_REGION instead of setting them to personal/us-east-1. Tests updated: bash 15 cases, Pester 13 cases, all pass.

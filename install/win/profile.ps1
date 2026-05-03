@@ -56,17 +56,20 @@ if (Get-Command fnm -ErrorAction SilentlyContinue) {
 if ((Get-Command aws -ErrorAction SilentlyContinue) -and $env:AWS_WORK_DIR) {
     function global:Select-AwsProfile {
         $workDir = $env:AWS_WORK_DIR.TrimEnd('\', '/')
-        $awsProfile = if ($PWD.Path.StartsWith($workDir, [System.StringComparison]::OrdinalIgnoreCase) -and
-                         ($PWD.Path.Length -eq $workDir.Length -or $PWD.Path[$workDir.Length] -in '\', '/')) {
-            'work'
+        $inWorkDir = $PWD.Path.StartsWith($workDir, [System.StringComparison]::OrdinalIgnoreCase) -and
+                     ($PWD.Path.Length -eq $workDir.Length -or $PWD.Path[$workDir.Length] -in '\', '/')
+        if ($inWorkDir) {
+            if ($env:AWS_PROFILE -ne 'work') {
+                $env:AWS_PROFILE = 'work'
+                $region = aws configure get region --profile work 2>$null
+                if ($region) { $env:AWS_DEFAULT_REGION = $region }
+                else { Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue }
+            }
         } else {
-            'personal'
-        }
-        if ($env:AWS_PROFILE -ne $awsProfile) {
-            $env:AWS_PROFILE = $awsProfile
-            $region = aws configure get region --profile $awsProfile 2>$null
-            if ($region) { $env:AWS_DEFAULT_REGION = $region }
-            else { Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue }
+            if ($env:AWS_PROFILE) {
+                Remove-Item Env:AWS_PROFILE -ErrorAction SilentlyContinue
+                Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue
+            }
         }
     }
     Select-AwsProfile

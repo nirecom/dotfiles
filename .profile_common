@@ -47,20 +47,22 @@ fi
 # If AWS_WORK_DIR is unset, this block is skipped (AWS_PROFILE is untouched).
 if type aws >/dev/null 2>&1 && [ "$OSDIST" != "qnap" ] && [ -n "${AWS_WORK_DIR:-}" ]; then
     _aws_select_profile() {
-        local _profile _work_dir
+        local _work_dir
         _work_dir="${AWS_WORK_DIR%/}"
         if [ "$PWD" = "$_work_dir" ] || case "$PWD" in "$_work_dir"/*) true;; *) false;; esac; then
-            _profile="work"
+            if [ "${AWS_PROFILE:-}" != "work" ]; then
+                export AWS_PROFILE="work"
+                local _region
+                _region=$(aws configure get region --profile "work" 2>/dev/null)
+                if [ -n "$_region" ]; then
+                    export AWS_DEFAULT_REGION="$_region"
+                else
+                    unset AWS_DEFAULT_REGION
+                fi
+            fi
         else
-            _profile="personal"
-        fi
-        if [ "${AWS_PROFILE:-}" != "$_profile" ]; then
-            export AWS_PROFILE="$_profile"
-            local _region
-            _region=$(aws configure get region --profile "$_profile" 2>/dev/null)
-            if [ -n "$_region" ]; then
-                export AWS_DEFAULT_REGION="$_region"
-            else
+            if [ -n "${AWS_PROFILE:-}" ]; then
+                unset AWS_PROFILE
                 unset AWS_DEFAULT_REGION
             fi
         fi
