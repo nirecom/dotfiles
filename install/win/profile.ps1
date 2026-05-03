@@ -96,7 +96,8 @@ if ((Get-Command aws -ErrorAction SilentlyContinue) -and $env:AWS_WORK_DIR) {
             if (Get-Command fnm -ErrorAction SilentlyContinue) { fnm use --silent-if-unchanged 2>$null }
             Select-AwsProfile
         }
-        Set-Alias -Name cd -Value Set-LocationWithFnmAndAws -Scope Global -Force
+        Remove-Item Alias:\cd -Force -ErrorAction SilentlyContinue
+        Set-Alias -Name cd -Value Set-LocationWithFnmAndAws -Scope Global
     } else {
         function global:Set-LocationWithAws {
             param([string]$Path, [string]$LiteralPath)
@@ -118,7 +119,8 @@ if ((Get-Command aws -ErrorAction SilentlyContinue) -and $env:AWS_WORK_DIR) {
             }
             Select-AwsProfile
         }
-        Set-Alias -Name cd -Value Set-LocationWithAws -Scope Global -Force
+        Remove-Item Alias:\cd -Force -ErrorAction SilentlyContinue
+        Set-Alias -Name cd -Value Set-LocationWithAws -Scope Global
     }
 }
 
