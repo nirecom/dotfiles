@@ -41,6 +41,44 @@ fi
 if type aws >/dev/null 2>&1 && [ "$OSDIST" != "qnap" ]; then
     export AWS_DEFAULT_REGION=$(aws configure get region --profile default)
 fi
+
+# AWS profile auto-switch based on directory prefix.
+# AWS_WORK_DIR: set in local env — not hardcoded here.
+# If AWS_WORK_DIR is unset, this block is skipped (AWS_PROFILE is untouched).
+if type aws >/dev/null 2>&1 && [ "$OSDIST" != "qnap" ] && [ -n "${AWS_WORK_DIR:-}" ]; then
+    _aws_select_profile() {
+        local _profile _work_dir
+        _work_dir="${AWS_WORK_DIR%/}"
+        if [ "$PWD" = "$_work_dir" ] || case "$PWD" in "$_work_dir"/*) true;; *) false;; esac; then
+            _profile="work"
+        else
+            _profile="personal"
+        fi
+        if [ "${AWS_PROFILE:-}" != "$_profile" ]; then
+            export AWS_PROFILE="$_profile"
+            local _region
+            _region=$(aws configure get region --profile "$_profile" 2>/dev/null)
+            if [ -n "$_region" ]; then
+                export AWS_DEFAULT_REGION="$_region"
+            else
+                unset AWS_DEFAULT_REGION
+            fi
+        fi
+    }
+    _aws_select_profile
+    if [ -n "$ZSH_VERSION" ]; then
+        autoload -Uz add-zsh-hook
+        if ! (( ${chpwd_functions[(Ie)_aws_select_profile]} )); then
+            add-zsh-hook chpwd _aws_select_profile
+        fi
+    else
+        case "$PROMPT_COMMAND" in
+            *_aws_prompt_cmd*) ;;
+            *) PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND}; }_aws_prompt_cmd" ;;
+        esac
+        _aws_prompt_cmd() { _aws_select_profile; }
+    fi
+fi
 #export BASH_SILENCE_DEPRECATION_WARNING=1
 #export LSCOLORS=Cxfxcxdxbxegedabagacad
 export LSCOLORS=gxfxcxdxbxegedabagacad
