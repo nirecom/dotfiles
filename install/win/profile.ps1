@@ -50,6 +50,78 @@ if (Get-Command fnm -ErrorAction SilentlyContinue) {
     }
 }
 
+# AWS profile auto-switch based on directory prefix.
+# AWS_WORK_DIR: set in local env — not hardcoded here.
+# If AWS_WORK_DIR is unset, this block is skipped.
+if ((Get-Command aws -ErrorAction SilentlyContinue) -and $env:AWS_WORK_DIR) {
+    function global:Select-AwsProfile {
+        $workDir = $env:AWS_WORK_DIR.TrimEnd('\', '/')
+        $inWorkDir = $PWD.Path.StartsWith($workDir, [System.StringComparison]::OrdinalIgnoreCase) -and
+                     ($PWD.Path.Length -eq $workDir.Length -or $PWD.Path[$workDir.Length] -in '\', '/')
+        if ($inWorkDir) {
+            if ($env:AWS_PROFILE -ne 'work') {
+                $env:AWS_PROFILE = 'work'
+                $region = aws configure get region --profile work 2>$null
+                if ($region) { $env:AWS_DEFAULT_REGION = $region }
+                else { Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue }
+            }
+        } else {
+            if ($env:AWS_PROFILE) {
+                Remove-Item Env:AWS_PROFILE -ErrorAction SilentlyContinue
+                Remove-Item Env:AWS_DEFAULT_REGION -ErrorAction SilentlyContinue
+            }
+        }
+    }
+    Select-AwsProfile
+
+    if (Get-Command Set-LocationWithFnm -ErrorAction SilentlyContinue) {
+        function global:Set-LocationWithFnmAndAws {
+            param([string]$Path, [string]$LiteralPath)
+            $target = if ($PSBoundParameters.ContainsKey('LiteralPath')) { $LiteralPath }
+                      elseif ($PSBoundParameters.ContainsKey('Path')) { $Path }
+                      else { $null }
+
+            if ($null -eq $target -or $target -eq '') {
+                Set-Location $HOME
+            } else {
+                $drivePrefix = ($target -split ':')[0]
+                $isFileSystem = ($drivePrefix.Length -le 1) -or ($target -match '^[A-Za-z]:\\') -or ($target -match '^/')
+                if (-not $isFileSystem) { Set-Location $target; return }
+                if (Test-Path -LiteralPath $target) {
+                    Set-Location -LiteralPath $target
+                } else {
+                    Write-Error "cd: no such directory: $target" -ErrorAction Continue; return
+                }
+            }
+            if (Get-Command fnm -ErrorAction SilentlyContinue) { fnm use --silent-if-unchanged 2>$null }
+            Select-AwsProfile
+        }
+        Set-Alias -Name cd -Value Set-LocationWithFnmAndAws -Scope Global -Force
+    } else {
+        function global:Set-LocationWithAws {
+            param([string]$Path, [string]$LiteralPath)
+            $target = if ($PSBoundParameters.ContainsKey('LiteralPath')) { $LiteralPath }
+                      elseif ($PSBoundParameters.ContainsKey('Path')) { $Path }
+                      else { $null }
+
+            if ($null -eq $target -or $target -eq '') {
+                Set-Location $HOME
+            } else {
+                $drivePrefix = ($target -split ':')[0]
+                $isFileSystem = ($drivePrefix.Length -le 1) -or ($target -match '^[A-Za-z]:\\') -or ($target -match '^/')
+                if (-not $isFileSystem) { Set-Location $target; return }
+                if (Test-Path -LiteralPath $target) {
+                    Set-Location -LiteralPath $target
+                } else {
+                    Write-Error "cd: no such directory: $target" -ErrorAction Continue; return
+                }
+            }
+            Select-AwsProfile
+        }
+        Set-Alias -Name cd -Value Set-LocationWithAws -Scope Global -Force
+    }
+}
+
 if (Test-Path "$AgentsDir\profile-snippet.ps1") { . "$AgentsDir\profile-snippet.ps1" }
 $SessionDir = "$HOME\.claude\projects"
 
@@ -192,3 +264,7 @@ $env:FORNIX_OU             = 'nire-personal'
 $env:FORNIX_CLASSIFICATION = 'internal'
 $env:FLUSH_INTERVAL        = '10'
 $env:FORNIX_SYNC_INTERVAL  = '300'
+
+# --- BEGIN agents profile sourcing ---
+. "C:\git\agents\profile-snippet.ps1"
+# --- END agents profile sourcing ---
