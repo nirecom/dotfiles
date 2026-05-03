@@ -214,7 +214,6 @@ if type git > /dev/null 2>&1; then # if git is installed
     if [ -n "$PID" ] && [ $$ != "$PID" ]; then # if first bash process
         _dotfiles_private_dir="$(dirname "$DOTFILES_DIR")/dotfiles-private"
         _agents_dir="$(dirname "$DOTFILES_DIR")/agents"
-        _session_dir="$HOME/.claude/projects"
 
         # Suppress zsh job-control output ([N] PID / [N] exit N) via NO_MONITOR
         _dotfiles_fetch_all() {
@@ -246,18 +245,10 @@ if type git > /dev/null 2>&1; then # if git is installed
                 $_tc git -C "$_agents_dir" fetch 2>/dev/null & _pid_ag=$!
             fi
 
-            _pid_ss= _rc_ss=1
-            if [ -d "$_session_dir/.git" ]; then
-                echo "git fetch Claude session sync ..."
-                # shellcheck disable=SC2086
-                $_tc git -C "$_session_dir" fetch 2>/dev/null & _pid_ss=$!
-            fi
-
             # Wait for all fetches
             wait $_pid_df; _rc_df=$?
             [ -n "$_pid_prv" ] && { wait $_pid_prv; _rc_prv=$?; }
             [ -n "$_pid_ag"  ] && { wait $_pid_ag;  _rc_ag=$?;  }
-            [ -n "$_pid_ss"  ] && { wait $_pid_ss;  _rc_ss=$?;  }
         }
         _dotfiles_fetch_all
         unset -f _dotfiles_fetch_all 2>/dev/null
@@ -284,48 +275,11 @@ if type git > /dev/null 2>&1; then # if git is installed
         fi
         [ "$_rc_prv" -eq 0 ] && git -C "$_dotfiles_private_dir" merge --ff-only FETCH_HEAD 2>/dev/null
         [ "$_rc_ag"  -eq 0 ] && git -C "$_agents_dir" merge --ff-only FETCH_HEAD 2>/dev/null
-        [ "$_rc_ss"  -eq 0 ] && git -C "$_session_dir" merge --ff-only FETCH_HEAD 2>/dev/null
 
-        unset _dotfiles_private_dir _agents_dir _session_dir
-        unset _pid_df _pid_prv _pid_ag _pid_ss _rc_df _rc_prv _rc_ag _rc_ss _ans
+        unset _dotfiles_private_dir _agents_dir
+        unset _pid_df _pid_prv _pid_ag _rc_df _rc_prv _rc_ag _ans
     fi
 fi
-
-# Returns true if any VS Code window is currently open
-_any_vscode_window() {
-    if [ "$(uname)" = "Darwin" ]; then
-        local count
-        count=$(osascript -e 'tell application "System Events" to (count (every window of every process whose name contains "Code"))' 2>/dev/null)
-        [ "${count:-0}" -gt 0 ]
-    elif type xdotool >/dev/null 2>&1; then
-        xdotool search --name "Visual Studio Code" 2>/dev/null | grep -q .
-    elif type wmctrl >/dev/null 2>&1; then
-        wmctrl -l 2>/dev/null | grep -q "Visual Studio Code"
-    else
-        return 1
-    fi
-}
-
-# Launch VS Code with session sync (push on close)
-codes() {
-    local target="${1:-.}"
-    local name
-    if [[ "$target" == *.code-workspace ]]; then
-        name="$(basename "$target" .code-workspace)"
-    else
-        name="$(basename "$(cd "$target" 2>/dev/null && pwd || echo "$target")")"
-    fi
-    (
-        code --new-window "$@"
-        "$DOTFILES_DIR/bin/wait-vscode-window.sh" "$name"
-        if _any_vscode_window; then
-            "${AGENTS_DIR:-$DOTFILES_DIR}/bin/session-sync.sh" push --quiet
-        else
-            "${AGENTS_DIR:-$DOTFILES_DIR}/bin/session-sync.sh" push --quiet --toast
-        fi
-    ) &
-    disown
-}
 
 # Source code highlighting
 case "$OSDIST" in

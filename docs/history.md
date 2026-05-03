@@ -156,3 +156,7 @@ Changes: .profile_common: added sourcing of ~/.config/dotfiles/local.env (if it 
 ### BUGFIX: Fix cd alias override in admin pwsh: use Remove-Item before Set-Alias (2026-05-03, pending)
 Background: Set-Alias -Force cannot change the AllScope option on PowerShell's built-in cd alias, causing an error in admin sessions where fnm does not pre-empt it with its own non-AllScope alias.
 Changes: Replace Set-Alias -Force with Remove-Item Alias:\cd -Force followed by Set-Alias (no -Force). Remove-Item takes a different code path that permits AllScope alias removal.
+
+### REFACTOR: Extract session-sync auto-pull and codes function to agents repo (2026-05-03, pending)
+Background: session-sync runtime scripts already lived in agents/, but the auto-pull triggers (in install/win/profile.ps1 and .profile_common) and the bin/wait-vscode-window scripts were still owned by dotfiles. This made session-sync inoperable on machines without dotfiles installed.
+Changes: install/win/profile.ps1: removed $SessionDir variable, fetchSs block, and codes function (now in agents/profile-snippet.ps1). .profile_common: removed _session_dir, session-sync fetch leg, _any_vscode_window helper, and codes function (now in agents/profile-snippet.sh). Deleted bin/wait-vscode-window.{ps1,sh} (moved to agents/bin/). Deleted tests/main-wait-vscode-window.* and tests/main-profile-codes.* (moved to agents/tests/). docs/architecture/file-tree.md: removed wait-vscode-window entries.
