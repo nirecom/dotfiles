@@ -125,7 +125,6 @@ if ((Get-Command aws -ErrorAction SilentlyContinue) -and $env:AWS_WORK_DIR) {
 }
 
 if (Test-Path "$AgentsDir\profile-snippet.ps1") { . "$AgentsDir\profile-snippet.ps1" }
-$SessionDir = "$HOME\.claude\projects"
 
 if (Get-Command git -ErrorAction SilentlyContinue) {
     # Launch all fetches in parallel
@@ -148,11 +147,6 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
     if (Test-Path "$FornixAgentDir\.git") {
         Write-Host "git fetch fornix-agent ..."
         $fetchFa = Start-Process -FilePath git -ArgumentList "-C $FornixAgentDir fetch" -NoNewWindow -PassThru
-    }
-    $fetchSs = $null
-    if (Test-Path "$SessionDir\.git") {
-        Write-Host "git fetch Claude session sync ..."
-        $fetchSs = Start-Process -FilePath git -ArgumentList "-C $SessionDir fetch" -NoNewWindow -PassThru
     }
 
     # Extra repos from ~/.config/dotfiles/fetch-repos (one path per line, # = comment)
@@ -214,10 +208,6 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
         if (-not $fetchFa.WaitForExit(3000)) { $fetchFa.Kill() }
         elseif ($fetchFa.ExitCode -eq 0) { git -C $FornixAgentDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
     }
-    if ($fetchSs) {
-        if (-not $fetchSs.WaitForExit(3000)) { $fetchSs.Kill() }
-        elseif ($fetchSs.ExitCode -eq 0) { git -C $SessionDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
-    }
     foreach ($ef in $extraFetches) {
         if (-not $ef.Proc.WaitForExit(3000)) { $ef.Proc.Kill() }
         elseif ($ef.Proc.ExitCode -eq 0) { git -C $ef.Path merge --ff-only --no-summary FETCH_HEAD 2>$null }
@@ -244,21 +234,6 @@ if (Get-Command starship -ErrorAction SilentlyContinue) {
     Invoke-Expression (&starship init powershell)
 }
 
-# Launch VS Code with session sync (push on window close via title polling)
-function codes {
-    $syncScript = "$AgentsDir\bin\session-sync.ps1"
-    $waitScript = "$DotfilesDir\bin\wait-vscode-window.ps1"
-    $target = if ($args.Count -gt 0) { $args[0] } else { '.' }
-    $codeArgs = $args -join ' '
-    if ($target -match '\.code-workspace$') {
-        $name = [IO.Path]::GetFileNameWithoutExtension((Resolve-Path $target).Path)
-    } else {
-        $name = Split-Path -Leaf (Resolve-Path $target).Path
-    }
-    Start-Process pwsh -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-Command",
-        "code.cmd --new-window $codeArgs; & '$waitScript' '$name'; & '$syncScript' push -Quiet" -WindowStyle Hidden
-}
-
 # fornix-agent
 $env:FORNIX_DIR            = 'C:\git\fornix-stream'
 $env:FORNIX_AGENT_DIR      = 'C:\git\fornix-agent'
@@ -266,7 +241,3 @@ $env:FORNIX_OU             = 'nire-personal'
 $env:FORNIX_CLASSIFICATION = 'internal'
 $env:FLUSH_INTERVAL        = '10'
 $env:FORNIX_SYNC_INTERVAL  = '300'
-
-# --- BEGIN agents profile sourcing ---
-. "C:\git\agents\profile-snippet.ps1"
-# --- END agents profile sourcing ---
