@@ -1,6 +1,11 @@
 #!/bin/bash
 # Install nvm (Node Version Manager)
 # Windows uses fnm (nvm has no Windows support); WSL2/macOS/Linux use nvm.
+#
+# Policy: install the version manager only. Node.js itself is each repo's
+# responsibility (via .node-version / .nvmrc). No default version is set —
+# repos without a version file will fail explicitly rather than silently
+# falling back to a stale LTS.
 
 set -e
 
@@ -15,18 +20,5 @@ else
   echo "Installing nvm..."
   # --skip-shell: .profile_common already handles nvm init; prevent auto-modification of .zshrc/.bashrc
   curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash -s -- --skip-shell
+  echo "nvm installed. Restart your shell, then 'nvm install <version>' in each repo as needed."
 fi
-
-# Load nvm for this session
-. "$NVM_DIR/nvm.sh"
-
-# Install LTS Node.js (skip if already present)
-if nvm ls --no-colors lts/* &>/dev/null; then
-  printf "${C_GRAY}Node.js LTS already installed: $(node --version)${C_RESET}\n"
-else
-  echo "Installing Node.js LTS..."
-  nvm install --lts
-fi
-nvm alias default lts/*
-
-echo "nvm setup complete: node $(node --version), npm $(npm --version)"
