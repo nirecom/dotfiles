@@ -25,7 +25,7 @@
 | [install/win/install-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/install-obsolete.ps1) | Remove obsolete files and shortcuts | |
 | [install/win/sounds.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/sounds.ps1) | Mute notification sounds | |
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget (Windows only) | |
-| [install/linux/nvm.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/nvm.sh) | Install nvm + Node.js LTS (WSL2/macOS/Linux) | |
+| [install/linux/nvm.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/nvm.sh) | Install nvm only (WSL2/macOS/Linux); Node.js managed per repo | |
 | [install/win/awscli.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/awscli.ps1) | Install AWS CLI via winget | |
 | [install/win/vscode.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/vscode.ps1) | Install VS Code and extensions | Extensions from `config/vscode-extensions.txt` |
 | [install/linux/vscode.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/vscode.sh) | Install VS Code and extensions | WSL: skip (Windows host). Extensions from shared list |
