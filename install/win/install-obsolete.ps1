@@ -97,6 +97,19 @@ if (Test-Path $gitConfigLocal) {
     }
 }
 
+# --- Remove obsolete ~/.claude/rules/language.md symlink (lang-config.js now owns language config) ---
+$langSymlink = Join-Path $HOME ".claude\rules\language.md"
+if (Test-Path $langSymlink -PathType Any) {
+    $langItem = Get-Item $langSymlink -Force -ErrorAction SilentlyContinue
+    if ($langItem -and ($langItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        $langTarget = $langItem.Target
+        if ($langTarget -and ($langTarget -ilike "*\dotfiles-private\agents\rules\language.md" -or $langTarget -ilike "*/dotfiles-private/agents/rules/language.md")) {
+            Write-Host "Removing obsolete symlink: $langSymlink (was: $langTarget)" -ForegroundColor Yellow
+            Remove-Item $langSymlink -Force
+        }
+    }
+}
+
 # --- BEGIN temporary: ~/dotfiles,~/git → C:\git migration ---
 # Remove old dotfiles directories after migration to C:\git
 $migrationTargets = @(

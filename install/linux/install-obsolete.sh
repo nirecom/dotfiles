@@ -136,3 +136,15 @@ if [ -f "$_git_config_local" ]; then
     unset _hp
 fi
 unset _git_config_local
+
+# Remove obsolete ~/.claude/rules/language.md symlink (lang-config.js now owns language config)
+_lang_link="$HOME/.claude/rules/language.md"
+if [[ -L "$_lang_link" ]]; then
+    _lang_target="$(readlink "$_lang_link")"
+    if [[ "$_lang_target" == */dotfiles-private/agents/rules/language.md ]]; then
+        echo "Removing obsolete symlink: $_lang_link (was: $_lang_target)"
+        rm "$_lang_link"
+    fi
+    unset _lang_target
+fi
+unset _lang_link
