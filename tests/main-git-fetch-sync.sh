@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 # Test: git sync uses fetch+merge pattern on both platforms
+# Tests: .profile_common, install/win/profile.ps1
+# Tags: git-fetch, ssh, batchmode, zsh-guard, pwsh-not-required, scope:common
+# L3 gap (what this test does NOT catch):
+# - Real ssh reading /dev/tty for a passphrase during interactive WSL login
+# - The terminal actually staying responsive (no hang on `wait`) after fetch
+# Closest-to-action mitigation: gap checked at WORKFLOW_USER_VERIFIED preflight
+# via bin/check-verification-gate.sh category: installer.
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -132,6 +139,48 @@ if grep -q '3000' "$DOTFILES_DIR/install/win/profile.ps1"; then
     pass "profile.ps1: 3s timeout (3000ms)"
 else
     fail "profile.ps1: missing 3s timeout"
+fi
+
+echo ""
+echo "--- Security: each fetch target has BatchMode=yes subshell guard ---"
+
+# Each grep matches guard env vars AND the specific git -C target on the same line,
+# so comments or unrelated lines cannot satisfy the assertion.
+if grep -qE '\(\s*GIT_TERMINAL_PROMPT=0\s+GIT_SSH_COMMAND=.ssh -o BatchMode=yes[^)]*git -C "\$DOTFILES_DIR" fetch' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: dotfiles fetch has BatchMode=yes subshell guard"
+else
+    fail ".profile_common: dotfiles fetch missing BatchMode=yes subshell guard"
+fi
+
+if grep -qE '\(\s*GIT_TERMINAL_PROMPT=0\s+GIT_SSH_COMMAND=.ssh -o BatchMode=yes[^)]*git -C "\$_dotfiles_private_dir" fetch' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: my-private-repo fetch has BatchMode=yes subshell guard"
+else
+    fail ".profile_common: my-private-repo fetch missing BatchMode=yes subshell guard"
+fi
+
+if grep -qE '\(\s*GIT_TERMINAL_PROMPT=0\s+GIT_SSH_COMMAND=.ssh -o BatchMode=yes[^)]*git -C "\$_agents_dir" fetch' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: agents fetch has BatchMode=yes subshell guard"
+else
+    fail ".profile_common: agents fetch missing BatchMode=yes subshell guard"
+fi
+
+echo ""
+echo "--- Normal: shell guard handles zsh sessions (pgrep bash fix) ---"
+
+if grep -q 'ZSH_VERSION' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: fetch guard includes ZSH_VERSION branch for zsh sessions"
+else
+    fail ".profile_common: fetch guard missing ZSH_VERSION branch (zsh sessions will skip fetch)"
+fi
+
+# NOTE (codex round 2, C1): the pgrep -fo bash guard is RETAINED by design (bash path
+# unchanged); only the ZSH_VERSION fallback is added. Do NOT assert pgrep absence — that
+# would contradict the implementation. Assert instead that the zsh fallback co-exists on
+# the same guard line as the retained pgrep-derived PID condition.
+if grep -qE 'if \{ \[ -n "\$PID" \].*\}\s*\|\|\s*\[ -n "\$\{ZSH_VERSION-\}" \]' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: guard combines retained bash pgrep condition with ZSH_VERSION fallback"
+else
+    fail ".profile_common: guard line does not combine bash condition with ZSH_VERSION fallback"
 fi
 
 echo ""
