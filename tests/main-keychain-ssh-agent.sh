@@ -1,5 +1,7 @@
 #!/bin/bash
 # Tests for keychain SSH agent: install.sh default inclusion and .profile_common auto-detection
+# Tests: .profile_common, install.sh
+# Tags: ssh-keychain, ssh-agent, find-posix, scope:common
 set -euo pipefail
 
 PASS=0
@@ -30,6 +32,21 @@ else
 fi
 
 echo ""
+echo "=== .profile_common: find command is POSIX-compatible (no -printf) ==="
+
+if grep -q "find.*ssh.*-printf" "$DOTFILES_DIR/.profile_common"; then
+    fail ".profile_common: still uses GNU-only -printf in find command"
+else
+    pass ".profile_common: no -printf in find command (GNU-only extension removed)"
+fi
+
+if grep -q "find.*ssh.*basename" "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: uses POSIX-compatible basename pipeline in find command"
+else
+    fail ".profile_common: missing POSIX-compatible basename pipeline in find command"
+fi
+
+echo ""
 echo "=== .profile_common: SSH key auto-detection ==="
 
 # Create temporary SSH directory for testing
@@ -38,7 +55,7 @@ trap "rm -rf $TEST_SSH_DIR" EXIT
 
 # Helper: extract the find command from .profile_common and run it against test dir
 find_keys() {
-    find "$TEST_SSH_DIR" -maxdepth 1 -name 'id_*' ! -name '*.pub' -printf '%f\n' 2>/dev/null
+    find "$TEST_SSH_DIR" -maxdepth 1 -name 'id_*' ! -name '*.pub' 2>/dev/null | while IFS= read -r _f; do basename "$_f"; done
 }
 
 # Normal: single key detected
@@ -85,6 +102,26 @@ else
 fi
 rm -f "$TEST_SSH_DIR"/*
 
+# Edge: private key exists without matching .pub (generated on another machine)
+touch "$TEST_SSH_DIR/id_ed25519_nopub"
+result=$(find_keys)
+if [ "$result" = "id_ed25519_nopub" ]; then
+    pass "Key without .pub counterpart is detected"
+else
+    fail "Key without .pub: got [$result]"
+fi
+rm -f "$TEST_SSH_DIR"/*
+
+# Edge: private key filename containing a space (POSIX basename pipeline must preserve it)
+touch "$TEST_SSH_DIR/id_ed25519 backup"
+result=$(find_keys)
+if [ "$result" = "id_ed25519 backup" ]; then
+    pass "Key filename with space preserved by basename pipeline"
+else
+    fail "Key filename with space: got [$result]"
+fi
+rm -f "$TEST_SSH_DIR"/*
+
 # Idempotency: _ssh_keys is unset after sourcing
 # Simulate the pattern from .profile_common
 _ssh_keys=$(find_keys)
@@ -101,7 +138,7 @@ rm -f "$TEST_SSH_DIR"/*
 
 # Edge: ~/.ssh directory does not exist
 NONEXISTENT_DIR=$(mktemp -u)
-result=$(find "$NONEXISTENT_DIR" -maxdepth 1 -name 'id_*' ! -name '*.pub' -printf '%f\n' 2>/dev/null || true)
+result=$(find "$NONEXISTENT_DIR" -maxdepth 1 -name 'id_*' ! -name '*.pub' 2>/dev/null | while IFS= read -r _f; do basename "$_f"; done || true)
 if [ -z "$result" ]; then
     pass "Nonexistent SSH directory: empty result, no error"
 else
