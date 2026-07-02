@@ -186,7 +186,7 @@ GIT_PS1_SHOWSTASHSTATE=true
 # Setup ssh-agent
 if type keychain >/dev/null 2>&1; then
     # Auto-detect private keys (id_* excluding .pub)
-    _ssh_keys=$(find ~/.ssh -maxdepth 1 -name 'id_*' ! -name '*.pub' -printf '%f\n' 2>/dev/null)
+    _ssh_keys=$(find ~/.ssh -maxdepth 1 -name 'id_*' ! -name '*.pub' 2>/dev/null | while IFS= read -r _f; do basename "$_f"; done)
     if [ -n "$_ssh_keys" ]; then
         eval "$(keychain --eval --nogui --quiet --agents ssh $_ssh_keys)"
     fi
@@ -211,7 +211,7 @@ if type git > /dev/null 2>&1; then # if git is installed
     if type pgrep >/dev/null 2>&1; then
     PID=`pgrep -fo bash`
     fi
-    if [ -n "$PID" ] && [ $$ != "$PID" ]; then # if first bash process
+    if { [ -n "$PID" ] && [ $$ != "$PID" ]; } || [ -n "${ZSH_VERSION-}" ]; then # bash: non-oldest session; zsh: always
         _dotfiles_private_dir="$(dirname "$DOTFILES_DIR")/dotfiles-private"
         _agents_dir="$(dirname "$DOTFILES_DIR")/agents"
 
@@ -229,20 +229,20 @@ if type git > /dev/null 2>&1; then # if git is installed
             # Launch all fetches in parallel
             echo "git fetch $DOTFILES_DIR ..."
             # shellcheck disable=SC2086
-            $_tc git -C "$DOTFILES_DIR" fetch 2>/dev/null & _pid_df=$!
+            ( GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' $_tc git -C "$DOTFILES_DIR" fetch 2>/dev/null ) & _pid_df=$!
 
             _pid_prv= _rc_prv=1
             if [ -d "$_dotfiles_private_dir/.git" ]; then
                 echo "git fetch dotfiles-private ..."
                 # shellcheck disable=SC2086
-                $_tc git -C "$_dotfiles_private_dir" fetch 2>/dev/null & _pid_prv=$!
+                ( GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' $_tc git -C "$_dotfiles_private_dir" fetch 2>/dev/null ) & _pid_prv=$!
             fi
 
             _pid_ag= _rc_ag=1
             if [ -d "$_agents_dir/.git" ]; then
                 echo "git fetch agents ..."
                 # shellcheck disable=SC2086
-                $_tc git -C "$_agents_dir" fetch 2>/dev/null & _pid_ag=$!
+                ( GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' $_tc git -C "$_agents_dir" fetch 2>/dev/null ) & _pid_ag=$!
             fi
 
             # Wait for all fetches
