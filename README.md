@@ -35,7 +35,7 @@ When the `agents` repo is cloned as a sibling of the dotfiles repo (e.g. `~/git/
 | `git` | Repo clone; symlinks reference repo paths |
 | `curl` | Bootstrap fetches (nvm, uv, starship, awscli installers) |
 
-> sudo access is required for apt/Homebrew installs (`--base` and above).
+> On macOS, `./install.sh` (no flag) also installs Homebrew if absent (may prompt for admin password). sudo/admin access is required for apt/Homebrew installs (`--base` and above).
 
 ### Required (Windows)
 
@@ -71,13 +71,15 @@ Note: no-flag install also sets up a Node.js version manager (nvm on Linux/macOS
 # The `agents` and `my-private-repo` repos must be siblings of this one.
 git clone git@github.com:nirecom/dotfiles.git ~/git/dotfiles
 cd ~/git/dotfiles
-./install.sh            # Symlinks only
+./install.sh            # Symlinks + Homebrew bootstrap (macOS)
 ./install.sh --base     # Symlinks + base packages
 ./install.sh --develop  # Symlinks + dev tools
 ./install.sh --full     # Symlinks + base + dev tools
 ```
 
 `install.sh` resolves its own location and writes `~/.dotfiles_env` so login shells (`.bash_profile`, `.zshrc`) can find the repo regardless of where it was cloned.
+
+On macOS, the no-flag `./install.sh` also ensures Homebrew is usable in the current process: if Homebrew is already installed it applies `brew shellenv`; if absent it installs Homebrew (and Rosetta on Apple Silicon) automatically. This is required because the default install path sets up keychain and gh, both of which need `brew`.
 
 ### Windows (PowerShell)
 
