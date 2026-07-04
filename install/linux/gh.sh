@@ -31,5 +31,9 @@ else
     printf "${C_GREEN}gh installed: $(gh --version | head -1)${C_RESET}\n"
 fi
 
-printf "${C_YELLOW}gh: not authenticated — running gh auth login...${C_RESET}\n"
-gh auth login
+if command -v gh >/dev/null 2>&1; then
+    printf "${C_YELLOW}gh: not authenticated — running gh auth login...${C_RESET}\n"
+    gh auth login || printf "${C_YELLOW}gh auth login did not complete; continuing installation.${C_RESET}\n"
+else
+    printf "${C_YELLOW}gh not available — skipping gh auth login.${C_RESET}\n"
+fi
