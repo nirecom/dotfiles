@@ -8,29 +8,10 @@ if [ "$OSDIST" != "macos" ]; then
     exit 1
 fi
 
-if ! /usr/bin/pgrep -q oahd 2>/dev/null; then
-    echo "Installing Rosetta..."
-    softwareupdate --install-rosetta --agree-to-license
-else
-    echo "Rosetta is already installed."
-fi
-
-# Install Brew on macos
-if ! type brew >/dev/null 2>&1; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-# brew shellenv will be done at .profile_common under dotfiles/ repository
-#    if [ ! grep "$BREWPATH" $HOME/.profile >/dev/null 2&>1 ]; then
-#        echo 'eval $(/opt/homebrew/bin/brew shellenv)' >>$HOME/.profile
-#    fi
-#    if [ ! grep "$BREWPATH" $HOME/.profile >/dev/null 2&>1 ]; then
-#        echo 'eval $(/opt/homebrew/bin/brew shellenv)' >>$HOME/.zprofile
-#    fi
-fi
-if "$ISM1"; then
-    eval $(/opt/homebrew/bin/brew shellenv)
-else
-    eval $(/usr/local/bin/brew shellenv)
-fi
+# Ensure brew is installed and usable in this process (Rosetta + installer + shellenv).
+# shellcheck source=/dev/null
+source "$DOTFILES_DIR/install/linux/brew-bootstrap.sh"
+brew_bootstrap
 
 # two dependencies of git
 # https://github.com/Homebrew/discussions/discussions/439

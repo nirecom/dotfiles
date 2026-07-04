@@ -10,6 +10,7 @@ sounds
 vs-cpp
 
 # Linux-only tools (no Windows counterpart)
+brew-bootstrap
 brew-git
 ecs-cli
 git-completion

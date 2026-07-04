@@ -39,7 +39,11 @@ echo ""
 printf "${C_BOLD}--- Creating symlinks ---${C_RESET}\n"
 "$DOTFILES_DIR/install/linux/dotfileslink.sh"
 
-# Step 2: Install keychain (SSH agent manager)
+# Step 2: Ensure Homebrew is usable in this process (macOS only, no-op elsewhere)
+source "$DOTFILES_DIR/install/linux/brew-bootstrap.sh"
+brew_bootstrap
+
+# Step 3: Install keychain (SSH agent manager)
 echo ""
 printf "${C_BOLD}--- Installing keychain ---${C_RESET}\n"
 "$DOTFILES_DIR/install/linux/keychain.sh"
@@ -77,12 +81,12 @@ if [ "$1" = "--base" ] || [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
 fi
 
 if [ "$1" = "--develop" ] || [ "$1" = "--full" ]; then
-    # Step 8: Install development tools
+    # Step 10: Install development tools
     echo ""
     printf "${C_BOLD}--- Installing development tools ---${C_RESET}\n"
     "$DOTFILES_DIR/install/linux/install-develop.sh"
 
-    # Step 9: Install VS Code and extensions
+    # Step 11: Install VS Code and extensions
     echo ""
     printf "${C_BOLD}--- Installing Visual Studio Code ---${C_RESET}\n"
     "$DOTFILES_DIR/install/linux/vscode.sh"
