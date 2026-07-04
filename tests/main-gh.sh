@@ -1,9 +1,21 @@
 #!/bin/bash
 # tests/main-gh.sh - Tests for install/linux/gh.sh
+# Tests: install/linux/gh.sh, install.sh
+# Tags: installer, gh, github-cli, auth, scope:common, pwsh-not-required
 # Tests are divided into:
 #   - Static: grep-based pattern checks (run even when script does not exist)
 #   - Dynamic: actual script execution with mocked commands
 # Dynamic tests skip gracefully when the source script is not yet created.
+#
+# FAIL-BEFORE-FIX (issue #331): GH-L-6, GH-L-7 and the auth-guard static checks
+# assert the POST-FIX contract (gh auth login guarded by `command -v gh` and
+# non-fatalized with `||`). Against the current UNFIXED gh.sh they are EXPECTED
+# TO FAIL — that failure is the fail-before-fix evidence, not a test defect.
+# They pass once install/linux/gh.sh Step 4 (guard + non-fatalization) lands.
+#
+# L3 gap: real APT/GPG key injection and sources.list.d modification cannot be
+# tested at L2 (they would mutate the host). Real `gh auth login` interactive
+# TTY/device-flow and network access to packages.github.com are also out of scope.
 
 set -euo pipefail
 
@@ -161,6 +173,29 @@ else
     else
         fail "missing C_GREEN color variable"
     fi
+
+    # --- FAIL-BEFORE-FIX static contract (issue #331 Step 4) ---
+    # GH-S-1: `gh auth login` must be guarded by an ADDITIONAL `command -v gh`
+    # presence check so it is never invoked when gh is absent (brew install
+    # failed). The unfixed script already has ONE `command -v gh` (the install
+    # idempotency check at the top); the auth guard adds a SECOND. So require at
+    # least two occurrences. EXPECTED TO FAIL against current unfixed gh.sh
+    # (exactly one `command -v gh`).
+    cmd_v_gh_count=$(grep -Ec 'command -v gh' "$SCRIPT")
+    if [ "$cmd_v_gh_count" -ge 2 ] && grep -q 'gh auth login' "$SCRIPT"; then
+        pass "GH-S-1: gh auth login is guarded by a dedicated command -v gh check"
+    else
+        fail "GH-S-1 (fail-before-fix): auth login lacks a dedicated command -v gh guard (count=$cmd_v_gh_count)"
+    fi
+
+    # GH-S-2: `gh auth login` must be non-fatalized with `||` so a failed/aborted
+    # login does not propagate up and abort install.sh (which runs under set -e).
+    # EXPECTED TO FAIL against current unfixed gh.sh.
+    if grep -Eq 'gh auth login[[:space:]]*\|\|' "$SCRIPT"; then
+        pass "GH-S-2: gh auth login is non-fatalized with ||"
+    else
+        fail "GH-S-2 (fail-before-fix): gh auth login is not non-fatalized with ||"
+    fi
 fi
 
 echo ""
@@ -170,14 +205,15 @@ echo ""
 # All dynamic tests skip gracefully when the script doesn't exist yet.
 # ---------------------------------------------------------------------------
 
-# GH-L-2: When gh is already installed, prints gray "already installed" and exits 0
-echo "=== GH-L-2: Already installed — prints gray message, exits 0 ==="
+# GH-L-2: When gh is already installed AND authenticated, prints gray
+# "already installed" and exits 0 (early-exit path).
+echo "=== GH-L-2: Already installed + authenticated — exits 0 ==="
 if [ ! -f "$SCRIPT" ]; then
     skip "GH-L-2"
 else
     MOCK_L2="$TMPBASE/mock_l2"
     make_mock_env "$MOCK_L2"
-    make_gh_mock "$MOCK_L2"  # gh IS present
+    make_gh_mock "$MOCK_L2"  # gh IS present; `auth status` returns 0 (exit 0 stub)
 
     output=$(run_with_timeout env PATH="$MOCK_L2:$PATH" DOTFILES_DIR="$DOTFILES_DIR" bash "$SCRIPT" 2>&1) \
         && exit_code=$? || exit_code=$?
@@ -279,7 +315,7 @@ EOF
     if [ "$exit_code" -eq 0 ]; then
         pass "GH-L-1: exits 0 on successful install (ubuntu)"
     else
-        fail "GH-L-1: exits $exit_code; output=[$output]"
+        fail "GH-L-1 (fail-before-fix): exits $exit_code; output=[$output]"
     fi
 fi
 
@@ -352,6 +388,103 @@ else
         fail "GH-L-5: ANSI codes found in piped output: [$output]"
     else
         pass "GH-L-5: no ANSI codes when stdout is piped"
+    fi
+fi
+
+echo ""
+
+# ---------------------------------------------------------------------------
+# GH-L-6 (FAIL-BEFORE-FIX, issue #331): gh present but NOT authenticated, and
+# `gh auth login` FAILS (non-zero). The installer must NOT abort — gh.sh must
+# still exit 0 so install.sh (set -e) continues.
+#
+# Current UNFIXED gh.sh ends with a bare `gh auth login`; when it returns
+# non-zero the script exits non-zero → this test FAILS now (expected).
+# After Step 4 adds `gh auth login || printf ...`, gh.sh exits 0 → PASSES.
+# ---------------------------------------------------------------------------
+echo "=== GH-L-6: gh auth login fails — gh.sh stays non-fatal (exit 0) ==="
+if [ ! -f "$SCRIPT" ]; then
+    skip "GH-L-6"
+else
+    MOCK_L6="$TMPBASE/mock_l6"
+    make_mock_env "$MOCK_L6"
+
+    # gh present; `auth status` fails (not authenticated → no early exit),
+    # `auth login` fails (non-zero). Never prompts (returns immediately).
+    cat > "$MOCK_L6/gh" <<'EOF'
+#!/bin/bash
+case "${1:-}" in
+    --version) echo "gh version 2.40.0 (2024-01-01)"; exit 0 ;;
+    auth)
+        case "${2:-}" in
+            status) exit 1 ;;   # NOT authenticated
+            login)  exit 1 ;;   # login FAILS / aborted
+        esac
+        ;;
+esac
+exit 0
+EOF
+    chmod +x "$MOCK_L6/gh"
+
+    output=$(run_with_timeout env PATH="$MOCK_L6:$PATH" DOTFILES_DIR="$DOTFILES_DIR" bash "$SCRIPT" 2>&1) \
+        && exit_code=$? || exit_code=$?
+
+    if [ "$exit_code" -eq 0 ]; then
+        pass "GH-L-6: gh.sh exits 0 despite gh auth login failing"
+    else
+        fail "GH-L-6 (fail-before-fix): gh.sh aborted with exit $exit_code; output=[$output]"
+    fi
+fi
+
+echo ""
+
+# ---------------------------------------------------------------------------
+# GH-L-7 (FAIL-BEFORE-FIX, issue #331): gh command genuinely absent (brew/apt
+# install produced no real binary). `gh auth login` must be SKIPPED (guarded by
+# command -v gh) and the script must not abort.
+#
+# Current UNFIXED gh.sh runs `gh auth login` unconditionally → with gh absent it
+# is "command not found" (127) → gh.sh exits non-zero → this test FAILS now.
+# After Step 4 the `command -v gh` guard skips auth → gh.sh exits 0 → PASSES.
+# ---------------------------------------------------------------------------
+echo "=== GH-L-7: gh absent — auth login skipped, script does not abort ==="
+if [ ! -f "$SCRIPT" ]; then
+    skip "GH-L-7"
+else
+    MOCK_L7="$TMPBASE/mock_l7"
+    make_mock_env "$MOCK_L7"   # brew/apt are no-op → gh never becomes available
+
+    # Wrapper forces `command -v gh` to always fail (gh truly absent) so gh.sh
+    # takes the install branch, then reaches the auth section with gh missing.
+    GH_WRAPPER_L7="$TMPBASE/gh_wrapper_l7.sh"
+    cat > "$GH_WRAPPER_L7" <<EOF
+#!/bin/bash
+command() {
+    if [ "\${1:-}" = "-v" ] && [ "\${2:-}" = "gh" ]; then
+        return 1  # gh never found
+    fi
+    builtin command "\$@"
+}
+export -f command
+# Also override gh itself so a real gh on PATH is never reached. Simulate
+# "command not found" (127) WITHOUT prompting — the unfixed script's
+# unconditional 'gh auth login' would otherwise launch the real interactive
+# login and hang. Post-fix, the command -v gh guard skips this entirely.
+gh() { return 127; }
+export -f gh
+export PATH="$MOCK_L7:\$PATH"
+export DOTFILES_DIR="$DOTFILES_DIR"
+source "$SCRIPT"
+EOF
+    chmod +x "$GH_WRAPPER_L7"
+
+    output=$(run_with_timeout bash "$GH_WRAPPER_L7" 2>&1) \
+        && exit_code=$? || exit_code=$?
+
+    if [ "$exit_code" -eq 0 ]; then
+        pass "GH-L-7: gh.sh exits 0 and skips auth login when gh is absent"
+    else
+        fail "GH-L-7 (fail-before-fix): gh.sh aborted with exit $exit_code; output=[$output]"
     fi
 fi
 
