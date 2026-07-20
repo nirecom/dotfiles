@@ -86,6 +86,12 @@ if command -v fnm &>/dev/null; then
     echo "[WARN] fnm binary still found on PATH after cleanup. Check shell configs."
 fi
 
+# Remove bierner.markdown-mermaid (replaced by built-in vscode.mermaid-markdown-features)
+if command -v code >/dev/null 2>&1 && code --list-extensions 2>/dev/null | grep -qi "bierner\.markdown-mermaid"; then
+    echo "Uninstalling obsolete extension: bierner.markdown-mermaid (replaced by built-in vscode.mermaid-markdown-features)"
+    code --uninstall-extension bierner.markdown-mermaid
+fi
+
 # --- BEGIN temporary: .git/workflow → ~/.claude/projects/workflow migration ---
 _wf_new_dir="$HOME/.claude/projects/workflow"
 

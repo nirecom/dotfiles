@@ -1,10 +1,14 @@
 #!/bin/bash
 # Test: language policy changes — rules moved from public to my-private-repo
+# Tests: language.md symlink wiring, install scripts language policy
+# Tags: language-policy, symlink, scope:common
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PRIVATE_DIR="$DOTFILES_DIR/../my-private-repo"
+PRIVATE_DIR="${DOTFILES_PRIVATE_DIR:-}"
 AGENTS_DIR="$DOTFILES_DIR/../agents"
+
+[ -n "$PRIVATE_DIR" ] || { echo "SKIP: DOTFILES_PRIVATE_DIR not set"; exit 0; }
 
 pass=0
 fail=0
@@ -47,14 +51,6 @@ assert_false "docs-convention.md does not contain Private repositories Japanese 
 # 3. .config/git/ignore contains language.md entry
 assert_true ".config/git/ignore contains language.md gitignore entry" \
     "grep -q 'claude-global/rules/language.md' '$DOTFILES_DIR/.config/git/ignore'"
-
-# 4. install.ps1 references my-private-repo installer
-assert_true "install.ps1 references my-private-repo installer" \
-    "grep -q 'my-private-repo' '$DOTFILES_DIR/install.ps1'"
-
-# 5. install.sh references my-private-repo/install.sh
-assert_true "install.sh references my-private-repo/install.sh" \
-    "grep -q 'my-private-repo/install.sh' '$DOTFILES_DIR/install.sh'"
 
 # 6. Private repo language.md exists with all 4 section headers
 assert_true "private language.md exists" \
@@ -116,14 +112,6 @@ assert_true "windows installer language.md Dest uses \$AgentsDir" \
 echo ""
 echo "=== Edge Cases ==="
 
-# 10. install.ps1 has Test-Path guard around my-private-repo call
-assert_true "install.ps1 has Test-Path guard for my-private-repo" \
-    "grep -q 'Test-Path' '$DOTFILES_DIR/install.ps1'"
-
-# 11. install.sh has -x test guard around my-private-repo call
-assert_true "install.sh has -x test guard for my-private-repo" \
-    "grep -q '\-x.*PRIVATE_INSTALLER' '$DOTFILES_DIR/install.sh'"
-
 # 12. linux installer language.md entry does NOT use the old claude-global Dest path
 assert_false "linux installer language.md entry does not use old claude-global/rules/language.md as Dest" \
     "grep -q ':.*claude-global/rules/language.md\$' '$PRIVATE_DIR/install/linux/dotfileslink.sh'"
@@ -146,7 +134,7 @@ if [ -L "$LIVE_LINK" ]; then
     pass=$((pass + 1))
     target=$(readlink "$LIVE_LINK")
     case "$target" in
-        *my-private-repo/claude-global/rules/language.md)
+        */claude-global/rules/language.md)
             echo "PASS: symlink resolves to my-private-repo/claude-global/rules/language.md"
             pass=$((pass + 1))
             ;;

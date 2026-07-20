@@ -212,7 +212,6 @@ if type git > /dev/null 2>&1; then # if git is installed
     PID=`pgrep -fo bash`
     fi
     if { [ -n "$PID" ] && [ $$ != "$PID" ]; } || [ -n "${ZSH_VERSION-}" ]; then # bash: non-oldest session; zsh: always
-        _dotfiles_private_dir="$(dirname "$DOTFILES_DIR")/my-private-repo"
         _agents_dir="$(dirname "$DOTFILES_DIR")/agents"
 
         # Suppress zsh job-control output ([N] PID / [N] exit N) via NO_MONITOR
@@ -231,11 +230,18 @@ if type git > /dev/null 2>&1; then # if git is installed
             # shellcheck disable=SC2086
             ( GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' $_tc git -C "$DOTFILES_DIR" fetch 2>/dev/null ) & _pid_df=$!
 
-            _pid_prv= _rc_prv=1
-            if [ -d "$_dotfiles_private_dir/.git" ]; then
-                echo "git fetch my-private-repo ..."
-                # shellcheck disable=SC2086
-                ( GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' $_tc git -C "$_dotfiles_private_dir" fetch 2>/dev/null ) & _pid_prv=$!
+            # Extra repos from ~/.config/dotfiles/fetch-repos (one path per line, # = comment)
+            local _fetch_repos_file="$HOME/.config/dotfiles/fetch-repos"
+            _xdirs=(); _xpids=()
+            if [ -f "$_fetch_repos_file" ]; then
+                while IFS= read -r _xrepo || [ -n "$_xrepo" ]; do
+                    case "$_xrepo" in '#'*|'') continue ;; esac
+                    [ -d "$_xrepo/.git" ] || continue
+                    echo "git fetch $_xrepo ..."
+                    # shellcheck disable=SC2086
+                    ( GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' $_tc git -C "$_xrepo" fetch 2>/dev/null ) &
+                    _xdirs+=("$_xrepo"); _xpids+=("$!")
+                done < "$_fetch_repos_file"
             fi
 
             _pid_ag= _rc_ag=1
@@ -247,7 +253,6 @@ if type git > /dev/null 2>&1; then # if git is installed
 
             # Wait for all fetches
             wait $_pid_df; _rc_df=$?
-            [ -n "$_pid_prv" ] && { wait $_pid_prv; _rc_prv=$?; }
             [ -n "$_pid_ag"  ] && { wait $_pid_ag;  _rc_ag=$?;  }
         }
         _dotfiles_fetch_all
@@ -273,11 +278,16 @@ if type git > /dev/null 2>&1; then # if git is installed
                 fi
             fi
         fi
-        [ "$_rc_prv" -eq 0 ] && git -C "$_dotfiles_private_dir" merge --ff-only FETCH_HEAD 2>/dev/null
         [ "$_rc_ag"  -eq 0 ] && git -C "$_agents_dir" merge --ff-only FETCH_HEAD 2>/dev/null
+        _xi=0
+        for _xpid in "${_xpids[@]}"; do
+            wait "$_xpid" 2>/dev/null && git -C "${_xdirs[$_xi]}" merge --ff-only FETCH_HEAD 2>/dev/null
+            _xi=$((_xi+1))
+        done
+        unset _xi
 
-        unset _dotfiles_private_dir _agents_dir
-        unset _pid_df _pid_prv _pid_ag _rc_df _rc_prv _rc_ag _ans
+        unset _agents_dir
+        unset _pid_df _pid_ag _rc_df _rc_ag _ans _xdirs _xpids
     fi
 fi
 

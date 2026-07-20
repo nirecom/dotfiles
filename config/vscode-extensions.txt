@@ -1,5 +1,4 @@
 anthropic.claude-code
-bierner.markdown-mermaid
 github.copilot-chat
 ms-python.debugpy
 ms-python.python

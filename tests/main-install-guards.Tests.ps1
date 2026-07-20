@@ -1,25 +1,25 @@
 # tests/main-install-guards.Tests.ps1
-# TDD: Tests for platform guards in install.ps1 files across dotfiles, my-private-repo, and agents.
+# TDD: Tests for platform guards in install.ps1 files across dotfiles, private-repo, and agents.
 # These tests are expected to FAIL until the platform guard implementation is in place.
 # Syntax tests (S-group) should PASS immediately as the source files are valid PowerShell.
 
 BeforeAll {
     $script:DotfilesDir  = 'c:/git/dotfiles'
-    $script:PrivateDir   = 'c:/git/my-private-repo'
+    $script:PrivateDir   = $env:DOTFILES_PRIVATE_DIR
     $script:AgentsDir    = 'c:/git/agents'
 
     $script:DotfilesPs1  = Join-Path $script:DotfilesDir  'install.ps1'
-    $script:PrivatePs1   = Join-Path $script:PrivateDir   'install.ps1'
+    $script:PrivatePs1   = if ($script:PrivateDir) { Join-Path $script:PrivateDir 'install.ps1' } else { '' }
     $script:AgentsPs1    = Join-Path $script:AgentsDir    'install.ps1'
 
     $script:Contents = @{
         dotfiles        = if (Test-Path $script:DotfilesPs1) { Get-Content $script:DotfilesPs1 -Raw } else { '' }
-        'my-private-repo' = if (Test-Path $script:PrivatePs1)  { Get-Content $script:PrivatePs1  -Raw } else { '' }
+        'private-repo' = if (Test-Path $script:PrivatePs1)  { Get-Content $script:PrivatePs1  -Raw } else { '' }
         agents          = if (Test-Path $script:AgentsPs1)    { Get-Content $script:AgentsPs1    -Raw } else { '' }
     }
     $script:Lines = @{
         dotfiles        = if (Test-Path $script:DotfilesPs1) { Get-Content $script:DotfilesPs1 } else { @() }
-        'my-private-repo' = if (Test-Path $script:PrivatePs1)  { Get-Content $script:PrivatePs1  } else { @() }
+        'private-repo' = if (Test-Path $script:PrivatePs1)  { Get-Content $script:PrivatePs1  } else { @() }
         agents          = if (Test-Path $script:AgentsPs1)    { Get-Content $script:AgentsPs1    } else { @() }
     }
 }
@@ -36,10 +36,10 @@ Describe "S: Syntax checks" {
         $errors.Count | Should -Be 0
     }
 
-    It "S2: my-private-repo/install.ps1 has valid PowerShell syntax" {
+    It "S2: private-repo/install.ps1 has valid PowerShell syntax" {
         $errors = $null
         [System.Management.Automation.Language.Parser]::ParseInput(
-            $script:Contents['my-private-repo'], [ref]$null, [ref]$errors) | Out-Null
+            $script:Contents['private-repo'], [ref]$null, [ref]$errors) | Out-Null
         $errors.Count | Should -Be 0
     }
 
@@ -62,10 +62,10 @@ Describe "G: Guard presence — dotfiles/install.ps1" {
     }
 }
 
-Describe "G: Guard presence — my-private-repo/install.ps1" {
-    It "G2: my-private-repo/install.ps1 contains IsWindows guard" {
+Describe "G: Guard presence — private-repo/install.ps1" {
+    It "G2: private-repo/install.ps1 contains IsWindows guard" {
         # TDD: will FAIL until guard is added
-        $script:Contents['my-private-repo'] | Should -Match '\$IsWindows\s+-eq\s+\$false'
+        $script:Contents['private-repo'] | Should -Match '\$IsWindows\s+-eq\s+\$false'
     }
 }
 
@@ -127,10 +127,10 @@ Describe "P: Guard placement — dotfiles/install.ps1" {
     }
 }
 
-Describe "P: Guard placement — my-private-repo/install.ps1" {
-    It "P2: my-private-repo/install.ps1 has IsWindows guard before Set-StrictMode" {
+Describe "P: Guard placement — private-repo/install.ps1" {
+    It "P2: private-repo/install.ps1 has IsWindows guard before Set-StrictMode" {
         # TDD: will FAIL until guard is added before Set-StrictMode
-        $lines = $script:Lines['my-private-repo']
+        $lines = $script:Lines['private-repo']
         $guardLine = ($lines | Select-String '\$IsWindows\s+-eq\s+\$false').LineNumber | Select-Object -First 1
         $strictLine = ($lines | Select-String 'Set-StrictMode').LineNumber | Select-Object -First 1
         $guardLine | Should -Not -BeNullOrEmpty
