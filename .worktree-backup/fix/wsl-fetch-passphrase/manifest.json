@@ -1,0 +1,21 @@
+{
+  "worktree_path": "C:/git/worktrees/wsl-fetch-passphrase/dotfiles",
+  "branch": "fix/wsl-fetch-passphrase",
+  "backup_dir": "C:/git/dotfiles/.worktree-backup/fix/wsl-fetch-passphrase",
+  "created_iso": "2026-07-03T00:49:46Z",
+  "files": [
+    {
+      "path": "WORKTREE_NOTES.md",
+      "size_bytes": 3759,
+      "mtime_iso": "2026-07-03T00:49:46+09:00",
+      "sha256": "f363e7f1cd890e6f3d4ddd868af8a4fad76a1218a5b5531570c6866b59f4ef0a"
+    }
+  ],
+  "summary": {
+    "total_files": 1,
+    "total_size_bytes": 3759
+  },
+  "docker_impact": {
+    "containers_referencing_worktree": []
+  }
+}

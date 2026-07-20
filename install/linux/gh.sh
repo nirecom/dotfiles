@@ -1,5 +1,6 @@
 #!/bin/bash
 # Install GitHub CLI (gh)
+# Sibling: agents/install/linux/gh.sh (same pattern; kept separate for self-sufficiency)
 : "${DOTFILES_DIR:=$(cd "$(dirname "$0")/../.." && pwd)}"
 source "$DOTFILES_DIR/bin/colors.sh"
 source "$DOTFILES_DIR/bin/detectos.sh"
