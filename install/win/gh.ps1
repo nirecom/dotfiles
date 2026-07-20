@@ -1,5 +1,6 @@
 # gh.ps1 - Install GitHub CLI
 # Usage: Called by install.ps1 -Base or run independently
+# Sibling: agents/install/win/gh.ps1 (same pattern; kept separate for self-sufficiency)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
