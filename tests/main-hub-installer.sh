@@ -2,12 +2,16 @@
 # Tests for hub installer structure
 # Static checks only (no actual installation).
 # TDD: Many tests are expected to FAIL until the hub implementation is in place.
+# Tests: install.sh, install.ps1, private-repo hub installer structure
+# Tags: hub-installer, scope:common
 
 DOTFILES_DIR="c:/git/dotfiles"
-PRIVATE_DIR="c:/git/my-private-repo"
+PRIVATE_DIR="${DOTFILES_PRIVATE_DIR:-}"
 
 PASS=0
 FAIL=0
+
+[ -n "$PRIVATE_DIR" ] || { echo "SKIP: DOTFILES_PRIVATE_DIR not set — private repo tests skipped"; exit 0; }
 
 run_with_timeout() {
     if command -v timeout >/dev/null 2>&1; then
@@ -51,11 +55,11 @@ else
     fail "S1: dotfiles/install.sh bash syntax"
 fi
 
-# S2: my-private-repo/install.sh bash syntax
+# S2: private-repo/install.sh bash syntax
 if run_with_timeout bash -n "$PRIVATE_DIR/install.sh" 2>/dev/null; then
-    ok "S2: my-private-repo/install.sh bash syntax"
+    ok "S2: private-repo/install.sh bash syntax"
 else
-    fail "S2: my-private-repo/install.sh bash syntax"
+    fail "S2: private-repo/install.sh bash syntax"
 fi
 
 # S3: dotfiles/install.ps1 PowerShell syntax (pwsh only)
@@ -77,7 +81,7 @@ else
     ok "S3: dotfiles/install.ps1 PowerShell syntax (SKIPPED - pwsh not found)"
 fi
 
-# S4: my-private-repo/install.ps1 PowerShell syntax (pwsh only)
+# S4: private-repo/install.ps1 PowerShell syntax (pwsh only)
 if command -v pwsh >/dev/null 2>&1; then
     if run_with_timeout pwsh -NoProfile -Command "
         \$err = \$null
@@ -88,12 +92,12 @@ if command -v pwsh >/dev/null 2>&1; then
             if (\$parseErrors.Count -gt 0) { exit 1 } else { exit 0 }
         } catch { exit 1 }
     " 2>/dev/null; then
-        ok "S4: my-private-repo/install.ps1 PowerShell syntax"
+        ok "S4: private-repo/install.ps1 PowerShell syntax"
     else
-        fail "S4: my-private-repo/install.ps1 PowerShell syntax"
+        fail "S4: private-repo/install.ps1 PowerShell syntax"
     fi
 else
-    ok "S4: my-private-repo/install.ps1 PowerShell syntax (SKIPPED - pwsh not found)"
+    ok "S4: private-repo/install.ps1 PowerShell syntax (SKIPPED - pwsh not found)"
 fi
 
 echo ""
@@ -122,53 +126,53 @@ check "D4: dotfiles/install.ps1 does not contain AgentsInstaller" \
 echo ""
 
 # ---------------------------------------------------------------------------
-# H: hub 構造確認（my-private-repo）
+# H: hub 構造確認（private-repo）
 # ---------------------------------------------------------------------------
-echo "--- H: Hub structure checks (my-private-repo) ---"
+echo "--- H: Hub structure checks (private-repo) ---"
 
-# H1: my-private-repo/install.sh に clone_if_missing 関数が存在すること
-check "H1: my-private-repo/install.sh has clone_if_missing function" \
+# H1: private-repo/install.sh に clone_if_missing 関数が存在すること
+check "H1: private-repo/install.sh has clone_if_missing function" \
     "grep -q 'clone_if_missing' '$PRIVATE_DIR/install.sh'"
 
-# H2: my-private-repo/install.sh に IS_DOTFILES_SLAVE の export が存在すること
-check "H2: my-private-repo/install.sh exports IS_DOTFILES_SLAVE" \
+# H2: private-repo/install.sh に IS_DOTFILES_SLAVE の export が存在すること
+check "H2: private-repo/install.sh exports IS_DOTFILES_SLAVE" \
     "grep -q 'export IS_DOTFILES_SLAVE' '$PRIVATE_DIR/install.sh'"
 
-# H3: my-private-repo/install.sh が dotfiles/install.sh を呼び出していること
-check "H3: my-private-repo/install.sh references dotfiles/install.sh" \
+# H3: private-repo/install.sh が dotfiles/install.sh を呼び出していること
+check "H3: private-repo/install.sh references dotfiles/install.sh" \
     "grep -q 'install\.sh' '$PRIVATE_DIR/install.sh'"
 
-# H4: my-private-repo/install.sh が agents/install.sh を呼び出していること
-check "H4: my-private-repo/install.sh references agents/install.sh" \
+# H4: private-repo/install.sh が agents/install.sh を呼び出していること
+check "H4: private-repo/install.sh references agents/install.sh" \
     "grep -q 'agents' '$PRIVATE_DIR/install.sh' && grep -q 'install\.sh' '$PRIVATE_DIR/install.sh'"
 
-# H5: my-private-repo/install.sh が fornix/install.sh を -x チェック付きで呼び出していること
-check "H5: my-private-repo/install.sh conditionally calls fornix/install.sh with -x check" \
+# H5: private-repo/install.sh が fornix/install.sh を -x チェック付きで呼び出していること
+check "H5: private-repo/install.sh conditionally calls fornix/install.sh with -x check" \
     "grep -q 'fornix' '$PRIVATE_DIR/install.sh' && grep -q '\-x' '$PRIVATE_DIR/install.sh'"
 
-# H6: my-private-repo/install.sh が exec $SHELL -l の前に unset IS_DOTFILES_SLAVE を実行していること
-check "H6: my-private-repo/install.sh unsets IS_DOTFILES_SLAVE before exec \$SHELL -l" \
+# H6: private-repo/install.sh が exec $SHELL -l の前に unset IS_DOTFILES_SLAVE を実行していること
+check "H6: private-repo/install.sh unsets IS_DOTFILES_SLAVE before exec \$SHELL -l" \
     "tail -5 '$PRIVATE_DIR/install.sh' | grep -q 'unset IS_DOTFILES_SLAVE' &&
      tail -3 '$PRIVATE_DIR/install.sh' | grep -q 'exec \$SHELL -l'"
 
-# H7: my-private-repo/install.ps1 に Initialize-Repo 関数が存在すること
-check "H7: my-private-repo/install.ps1 has Initialize-Repo function" \
+# H7: private-repo/install.ps1 に Initialize-Repo 関数が存在すること
+check "H7: private-repo/install.ps1 has Initialize-Repo function" \
     "grep -q 'Initialize-Repo' '$PRIVATE_DIR/install.ps1'"
 
-# H8: my-private-repo/install.ps1 に \$LASTEXITCODE チェックが存在すること
-check "H8: my-private-repo/install.ps1 checks \$LASTEXITCODE" \
+# H8: private-repo/install.ps1 に \$LASTEXITCODE チェックが存在すること
+check "H8: private-repo/install.ps1 checks \$LASTEXITCODE" \
     "grep -q 'LASTEXITCODE' '$PRIVATE_DIR/install.ps1'"
 
-# H9: my-private-repo/install.ps1 が dotfiles\install.ps1 への参照を含むこと
-check "H9: my-private-repo/install.ps1 references dotfiles\\install.ps1" \
+# H9: private-repo/install.ps1 が dotfiles\install.ps1 への参照を含むこと
+check "H9: private-repo/install.ps1 references dotfiles\\install.ps1" \
     "grep -q 'install\.ps1' '$PRIVATE_DIR/install.ps1' && grep -qi 'dotfiles' '$PRIVATE_DIR/install.ps1'"
 
-# H10: my-private-repo/install.ps1 が agents\install.ps1 への参照を含むこと
-check "H10: my-private-repo/install.ps1 references agents\\install.ps1" \
+# H10: private-repo/install.ps1 が agents\install.ps1 への参照を含むこと
+check "H10: private-repo/install.ps1 references agents\\install.ps1" \
     "grep -q 'agents' '$PRIVATE_DIR/install.ps1' && grep -q 'install\.ps1' '$PRIVATE_DIR/install.ps1'"
 
-# H11: my-private-repo/install.ps1 が fornix の install.ps1 を Test-Path で条件付きで呼び出していること
-check "H11: my-private-repo/install.ps1 conditionally calls fornix/install.ps1 with Test-Path" \
+# H11: private-repo/install.ps1 が fornix の install.ps1 を Test-Path で条件付きで呼び出していること
+check "H11: private-repo/install.ps1 conditionally calls fornix/install.ps1 with Test-Path" \
     "grep -q 'fornix' '$PRIVATE_DIR/install.ps1' && grep -q 'Test-Path' '$PRIVATE_DIR/install.ps1'"
 
 echo ""
@@ -186,8 +190,8 @@ check "E1: dotfiles/install.sh contains exec \$SHELL -l" \
 check "E2: dotfiles/install.sh exec \$SHELL -l is guarded by IS_DOTFILES_SLAVE" \
     "grep -q 'IS_DOTFILES_SLAVE' '$DOTFILES_DIR/install.sh'"
 
-# E3: my-private-repo/install.sh に exec $SHELL -l が含まれること
-check "E3: my-private-repo/install.sh contains exec \$SHELL -l" \
+# E3: private-repo/install.sh に exec $SHELL -l が含まれること
+check "E3: private-repo/install.sh contains exec \$SHELL -l" \
     "grep -q 'exec \$SHELL -l' '$PRIVATE_DIR/install.sh'"
 
 echo ""
@@ -197,12 +201,12 @@ echo ""
 # ---------------------------------------------------------------------------
 echo "--- I: Idempotency guard checks ---"
 
-# I1: my-private-repo/install.sh の clone_if_missing が ! -d チェックを含むこと
-check "I1: my-private-repo/install.sh clone_if_missing has ! -d check" \
+# I1: private-repo/install.sh の clone_if_missing が ! -d チェックを含むこと
+check "I1: private-repo/install.sh clone_if_missing has ! -d check" \
     "grep -q '! -d\|! \[ -d' '$PRIVATE_DIR/install.sh'"
 
-# I2: my-private-repo/install.ps1 の Initialize-Repo が Test-Path チェックを含むこと
-check "I2: my-private-repo/install.ps1 Initialize-Repo has Test-Path check" \
+# I2: private-repo/install.ps1 の Initialize-Repo が Test-Path チェックを含むこと
+check "I2: private-repo/install.ps1 Initialize-Repo has Test-Path check" \
     "grep -q 'Test-Path' '$PRIVATE_DIR/install.ps1'"
 
 echo ""

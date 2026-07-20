@@ -123,7 +123,9 @@ Located in `.config/git/` (XDG-compliant, not `~/.gitconfig`).
 
 ## 10. Private Information Scanning
 
-Two checkpoints prevent private information from reaching public repositories: a `git pre-commit` hook and a Claude Code PreToolUse hook — both provided by the companion [nirecom/agents](https://github.com/nirecom/agents) repo. They detect RFC 1918 IP addresses, email addresses, MAC addresses, absolute local paths, hard-coded secrets, PEM private keys, and Trojan Source Unicode. Private repositories (detected via `gh api`) are skipped automatically.
+Two checkpoints prevent private information from reaching public repositories: a `git pre-commit` hook and a Claude Code PreToolUse hook — both provided by the companion [nirecom/agents](https://github.com/nirecom/agents) repo. They detect RFC 1918 IP addresses, email addresses, MAC addresses, absolute local paths, hard-coded secrets, PEM private keys, and Trojan Source Unicode.
+
+Private repositories (detected via `gh api`) are skipped automatically.
 
 See [nirecom/agents: docs/scan-outbound.md](https://github.com/nirecom/agents/blob/main/docs/scan-outbound.md) for detection patterns, exception handling, and configuration.
 

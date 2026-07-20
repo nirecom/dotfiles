@@ -24,7 +24,6 @@ if ($env:DOTFILES_DIR) {
     $DotfilesDir = "C:\git\dotfiles"
     $env:DOTFILES_DIR = $DotfilesDir
 }
-$PrivateDir = Join-Path (Split-Path -Parent $DotfilesDir) "my-private-repo"
 $AgentsDir = Join-Path (Split-Path -Parent $DotfilesDir) "agents"
 $FornixAgentDir = Join-Path (Split-Path -Parent $DotfilesDir) "fornix-agent"
 
@@ -133,11 +132,6 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
         Write-Host "git fetch $DotfilesDir ..."
         $fetchDf = Start-Process -FilePath git -ArgumentList "-C $DotfilesDir fetch" -NoNewWindow -PassThru
     }
-    $fetchPrv = $null
-    if (Test-Path "$PrivateDir\.git") {
-        Write-Host "git fetch my-private-repo ..."
-        $fetchPrv = Start-Process -FilePath git -ArgumentList "-C $PrivateDir fetch" -NoNewWindow -PassThru
-    }
     $fetchAg = $null
     if (Test-Path "$AgentsDir\.git") {
         Write-Host "git fetch agents ..."
@@ -196,10 +190,6 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
     }
 
     # Wait for optional fetches and merge
-    if ($fetchPrv) {
-        if (-not $fetchPrv.WaitForExit(3000)) { $fetchPrv.Kill() }
-        elseif ($fetchPrv.ExitCode -eq 0) { git -C $PrivateDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
-    }
     if ($fetchAg) {
         if (-not $fetchAg.WaitForExit(3000)) { $fetchAg.Kill() }
         elseif ($fetchAg.ExitCode -eq 0) { git -C $AgentsDir merge --ff-only --no-summary FETCH_HEAD 2>$null }
@@ -241,3 +231,7 @@ $env:FORNIX_OU             = 'nire-personal'
 $env:FORNIX_CLASSIFICATION = 'internal'
 $env:FLUSH_INTERVAL        = '10'
 $env:FORNIX_SYNC_INTERVAL  = '300'
+
+# --- BEGIN agents profile sourcing ---
+. "C:\git\agents\profile-snippet.ps1"
+# --- END agents profile sourcing ---
