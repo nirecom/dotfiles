@@ -97,11 +97,19 @@ if (Test-Path $gitConfigLocal) {
     }
 }
 
+# --- Uninstall bierner.markdown-mermaid (replaced by built-in vscode.mermaid-markdown-features) ---
+if (Get-Command code -ErrorAction SilentlyContinue) {
+    $installedExts = code --list-extensions 2>$null
+    if ($installedExts -match "bierner\.markdown-mermaid") {
+        Write-Host "Uninstalling obsolete extension: bierner.markdown-mermaid (replaced by built-in vscode.mermaid-markdown-features)" -ForegroundColor Yellow
+        code --uninstall-extension bierner.markdown-mermaid 2>$null | Out-Null
+    }
+}
+
 # --- BEGIN temporary: ~/dotfiles,~/git → C:\git migration ---
 # Remove old dotfiles directories after migration to C:\git
 $migrationTargets = @(
     @{ Old = "$env:USERPROFILE\dotfiles"; New = "C:\git\dotfiles" },
-    @{ Old = "$env:USERPROFILE\my-private-repo"; New = "C:\git\my-private-repo" },
     @{ Old = "$env:USERPROFILE\git"; New = "C:\git" }
 )
 foreach ($t in $migrationTargets) {

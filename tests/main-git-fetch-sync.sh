@@ -95,13 +95,7 @@ else
 fi
 
 echo ""
-echo "--- Normal: profile.ps1 fetches my-private-repo and agents ---"
-
-if grep -q 'my-private-repo' "$DOTFILES_DIR/install/win/profile.ps1"; then
-    pass "profile.ps1: fetches my-private-repo"
-else
-    fail "profile.ps1: missing my-private-repo fetch"
-fi
+echo "--- Normal: profile.ps1 fetches agents repo ---"
 
 if grep -q 'AgentsDir' "$DOTFILES_DIR/install/win/profile.ps1"; then
     pass "profile.ps1: fetches agents repo"
@@ -152,10 +146,10 @@ else
     fail ".profile_common: dotfiles fetch missing BatchMode=yes subshell guard"
 fi
 
-if grep -qE '\(\s*GIT_TERMINAL_PROMPT=0\s+GIT_SSH_COMMAND=.ssh -o BatchMode=yes[^)]*git -C "\$_dotfiles_private_dir" fetch' "$DOTFILES_DIR/.profile_common"; then
-    pass ".profile_common: my-private-repo fetch has BatchMode=yes subshell guard"
+if grep -qE '\(\s*GIT_TERMINAL_PROMPT=0\s+GIT_SSH_COMMAND=.ssh -o BatchMode=yes[^)]*git -C "\$_xrepo" fetch' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: extra repos fetch has BatchMode=yes subshell guard"
 else
-    fail ".profile_common: my-private-repo fetch missing BatchMode=yes subshell guard"
+    fail ".profile_common: extra repos fetch missing BatchMode=yes subshell guard"
 fi
 
 if grep -qE '\(\s*GIT_TERMINAL_PROMPT=0\s+GIT_SSH_COMMAND=.ssh -o BatchMode=yes[^)]*git -C "\$_agents_dir" fetch' "$DOTFILES_DIR/.profile_common"; then
