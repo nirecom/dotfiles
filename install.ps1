@@ -72,7 +72,7 @@ Invoke-ScriptIsolated "$DotfilesDir\install\win\fnm.ps1"
 # Step 3: Clean up obsolete files
 Write-Host ""
 Write-Host "--- Cleaning up obsolete files ---"
-& "$DotfilesDir\install\win\install-obsolete.ps1"
+& "$DotfilesDir\install\win\uninstall-obsolete.ps1"
 
 # Step 4: Configure notification sounds
 Write-Host ""
