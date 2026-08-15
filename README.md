@@ -57,7 +57,7 @@ When the `agents` repo is cloned as a sibling of the dotfiles repo (e.g. `~/git/
 | Linux | Windows | Adds |
 |-------|---------|------|
 | `--base` | `-Base` | zsh, vim, tmux, starship, source-highlight, AWS CLI v2, Google Japanese Input, AutoHotkey v2, PowerToys |
-| `--develop` | `-Develop` | uv (Python), VS Code + extensions, Claude Tabs, Claude Usage Widget |
+| `--develop` | `-Develop` | uv (Python), VS Code + extensions, Claude Usage Widget |
 | `--full` | `-Full` | All of the above + Visual Studio C++ build tools (Windows) |
 
 Note: no-flag install also sets up a Node.js version manager (nvm on Linux/macOS, fnm on Windows). Node.js itself is **not** installed — each repo is expected to pin its own version via `.node-version` / `.nvmrc`. nvm is pinned to v0.40.4 (`install/linux/nvm.sh`).

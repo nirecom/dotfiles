@@ -127,11 +127,6 @@ if ($Base -or $Develop -or $Toolchain -or $Full) {
     Write-Host ""
     Write-Host "--- Installing Claude Usage Widget ---"
     Invoke-ScriptIsolated "$DotfilesDir\install\win\claude-usage-widget.ps1"
-
-    # Step 10: Install Claude Tabs
-    Write-Host ""
-    Write-Host "--- Installing Claude Tabs ---"
-    Invoke-ScriptIsolated "$DotfilesDir\install\win\claude-tabs.ps1"
 }
 
 if ($Develop -or $Toolchain -or $Full) {

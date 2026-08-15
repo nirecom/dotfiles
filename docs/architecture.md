@@ -80,7 +80,7 @@ Variables set by `bin/detectos.sh`:
 
 `install.sh` (Linux/macOS) runs scripts in this order: `dotfileslink.sh` → `keychain.sh` → `nvm.sh` → `install-obsolete.sh` → `gh.sh` → (`--base`/`--develop`/`--full`: `install-base.sh` → `uv.sh` → `claude-usage-widget.sh`) → (`--develop`/`--full`: `install-develop.sh` → `vscode.sh`)
 
-`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `fnm.ps1` → `install-obsolete.ps1` → `sounds.ps1` → `snipping-tool.ps1` → input language hotkeys → `pwsh.ps1` → `gh.ps1` → (`-Base`/`-Develop`/`-Toolchain`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `claude-usage-widget.ps1` → `claude-tabs.ps1`) → (`-Develop`/`-Toolchain`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
+`install.ps1` (Windows) runs scripts in this order: `dotfileslink.ps1` → `fnm.ps1` → `uninstall-obsolete.ps1` → `sounds.ps1` → `snipping-tool.ps1` → input language hotkeys → `pwsh.ps1` → `gh.ps1` → (`-Base`/`-Develop`/`-Toolchain`/`-Full`: `starship.ps1` → `uv.ps1` → `google-japanese-input.ps1` → `autohotkey.ps1` → `powertoys.ps1` → `claude-usage-widget.ps1`) → (`-Develop`/`-Toolchain`/`-Full`: `awscli.ps1` → `vscode.ps1`) → (`-Toolchain`/`-Full`: `vs-cpp.ps1`)
 
 The full install chain (dotfiles → my-private-repo → agents → fornix) is orchestrated by the sibling `my-private-repo` hub installer. See its `docs/architecture.md` for the complete execution order and clone-if-missing design.
 

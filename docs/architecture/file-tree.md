@@ -21,8 +21,7 @@
 | [install/win/autohotkey.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/autohotkey.ps1) | Install AutoHotkey v2 and Japanese layout enforcer | English UI + Japanese preferred only |
 | [install/win/powertoys.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/powertoys.ps1) | Install PowerToys and deploy Keyboard Manager settings | |
 | [install/win/claude-usage-widget.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/claude-usage-widget.ps1) | Install Claude Usage Widget | |
-| [install/win/claude-tabs.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/claude-tabs.ps1) | Install Claude Tabs (multi-session terminal) | |
-| [install/win/install-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/install-obsolete.ps1) | Remove obsolete files and shortcuts | |
+| [install/win/uninstall-obsolete.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/uninstall-obsolete.ps1) | Remove obsolete files and shortcuts | |
 | [install/win/sounds.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/sounds.ps1) | Mute notification sounds | |
 | [install/win/fnm.ps1](https://github.com/nirecom/dotfiles/blob/main/install/win/fnm.ps1) | Install fnm via winget (Windows only) | |
 | [install/linux/nvm.sh](https://github.com/nirecom/dotfiles/blob/main/install/linux/nvm.sh) | Install nvm only (WSL2/macOS/Linux); Node.js managed per repo | |
@@ -83,7 +82,6 @@
 | [tests/main-symlink-repair.Tests.ps1](https://github.com/nirecom/dotfiles/blob/main/tests/main-symlink-repair.Tests.ps1) | Pester tests for file symlink backup and broken symlink detection | Normal/error/edge cases for atomic save repair |
 | [tests/main-block-dotenv.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-block-dotenv.sh) | block-dotenv.js hook tests | 59 test cases: Bash/Read/Grep/Glob blocking, false-positive prevention |
 | [tests/main-keychain-ssh-agent.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-keychain-ssh-agent.sh) | keychain SSH agent tests | install.sh inclusion + .profile_common auto-detection |
-| [tests/main-claude-tabs.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-claude-tabs.sh) | claude-tabs.ps1 installer tests | Structure validation (19 test cases) |
 | [tests/feature-robust-workflow.sh](https://github.com/nirecom/dotfiles/blob/main/tests/feature-robust-workflow.sh) | Workflow state machine tests | workflow-gate.js, workflow-mark.js, session-start.js |
 | [tests/main-workflow-run-tests.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-workflow-run-tests.sh) | workflow-run-tests.js unit tests | Command heuristics, exit-code marking, idempotency |
 | [tests/main-workflow-migration.sh](https://github.com/nirecom/dotfiles/blob/main/tests/main-workflow-migration.sh) | readState() migration tests | verify→run_tests, code removal, review_security addition |

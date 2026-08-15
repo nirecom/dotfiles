@@ -97,6 +97,29 @@ if (Test-Path $gitConfigLocal) {
     }
 }
 
+# --- Remove obsolete Claude Tabs (unused third-party Claude Code client) ---
+$claudeTabsCandidates = @(
+    Join-Path $env:LOCALAPPDATA "Claude Tabs"
+    Join-Path $env:ProgramFiles "Claude Tabs"
+)
+foreach ($ctDir in $claudeTabsCandidates) {
+    if (Test-Path $ctDir) {
+        $uninstaller = Get-ChildItem -Path $ctDir -Filter "Uninstall*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($uninstaller) {
+            Write-Host "Uninstalling obsolete app: Claude Tabs ($ctDir)" -ForegroundColor Yellow
+            Start-Process -FilePath $uninstaller.FullName -ArgumentList "/S" -Wait
+        }
+        if (Test-Path $ctDir) {
+            Remove-Item -Recurse -Force $ctDir -ErrorAction SilentlyContinue
+        }
+        if (-not (Test-Path $ctDir)) {
+            Write-Host "Removed obsolete app directory: $ctDir" -ForegroundColor DarkGray
+        } else {
+            Write-Warning "Could not fully remove: $ctDir (files may be in use)"
+        }
+    }
+}
+
 # --- Uninstall bierner.markdown-mermaid (replaced by built-in vscode.mermaid-markdown-features) ---
 if (Get-Command code -ErrorAction SilentlyContinue) {
     $installedExts = code --list-extensions 2>$null
