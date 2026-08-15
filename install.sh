@@ -56,7 +56,7 @@ printf "${C_BOLD}--- Installing nvm (Node.js) ---${C_RESET}\n"
 # Step 5: Clean up obsolete files
 echo ""
 printf "${C_BOLD}--- Cleaning up obsolete files ---${C_RESET}\n"
-"$DOTFILES_DIR/install/linux/install-obsolete.sh"
+"$DOTFILES_DIR/install/linux/uninstall-obsolete.sh"
 
 # Step 6: Install GitHub CLI (gh) — required for hooks (private repo detection)
 echo ""
