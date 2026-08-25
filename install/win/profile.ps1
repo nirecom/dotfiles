@@ -143,21 +143,27 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
         $fetchFa = Start-Process -FilePath git -ArgumentList "-C $FornixAgentDir fetch" -NoNewWindow -PassThru
     }
 
-    # Extra repos from ~/.config/dotfiles/fetch-repos (one path per line, # = comment)
-    $_extraFile = "$HOME\.config\dotfiles\fetch-repos"
+    # Extra repos from ~/.config/dotfiles/fetch-repos.txt (one path per line, # = comment).
+    # A relative entry resolves against the directory holding the repos, so the same
+    # list works on machines that clone into a different root.
+    $_extraFile = "$HOME\.config\dotfiles\fetch-repos.txt"
+    $_repoRoot  = Split-Path -Parent $DotfilesDir
     $extraFetches = @()
     if (Test-Path $_extraFile) {
         Get-Content $_extraFile |
             Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' } |
             ForEach-Object {
                 $repo = $_.Trim()
+                if (-not [System.IO.Path]::IsPathRooted($repo)) {
+                    $repo = Join-Path $_repoRoot $repo
+                }
                 if (Test-Path "$repo\.git") {
                     Write-Host "git fetch $repo ..."
                     $extraFetches += @{ Path = $repo; Proc = (Start-Process -FilePath git -ArgumentList "-C `"$repo`" fetch" -NoNewWindow -PassThru) }
                 }
             }
     }
-    Remove-Variable _extraFile
+    Remove-Variable _extraFile, _repoRoot
 
     # Wait for dotfiles fetch and merge
     if ($fetchDf) {

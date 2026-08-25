@@ -159,6 +159,88 @@ else
 fi
 
 echo ""
+echo "--- Normal: extra-repo list is read from ~/.config/dotfiles/fetch-repos.txt ---"
+
+if grep -qE '\$HOME/\.config/dotfiles/fetch-repos\.txt' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: reads fetch-repos.txt"
+else
+    fail ".profile_common: does not read fetch-repos.txt"
+fi
+
+# The extension-less legacy name must be gone; grep for it without the .txt suffix.
+if grep -qE 'dotfiles/fetch-repos([^.]|$)' "$DOTFILES_DIR/.profile_common"; then
+    fail ".profile_common: still references the legacy extension-less fetch-repos"
+else
+    pass ".profile_common: no reference to the legacy extension-less fetch-repos"
+fi
+
+if grep -qE 'fetch-repos\.txt' "$DOTFILES_DIR/install/win/profile.ps1"; then
+    pass "profile.ps1: reads fetch-repos.txt"
+else
+    fail "profile.ps1: does not read fetch-repos.txt"
+fi
+
+if grep -qE 'dotfiles\\fetch-repos([^.]|$)' "$DOTFILES_DIR/install/win/profile.ps1"; then
+    fail "profile.ps1: still references the legacy extension-less fetch-repos"
+else
+    pass "profile.ps1: no reference to the legacy extension-less fetch-repos"
+fi
+
+echo ""
+echo "--- Normal: relative list entries resolve against the repo-holding directory ---"
+
+if grep -qE '_repo_root=.*dirname "\$DOTFILES_DIR"' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: derives the repo root from the parent of DOTFILES_DIR"
+else
+    fail ".profile_common: missing repo-root derivation from DOTFILES_DIR's parent"
+fi
+
+if grep -qE 'case "\$_xrepo" in /\*\|\?:\[/\\\\\]\*\)' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: absolute entries (POSIX and drive-letter) bypass the join"
+else
+    fail ".profile_common: missing absolute-entry case for POSIX and drive-letter paths"
+fi
+
+if grep -qE '\$_repo_root/\$_xrepo' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: relative entries are joined onto the repo root"
+else
+    fail ".profile_common: relative entries are not joined onto the repo root"
+fi
+
+if grep -qE '\$_repoRoot\s*=\s*Split-Path -Parent \$DotfilesDir' "$DOTFILES_DIR/install/win/profile.ps1"; then
+    pass "profile.ps1: derives the repo root from the parent of DotfilesDir"
+else
+    fail "profile.ps1: missing repo-root derivation from DotfilesDir's parent"
+fi
+
+if grep -qE 'IsPathRooted\(\$repo\)' "$DOTFILES_DIR/install/win/profile.ps1"; then
+    pass "profile.ps1: tests each entry with IsPathRooted before joining"
+else
+    fail "profile.ps1: missing IsPathRooted check on list entries"
+fi
+
+if grep -qE 'Join-Path \$_repoRoot \$repo' "$DOTFILES_DIR/install/win/profile.ps1"; then
+    pass "profile.ps1: relative entries are joined onto the repo root"
+else
+    fail "profile.ps1: relative entries are not joined onto the repo root"
+fi
+
+echo ""
+echo "--- Edge: entries without a .git directory are skipped on both platforms ---"
+
+if grep -qE '\[ -d "\$_xrepo/\.git" \] \|\| continue' "$DOTFILES_DIR/.profile_common"; then
+    pass ".profile_common: skips entries whose .git is missing"
+else
+    fail ".profile_common: does not skip entries whose .git is missing"
+fi
+
+if grep -qE 'Test-Path "\$repo\\\.git"' "$DOTFILES_DIR/install/win/profile.ps1"; then
+    pass "profile.ps1: skips entries whose .git is missing"
+else
+    fail "profile.ps1: does not skip entries whose .git is missing"
+fi
+
+echo ""
 echo "--- Normal: shell guard handles zsh sessions (pgrep bash fix) ---"
 
 if grep -q 'ZSH_VERSION' "$DOTFILES_DIR/.profile_common"; then

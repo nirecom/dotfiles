@@ -142,3 +142,15 @@ if [ -f "$_git_config_local" ]; then
     unset _hp
 fi
 unset _git_config_local
+
+# --- BEGIN temporary: fetch-repos → fetch-repos.txt migration ---
+# The startup fetch list gained a .txt suffix to match the other list files.
+# Skip when the new name already exists — it may be provided by another installer.
+_fr_old="$HOME/.config/dotfiles/fetch-repos"
+_fr_new="$HOME/.config/dotfiles/fetch-repos.txt"
+if [ -f "$_fr_old" ] && [ ! -e "$_fr_new" ]; then
+    mv "$_fr_old" "$_fr_new"
+    echo "Renamed obsolete startup fetch list: fetch-repos -> fetch-repos.txt"
+fi
+unset _fr_old _fr_new
+# --- END temporary: fetch-repos → fetch-repos.txt migration ---

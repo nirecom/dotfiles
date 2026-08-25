@@ -69,3 +69,79 @@ Describe "migration cleanup — Remove-MigratedSource" {
         { Remove-MigratedSource -OldPath $old -NewPath $new } | Should -Not -Throw
     }
 }
+
+Describe "startup fetch list rename — fetch-repos -> fetch-repos.txt" {
+    BeforeAll {
+        $script:UninstallPs1 = Join-Path (Split-Path -Parent $PSScriptRoot) "install\win\uninstall-obsolete.ps1"
+        $script:Block = (Get-Content $script:UninstallPs1 -Raw) -replace '(?s)^.*?(# --- BEGIN temporary: fetch-repos.*?# --- END temporary: fetch-repos.*?---).*$', '$1'
+
+        # Run the shipped block verbatim except for $HOME, which is redirected at
+        # the source level so the real ~/.config/dotfiles is never touched.
+        function Invoke-FetchReposMigration {
+            param([string]$FakeHome)
+            $script = $script:Block -replace '\$HOME', "'$FakeHome'"
+            Invoke-Expression $script | Out-Null
+        }
+    }
+
+    BeforeEach {
+        $script:FakeHome = Join-Path $TestDrive "home-$(Get-Random)"
+        $script:ConfigDir = Join-Path $script:FakeHome ".config\dotfiles"
+        New-Item -ItemType Directory -Path $script:ConfigDir -Force | Out-Null
+        $script:Legacy = Join-Path $script:ConfigDir "fetch-repos"
+        $script:Current = Join-Path $script:ConfigDir "fetch-repos.txt"
+    }
+
+    Context "A. Block extraction" {
+        It "the migration block is present in uninstall-obsolete.ps1" {
+            $script:Block | Should -Match 'BEGIN temporary: fetch-repos'
+            $script:Block | Should -Match 'Move-Item'
+        }
+    }
+
+    Context "B. Legacy list present, new name absent" {
+        It "renames fetch-repos to fetch-repos.txt" {
+            Set-Content -Path $script:Legacy -Value "repo-a"
+            Invoke-FetchReposMigration -FakeHome $script:FakeHome
+            Test-Path $script:Legacy | Should -BeFalse
+            Test-Path $script:Current | Should -BeTrue
+        }
+
+        It "preserves the list content across the rename" {
+            Set-Content -Path $script:Legacy -Value "repo-a"
+            Invoke-FetchReposMigration -FakeHome $script:FakeHome
+            (Get-Content $script:Current -Raw).Trim() | Should -Be "repo-a"
+        }
+    }
+
+    Context "C. New name already exists" {
+        It "does NOT overwrite an existing fetch-repos.txt" {
+            Set-Content -Path $script:Legacy -Value "legacy"
+            Set-Content -Path $script:Current -Value "current"
+            Invoke-FetchReposMigration -FakeHome $script:FakeHome
+            (Get-Content $script:Current -Raw).Trim() | Should -Be "current"
+        }
+
+        It "leaves the legacy file in place when the new name exists" {
+            Set-Content -Path $script:Legacy -Value "legacy"
+            Set-Content -Path $script:Current -Value "current"
+            Invoke-FetchReposMigration -FakeHome $script:FakeHome
+            Test-Path $script:Legacy | Should -BeTrue
+        }
+    }
+
+    Context "D. Nothing to migrate" {
+        It "is a no-op when neither file exists" {
+            { Invoke-FetchReposMigration -FakeHome $script:FakeHome } | Should -Not -Throw
+            Test-Path $script:Current | Should -BeFalse
+        }
+
+        It "is idempotent — a second run leaves the migrated list intact" {
+            Set-Content -Path $script:Legacy -Value "repo-a"
+            Invoke-FetchReposMigration -FakeHome $script:FakeHome
+            Invoke-FetchReposMigration -FakeHome $script:FakeHome
+            (Get-Content $script:Current -Raw).Trim() | Should -Be "repo-a"
+            Test-Path $script:Legacy | Should -BeFalse
+        }
+    }
+}
