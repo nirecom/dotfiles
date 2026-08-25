@@ -230,12 +230,16 @@ if type git > /dev/null 2>&1; then # if git is installed
             # shellcheck disable=SC2086
             ( GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -o BatchMode=yes' $_tc git -C "$DOTFILES_DIR" fetch 2>/dev/null ) & _pid_df=$!
 
-            # Extra repos from ~/.config/dotfiles/fetch-repos (one path per line, # = comment)
-            local _fetch_repos_file="$HOME/.config/dotfiles/fetch-repos"
+            # Extra repos from ~/.config/dotfiles/fetch-repos.txt (one path per line, # = comment).
+            # A relative entry resolves against the directory holding the repos, so the same
+            # list works on machines that clone into a different root.
+            local _fetch_repos_file="$HOME/.config/dotfiles/fetch-repos.txt"
+            local _repo_root; _repo_root="$(dirname "$DOTFILES_DIR")"
             _xdirs=(); _xpids=()
             if [ -f "$_fetch_repos_file" ]; then
                 while IFS= read -r _xrepo || [ -n "$_xrepo" ]; do
                     case "$_xrepo" in '#'*|'') continue ;; esac
+                    case "$_xrepo" in /*|?:[/\\]*) ;; *) _xrepo="$_repo_root/$_xrepo" ;; esac
                     [ -d "$_xrepo/.git" ] || continue
                     echo "git fetch $_xrepo ..."
                     # shellcheck disable=SC2086

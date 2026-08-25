@@ -176,3 +176,14 @@ Get-ChildItem -Path $gitRoot -Directory -ErrorAction SilentlyContinue | ForEach-
     Remove-OldGitWorkflow -OldDir (Join-Path $_.FullName ".git\workflow") -NewDir $wfNewDir -Cutoff $wfCutoff
 }
 # --- END temporary: .git/workflow → ~/.claude/projects/workflow migration ---
+
+# --- BEGIN temporary: fetch-repos → fetch-repos.txt migration ---
+# The startup fetch list gained a .txt suffix to match the other list files.
+# Skip when the new name already exists — it may be provided by another installer.
+$frOld = Join-Path $HOME ".config\dotfiles\fetch-repos"
+$frNew = Join-Path $HOME ".config\dotfiles\fetch-repos.txt"
+if ((Test-Path $frOld) -and -not (Test-Path $frNew)) {
+    Move-Item -Path $frOld -Destination $frNew
+    Write-Host "Renamed obsolete startup fetch list: fetch-repos -> fetch-repos.txt" -ForegroundColor DarkGray
+}
+# --- END temporary: fetch-repos → fetch-repos.txt migration ---
