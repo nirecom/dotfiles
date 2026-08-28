@@ -1,0 +1,45 @@
+name: Task
+description: A unit of work to be done
+labels: ["type:task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for normal work items. On close,
+        `/issue-close-stage <N>` (Phase 1, in the linked worktree) writes a
+        `FEATURE` entry to `docs/history.md` using the Background/Changes
+        fields below, and `/issue-close-finalize <N>` (Phase 2, from the main
+        worktree) closes the issue.
+
+        **Title**: one short line naming the work — e.g. `unify issue template
+        sections`. Background and Changes below are required; write the actual
+        content, not a placeholder.
+  - type: textarea
+    id: background
+    attributes:
+      label: Background
+      description: Why is this work needed? Context, constraints, motivation.
+      placeholder: |
+        Background: ...
+    validations:
+      required: true
+  - type: textarea
+    id: changes
+    attributes:
+      label: Changes
+      description: What will change? Files, behavior, user-visible effects.
+      placeholder: |
+        Changes: ...
+    validations:
+      required: true
+  - type: textarea
+    id: subtasks
+    attributes:
+      label: Sub-tasks (optional)
+      description: |
+        Break the work into sub-issues (preferred) or a checklist here.
+        For sub-issues, create them with `gh issue create` and link via
+        `gh api repos/{owner}/{repo}/issues/<N>/sub_issues -f sub_issue_id=<DBID>`.
+      placeholder: |
+        - sub-issue #...
+        - sub-issue #...
