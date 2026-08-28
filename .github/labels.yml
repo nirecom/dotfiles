@@ -19,6 +19,10 @@
   color: "5319e7"
   description: "Merged into another issue. Applied after close."
 
+- name: "status:regressed"
+  color: "e4763e"
+  description: "Reopened after a prior close; regression history is preserved."
+
 - name: "intent:clarified"
   color: "1d76db"
   description: "Issue body ratified via /clarify-intent. /workflow-init Path A skips the interview."
@@ -28,9 +32,11 @@
   description: "Planning/architecture issue with no implementation. Sub-issues carry the actual work."
 
 # --- Severity ---
+# Definition SSOT: skills/issue-create/SKILL.md "Label policy". The descriptions
+# below are one-line summaries that reference it — never a second definition.
 - name: "severity:high"
   color: "b60205"
-  description: "Fatal: workflow stops, abort, infinite loop, security hole, or major feature impact"
+  description: "Mid-run interruption, security breach, or primary feature unusable (SSOT: /issue-create policy)"
 
 - name: "severity:low"
   color: "c5def5"
@@ -77,3 +83,16 @@
 - name: "model-scope:claude"
   color: "bfd4f2"
   description: "Issue scoped to Claude-family-specific behavior (occurrence limited to Claude models)"
+
+# --- Protected labels (never deleted by sync-labels.sh, even in normal sync) ---
+# GitHub default labels that sibling repos may use in existing issues.
+protected:
+  - bug
+  - enhancement
+  - documentation
+  - "good first issue"
+  - invalid
+  - duplicate
+  - question
+  - wontfix
+  - "help wanted"
