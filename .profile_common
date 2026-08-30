@@ -184,27 +184,48 @@ GIT_PS1_SHOWDIRTYSTATE=true
 GIT_PS1_SHOWSTASHSTATE=true
 
 # Setup ssh-agent
-if type keychain >/dev/null 2>&1; then
+#
+# Windows must be decided before the keychain branch: keychain would drive an
+# MSYS ssh-agent, which is exactly what this platform must not run.
+if [ "$OSDIST" = "mingw" ]; then
+    # An MSYS ssh-agent socket is an emulated AF_UNIX file that only the MSYS
+    # runtime instance which created it can reach. Git Bash, Claude Code's shell
+    # and every new terminal are separate instances, so each one found the
+    # recorded socket unreachable, spawned yet another agent and leaked another
+    # socket file, while the inherited SSH_AUTH_SOCK kept pointing at a dead one
+    # ("Error connecting to agent: Bad file descriptor").
+    #
+    # Windows OpenSSH instead exposes one machine-wide agent service over a named
+    # pipe, and keys added to it survive reboots. Defer to it: drop the poisoned
+    # variables and put its binaries ahead of the MSYS ones so ssh/scp/ssh-add all
+    # reach the same agent. Git needs core.sshCommand pointing at the same
+    # ssh.exe, since Git for Windows prefers its bundled ssh over PATH.
+    unset SSH_AUTH_SOCK SSH_AGENT_PID
+    _win_openssh="$(cygpath -u "${SYSTEMROOT:-C:\\Windows}" 2>/dev/null)/System32/OpenSSH"
+    if [ -x "$_win_openssh/ssh.exe" ]; then
+        # Windows already ships this directory in PATH, but behind /usr/bin, so a
+        # mere presence check would leave the MSYS ssh winning. Drop any existing
+        # occurrence, then prepend, so re-sourcing stays idempotent.
+        _rest=""
+        _ifs_save="$IFS"
+        IFS=":"
+        for _d in $PATH; do
+            [ "$_d" = "$_win_openssh" ] && continue
+            _rest="${_rest:+$_rest:}$_d"
+        done
+        IFS="$_ifs_save"
+        PATH="$_win_openssh:$_rest"
+        export PATH
+        unset _rest _ifs_save _d
+    fi
+    unset _win_openssh
+elif type keychain >/dev/null 2>&1; then
     # Auto-detect private keys (id_* excluding .pub)
     _ssh_keys=$(find ~/.ssh -maxdepth 1 -name 'id_*' ! -name '*.pub' 2>/dev/null | while IFS= read -r _f; do basename "$_f"; done)
     if [ -n "$_ssh_keys" ]; then
         eval "$(keychain --eval --nogui --quiet --agents ssh $_ssh_keys)"
     fi
     unset _ssh_keys
-else
-    # Fallback: manual ssh-agent management (mingw, etc.)
-    case "$OSDIST" in
-        "mingw" )
-            if [ -f ~/.ssh-agent ]; then
-                . ~/.ssh-agent
-            fi
-            if [ -z "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID >/dev/null 2>&1; then
-                ssh-agent > ~/.ssh-agent
-                . ~/.ssh-agent
-            fi
-            ssh-add -l >& /dev/null || ssh-add
-            ;;
-    esac
 fi
 
 if type git > /dev/null 2>&1; then # if git is installed
