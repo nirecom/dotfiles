@@ -2,7 +2,7 @@
 # Test: git sync uses fetch+merge pattern on both platforms
 # Tests: .profile_common, install/win/profile.ps1
 # Tags: git-fetch, ssh, batchmode, zsh-guard, pwsh-not-required, scope:common
-# L3 gap (what this test does NOT catch):
+# TL3 gap (what this test does NOT catch):
 # - Real ssh reading /dev/tty for a passphrase during interactive WSL login
 # - The terminal actually staying responsive (no hang on `wait`) after fetch
 # Closest-to-action mitigation: gap checked at WORKFLOW_USER_VERIFIED preflight
@@ -249,10 +249,11 @@ else
     fail ".profile_common: fetch guard missing ZSH_VERSION branch (zsh sessions will skip fetch)"
 fi
 
-# NOTE (codex round 2, C1): the pgrep -fo bash guard is RETAINED by design (bash path
-# unchanged); only the ZSH_VERSION fallback is added. Do NOT assert pgrep absence — that
-# would contradict the implementation. Assert instead that the zsh fallback co-exists on
-# the same guard line as the retained pgrep-derived PID condition.
+# NOTE: pgrep -fo bash remains the first-choice PID source on macOS/Linux, so do NOT assert
+# pgrep absence. Windows Git Bash (OSDIST=mingw) bypasses the oldest-session dedup guard
+# entirely; a ps-based PID fallback was rejected (MSYS ps lacks -eo). The mingw branch and
+# the stderr/source-order assertions for #333 live in tests/fix-profile-common-startup-fetch.sh.
+# The assertion below only checks that the zsh fallback co-exists with the PID condition.
 if grep -qE 'if \{ \[ -n "\$PID" \].*\}\s*\|\|\s*\[ -n "\$\{ZSH_VERSION-\}" \]' "$DOTFILES_DIR/.profile_common"; then
     pass ".profile_common: guard combines retained bash pgrep condition with ZSH_VERSION fallback"
 else
