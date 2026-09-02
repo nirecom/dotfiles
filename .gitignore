@@ -2,5 +2,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .claude/worktrees/
+.claude/scheduled_tasks.lock
 
 .migration-state.json

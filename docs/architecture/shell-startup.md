@@ -20,6 +20,10 @@ login
     → source .profile_common
     → PS1 with __git_ps1
     → git auto-pull (fast-forward only, first shell only)
+      → Skipped when CLAUDECODE is set and stdout is not a TTY (Claude Code's
+        Bash tool always runs non-interactively — no benefit to the session-sync
+        fetch there). No effect on Windows-native Claude Code bridging into WSL2
+        (CLAUDECODE does not propagate into that shell).
       → If diverged (force push): prompt y/N to reset (marker file skips)
 ```
 
