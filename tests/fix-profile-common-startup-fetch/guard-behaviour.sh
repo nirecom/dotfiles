@@ -163,3 +163,105 @@ TABLE
 else
     fail "source/probe: could not locate the profile-snippet.sh source statement"
 fi
+
+# ---------------------------------------------------------------------------
+# Issue #335: a Claude Code Bash-tool session must not fetch at all. Design
+# contract asserted below (see docs/history.md / the #335 plan): ONE standalone
+# `if` combining the CLAUDECODE marker with a TTY test (`-t 1`), placed AHEAD of
+# the trigger condition so it covers mingw / pgrep / zsh alike (CPR-ORTH) rather
+# than becoming a 4th arm of the existing OR. Polarity: the extracted condition
+# is the SKIP condition (true => skip), and both halves are required.
+# Extraction is CPR-SSOT as above: pulled from .profile_common at run time.
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- Behavioural: extract the Claude Code (CLAUDECODE + non-TTY) skip guard ---"
+
+CC_GUARD_LINE=$(printf '%s\n' "$GUARD_REGION" | grep -E '^[[:space:]]*(el)?if .*CLAUDECODE' | head -n 1 || true)
+CC_GUARD_EXPR=${CC_GUARD_LINE#*if }    # drop indentation + the leading `if `/`elif `
+CC_GUARD_EXPR=${CC_GUARD_EXPR%%; then*} # drop `; then` and any trailing comment
+
+if [ -n "$CC_GUARD_EXPR" ] && [ "$CC_GUARD_EXPR" != "$CC_GUARD_LINE" ]; then
+    pass "Extraction: Claude Code skip condition pulled from the source file: $CC_GUARD_EXPR"
+else
+    fail "Extraction: could not isolate a CLAUDECODE skip condition from .profile_common"
+fi
+
+if [ -n "$CC_GUARD_EXPR" ]; then
+    # A controlling terminal cannot be conjured in this harness, so `-t 1` is
+    # rewritten to a test-pinned predicate exactly the way `$$` is rewritten
+    # above. This case proves the rewrite has something to rewrite: without it a
+    # shape change would silently turn the substitution into a no-op and every
+    # row below would then read the *test harness*'s own stdout instead.
+    case "$CC_GUARD_EXPR" in
+        *'-t 1'*) pass "Extraction: Claude Code condition tests the TTY (-t 1 rewrite is meaningful)" ;;
+        *) fail "Extraction: Claude Code condition has no \`-t 1\` — the TTY rewrite would be a no-op" ;;
+    esac
+    CC_GUARD_EVAL=${CC_GUARD_EXPR//'-t 1'/'"$_TEST_TTY" = "yes"'}
+
+    # Placement (CPR-ORTH): the Claude Code condition must sit ahead of the
+    # trigger `if`, so it covers every branch instead of one arm of the OR.
+    CC_LINE_NO=$(printf '%s\n' "$GUARD_REGION" | grep -nE '^[[:space:]]*(el)?if .*CLAUDECODE' | head -n 1 | cut -d: -f1 || true)
+    TRIGGER_LINE_NO=$(printf '%s\n' "$GUARD_REGION" | grep -nE '^[[:space:]]*if \{ \[ -n "\$PID" \]' | head -n 1 | cut -d: -f1 || true)
+    if [ -n "$CC_LINE_NO" ] && [ -n "$TRIGGER_LINE_NO" ] && [ "$CC_LINE_NO" -lt "$TRIGGER_LINE_NO" ]; then
+        pass "Extraction: Claude Code condition precedes the trigger condition (orthogonal placement)"
+    else
+        fail "Extraction: Claude Code condition is not placed ahead of the trigger condition"
+    fi
+
+    # Composes the two conditions the way the sourced file does: the Claude Code
+    # condition decides first, and only when it does not skip does the existing
+    # trigger matrix (run_guard) get to speak. Rows therefore prove the skip wins
+    # over branches that would otherwise fetch, and that a fetch verdict really
+    # came back through the pre-existing guard.
+    run_cc_guard() {
+        local osdist="$1" pid="$2" self="$3" zsh="$4" cc="$5" tty="$6"
+        (
+            case "$cc" in
+                unset) unset CLAUDECODE 2>/dev/null || true ;;
+                empty) CLAUDECODE="" ;;
+                *) CLAUDECODE="$cc" ;;
+            esac
+            _TEST_TTY="$tty"
+            if eval "$CC_GUARD_EVAL"; then echo skip; else run_guard "$osdist" "$pid" "$self" "$zsh"; fi
+        )
+    }
+
+    echo ""
+    echo "--- Behavioural: Claude Code skip matrix (both halves required, all branches) ---"
+
+    while IFS='|' read -r name osdist pid self zsh cc tty want; do
+        name="${name//[[:space:]]/}"
+        if [ -z "$name" ] || [ "${name#\#}" != "$name" ]; then continue; fi
+        osdist="${osdist//[[:space:]]/}"; pid="${pid//[[:space:]]/}"
+        self="${self//[[:space:]]/}"; zsh="${zsh//[[:space:]]/}"
+        cc="${cc//[[:space:]]/}"; tty="${tty//[[:space:]]/}"
+        want="${want//[[:space:]]/}"
+        # Round-6 C4: an embedded space is not representable in this table — the
+        # field parser above strips ALL whitespace, which is what keeps the
+        # `|`-delimited columns readable. `__SP__` is decoded back to a real space
+        # AFTER that strip, so a CLAUDECODE value that would word-split (or
+        # glob-expand, see the `*` row) reaches the guard intact.
+        cc="${cc//__SP__/ }"
+        got=$(run_cc_guard "$osdist" "$pid" "$self" "$zsh" "$cc" "$tty")
+        assert_eq "guard/$name" "$want" "$got"
+    done <<'TABLE'
+cc-bash-non-tty-mingw-skip            | mingw | -     | 12345 | -   | 1     | no  | skip
+cc-bash-non-tty-linux-skip            | linux | 99999 | 12345 | -   | 1     | no  | skip
+cc-bash-non-tty-zsh-skip              | linux | -     | 12345 | 5.9 | 1     | no  | skip
+human-interactive-tty-fetch           | mingw | -     | 12345 | -   | unset | yes | fetch
+tty-with-claudecode-set-fetch         | mingw | -     | 12345 | -   | 1     | yes | fetch
+non-tty-claudecode-unset-fetch        | mingw | -     | 12345 | -   | unset | no  | fetch
+claudecode-empty-string-non-tty-fetch | mingw | -     | 12345 | -   | empty | no  | fetch
+cc-value-true-non-tty-skip            | mingw | -     | 12345 | -   | true  | no  | skip
+cc-value-metachar-non-tty-skip        | linux | 99999 | 12345 | -   | 1;2   | no  | skip
+cc-value-metachar-tty-fetch           | mingw | -     | 12345 | -   | 1;2   | yes | fetch
+cc-value-with-space-non-tty-skip      | mingw | -     | 12345 | -   | a__SP__b | no  | skip
+cc-value-with-space-tty-fetch         | mingw | -     | 12345 | -   | a__SP__b | yes | fetch
+cc-value-glob-star-non-tty-skip       | linux | 99999 | 12345 | -   | *     | no  | skip
+TABLE
+else
+    # Extraction failed: skip the eval-based matrix rather than crash the file,
+    # same shape as the source/probe guard above. The extraction assertion is
+    # already recorded as a failure, so nothing goes silently green.
+    echo "  (Claude Code skip matrix not run — condition could not be extracted)"
+fi

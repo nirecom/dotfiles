@@ -246,6 +246,13 @@ if type git > /dev/null 2>&1; then # if git is installed
     elif type pgrep >/dev/null 2>&1; then
         PID=`pgrep -fo bash`
     fi
+    # Claude Code's Bash tool always runs non-interactively, so CLAUDECODE set plus a
+    # non-TTY stdout reliably identifies a CC-launched shell — skip the fetch there.
+    # No effect when Windows-native Claude Code bridges into WSL2 (CLAUDECODE does not
+    # propagate into that shell); WSL-native Claude Code is unaffected.
+    if [ -n "${CLAUDECODE:-}" ] && [ ! -t 1 ]; then
+        :
+    else
     if { [ -n "$PID" ] && [ $$ != "$PID" ]; } || [ -n "${ZSH_VERSION-}" ] || [ "$OSDIST" = "mingw" ]; then # bash: non-oldest session; zsh: always; mingw: always (no reliable oldest-session detection, see above)
         _agents_dir="$(dirname "$DOTFILES_DIR")/agents"
 
@@ -327,6 +334,7 @@ if type git > /dev/null 2>&1; then # if git is installed
 
         unset _agents_dir
         unset _pid_df _pid_ag _rc_df _rc_ag _ans _xdirs _xpids
+    fi
     fi
 fi
 
