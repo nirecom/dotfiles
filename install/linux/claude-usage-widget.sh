@@ -48,10 +48,28 @@ case "$OSDIST" in
         hdiutil detach "$MOUNT_DIR" -quiet
         echo "Claude Usage Widget installed (v$VERSION)."
 
-        # Configure login item for autostart
-        if ! osascript -e 'tell application "System Events" to get the name of every login item' 2>/dev/null | grep -q "Claude Usage Widget"; then
-            osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Claude Usage Widget.app", hidden:false}'
-            echo "Added to login items (autostart)."
+        # Configure login item for autostart via LaunchAgent (avoids System Events permission dialog)
+        LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+        PLIST_FILE="$LAUNCH_AGENTS_DIR/com.nire.claude-usage-widget.plist"
+        if [ ! -f "$PLIST_FILE" ]; then
+            mkdir -p "$LAUNCH_AGENTS_DIR"
+            cat > "$PLIST_FILE" <<'PLIST_EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.nire.claude-usage-widget</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Applications/Claude Usage Widget.app/Contents/MacOS/Claude Usage Widget</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
+PLIST_EOF
+            echo "Added to login items (autostart — takes effect on next login)."
         else
             echo "Already in login items."
         fi

@@ -45,12 +45,18 @@ export LESS='-R'
 echo "Customizing color table ..."
 LOCALDIR="$DOTFILES_DIR"/source-highlight
 if [ -f $LOCALDIR/esc.style ]; then
-    sudo mv $SHAREDIR/esc.style $SHAREDIR/esc.style.orig
-    sudo cp $LOCALDIR/esc.style $SHAREDIR
-    sudo chmod 644 $SHAREDIR/esc.style
     case "$OSDIST" in
-        "macos" ) sudo chown nire $SHAREDIR/esc.style ;;
-        "ubuntu" ) sudo chown root:root $SHAREDIR/esc.style ;;
-        "amazon" ) sudo chown root:root $SHAREDIR/esc.style ;;
+        "macos" )
+            # Homebrew files are user-owned — no sudo needed
+            mv $SHAREDIR/esc.style $SHAREDIR/esc.style.orig
+            cp $LOCALDIR/esc.style $SHAREDIR
+            chmod 644 $SHAREDIR/esc.style
+            ;;
+        * )
+            sudo mv $SHAREDIR/esc.style $SHAREDIR/esc.style.orig
+            sudo cp $LOCALDIR/esc.style $SHAREDIR
+            sudo chmod 644 $SHAREDIR/esc.style
+            sudo chown root:root $SHAREDIR/esc.style
+            ;;
     esac
 fi
