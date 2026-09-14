@@ -1,6 +1,8 @@
 #!/bin/bash
 # Tests for install/linux/claude-usage-widget.sh
 # Validates script existence, syntax, and installation logic
+# Tests: install/linux/claude-usage-widget.sh
+# Tags: installer, claude-usage-widget, macos, scope:common, pwsh-not-required
 set -euo pipefail
 
 ERRORS=0
@@ -36,8 +38,8 @@ grep -q "github.com/SlavomirDurej/claude-usage-widget/releases" "$SCRIPT" && pas
 # Test: script has idempotent up-to-date skip (checks version against latest)
 grep -q "up to date" "$SCRIPT" && pass "has idempotent up-to-date skip" || fail "missing up-to-date skip"
 
-# Test: macOS configures login item for autostart
-grep -q "osascript.*login item" "$SCRIPT" && pass "macOS: configures login item" || fail "missing macOS login item setup"
+# Test: macOS configures login item for autostart via LaunchAgent plist
+grep -q "com.nire.claude-usage-widget.plist" "$SCRIPT" && pass "macOS: configures login item via LaunchAgent plist" || fail "missing macOS LaunchAgent plist setup"
 
 # Test: ubuntu creates autostart desktop entry
 grep -q "\.config/autostart" "$SCRIPT" && pass "ubuntu: creates autostart desktop entry" || fail "missing autostart desktop entry"
