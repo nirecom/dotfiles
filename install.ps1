@@ -101,14 +101,7 @@ if ($languageHotkey -ne '3' -or $layoutHotkey -ne '3' -or $hotkeyValue -ne '3') 
     Write-Host "Input language hotkeys already disabled." -ForegroundColor DarkGray
 }
 
-# Step 7: Install / update PowerShell Core
-Write-Host ""
-Write-Host "--- Installing PowerShell Core ---"
-# Run in a fresh subprocess to isolate from WinHTTP state corruption caused by
-# prior winget calls in this session (winget can leave Invoke-RestMethod broken).
-Invoke-ScriptIsolated "$DotfilesDir\install\win\pwsh.ps1"
-
-# Step 8: Install GitHub CLI (gh) — required for hooks (private repo detection)
+# Step 7: Install GitHub CLI (gh) — required for hooks (private repo detection)
 Write-Host ""
 Write-Host "--- Installing gh (GitHub CLI) ---"
 Invoke-ScriptIsolated "$DotfilesDir\install\win\gh.ps1"
