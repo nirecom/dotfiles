@@ -11,6 +11,7 @@ set -e
 # Resolve DOTFILES_DIR from this script's location so the repo can live anywhere.
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 export DOTFILES_DIR
+export HOMEBREW_NO_INTERACTIVE=1
 
 source "$DOTFILES_DIR/bin/colors.sh"
 
