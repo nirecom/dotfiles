@@ -38,6 +38,10 @@ full_pipeline_probe() {
     #                     reasons"; "other-pid" makes that pipeline want to fetch.
     local cc_mode="${1-unset}" source_count="${2-1}"
     local osdist="${3-mingw}" pgrep_mode="${4-absent}"
+    # $5 git_mode (#338): quiet (default) | merge-stdout | diverged | diverged-no-marker
+    local git_mode="${5-quiet}"
+    # $6 shell (#338): bash (default) | zsh — the interpreter that sources the profile.
+    local shell_cmd="${6-bash}"
     local fx home dotfiles agents xrepo bindir rc=0
     fx=$(mktemp -d)
     home="$fx/home"; dotfiles="$fx/dotfiles"; agents="$fx/agents"
@@ -46,11 +50,21 @@ full_pipeline_probe() {
 
     printf 'OSDIST=%s\nISWSL=false\nISM1=false\n' "$osdist" > "$dotfiles/bin/detectos.sh"
     printf '%s\n' "$xrepo" > "$home/.config/dotfiles/fetch-repos.txt"
+    # The marker pins the L313 WARNING branch; without it the closed stdin skips the prompt.
+    if [ "$git_mode" = "diverged" ]; then touch "$home/.dotfiles-no-auto-reset"; fi
 
     # Fake git: records every invocation's argv, never touches the network.
+    # " merge-base " never matches *" merge "*, so the two arms stay disjoint.
     {
         printf '#!/bin/bash\n'
         printf 'printf "ARGV:%%s\\n" "$*" >> "$GIT_RECORD_FILE"\n'
+        printf 'case "${GIT_FAKE_MODE-quiet}" in\n'
+        printf '  merge-stdout) case " $* " in *" merge "*) printf "Updating abc..def\\nFast-forward\\n 1 file changed\\n" ;; esac ;;\n'
+        printf '  diverged|diverged-no-marker) case " $* " in\n'
+        printf '    *" merge "*) printf "Fast-forward-attempt\\n"; exit 1 ;;\n'
+        printf '    *" merge-base "*) exit 1 ;;\n'
+        printf '  esac ;;\n'
+        printf 'esac\n'
         printf 'exit 0\n'
     } > "$bindir/git"
     chmod +x "$bindir/git"
@@ -98,17 +112,18 @@ full_pipeline_probe() {
         export DOTFILES_DIR="$dotfiles"
         export GIT_RECORD_FILE="$fx/record.txt"
         export PATH="$bindir:$PATH"
+        export GIT_FAKE_MODE="$git_mode"
         # $3 is the post-guard sentinel file (round-6 C2). `LESS` is exported at
         # column 0 well AFTER the fetch-trigger `if ... fi` closes, so a guard
         # written as a bare `return` (drops the whole rest of the file) or `exit`
         # (kills the shell) leaves it unset/absent here even though every
         # fetch-count assertion would still read a satisfying zero.
-        bash -c 'i=0; while [ "$i" -lt "$2" ]; do . "$1"; i=$((i + 1)); done; printf "%s\n" "${LESS-<unset>}" > "$3"' \
+        "$shell_cmd" -c 'i=0; while [ "$i" -lt "$2" ]; do . "$1"; i=$((i + 1)); done; printf "%s\n" "${LESS-<unset>}" > "$3"' \
             _ "$PROFILE" "$source_count" "$fx/post.txt" \
-            >"$fx/stdout.txt" 2>"$fx/stderr.txt"
+            >"$fx/stdout.txt" 2>"$fx/stderr.txt" </dev/null
     )
     rc=$?
-    printf 'df=%s|xr=%s|ag=%s|tot=%s|stdout=%s|stderr=%s|errsize=%s|post=%s|rc=%s\n' \
+    printf 'df=%s|xr=%s|ag=%s|tot=%s|stdout=%s|stderr=%s|errsize=%s|post=%s|rc=%s|mergetext=%s|warn=%s|merges=%s/%s/%s\n' \
         "$(count_matches "-C $dotfiles fetch" "$fx/record.txt")" \
         "$(count_matches "-C $xrepo fetch" "$fx/record.txt")" \
         "$(count_matches "-C $agents fetch" "$fx/record.txt")" \
@@ -117,14 +132,19 @@ full_pipeline_probe() {
         "$(grep -q 'git fetch' "$fx/stderr.txt" 2>/dev/null && echo has-progress || echo no-progress)" \
         "$([ -s "$fx/stderr.txt" ] && echo nonempty || echo empty)" \
         "$([ -f "$fx/post.txt" ] && head -n 1 "$fx/post.txt" || echo '<missing>')" \
-        "$rc"
+        "$rc" \
+        "$(grep -q 'Fast-forward' "$fx/stderr.txt" 2>/dev/null && echo has-merge-text || echo no-merge-text)" \
+        "$(grep -q 'WARNING: dotfiles diverged' "$fx/stderr.txt" 2>/dev/null && echo has-warn || echo no-warn)" \
+        "$(count_matches "-C $dotfiles merge --ff-only" "$fx/record.txt")" \
+        "$(count_matches "-C $xrepo merge --ff-only" "$fx/record.txt")" \
+        "$(count_matches "-C $agents merge --ff-only" "$fx/record.txt")"
     rm -rf "$fx"
 }
 
 # Splits one `|`-joined probe record into its `name=value` fields.
 read_pipeline_record() {
     IFS='|' read -r df_field xr_field ag_field tot_field stdout_field stderr_field \
-        errsize_field post_field rc_field <<EOF_RECORD
+        errsize_field post_field rc_field mergetext_field warn_field merges_field <<EOF_RECORD
 $1
 EOF_RECORD
 }

@@ -25,6 +25,9 @@ login
         fetch there). No effect on Windows-native Claude Code bridging into WSL2
         (CLAUDECODE does not propagate into that shell).
       → If diverged (force push): prompt y/N to reset (marker file skips)
+      → All merge output, diverged notices and reset output go to stderr, never
+        stdout: tools that snapshot the profile's stdout (e.g. AI coding CLIs)
+        would otherwise capture the text and corrupt values such as PATH.
 ```
 
 ## Windows PowerShell (PS5 / PS7)
