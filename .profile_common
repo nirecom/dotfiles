@@ -306,28 +306,29 @@ if type git > /dev/null 2>&1; then # if git is installed
 
         # Merge dotfiles
         if [ "$_rc_df" -eq 0 ]; then
-            if ! git -C "$DOTFILES_DIR" merge --ff-only FETCH_HEAD 2>/dev/null; then
+            # stdout goes to stderr: snapshot tools capture the profile's stdout and a merge summary corrupts PATH
+            if ! git -C "$DOTFILES_DIR" merge --ff-only FETCH_HEAD 1>&2 2>/dev/null; then
                 # ff-only failed — check if diverged (force push scenario)
                 if ! git -C "$DOTFILES_DIR" merge-base --is-ancestor HEAD FETCH_HEAD 2>/dev/null; then
                     if [ -e "$HOME/.dotfiles-no-auto-reset" ]; then
-                        echo "WARNING: dotfiles diverged from origin. Run: git -C $DOTFILES_DIR reset --hard origin/main"
+                        echo "WARNING: dotfiles diverged from origin. Run: git -C $DOTFILES_DIR reset --hard origin/main" >&2
                     elif [[ -t 0 ]]; then
-                        echo "dotfiles diverged from origin (force push detected)."
-                        echo "Reset to origin/main? Local changes will be lost. [y/N]"
+                        echo "dotfiles diverged from origin (force push detected)." >&2
+                        echo "Reset to origin/main? Local changes will be lost. [y/N]" >&2
                         read -t 10 -r _ans
                         if [[ "$_ans" =~ ^[Yy]$ ]]; then
-                            git -C "$DOTFILES_DIR" reset --hard origin/main
+                            git -C "$DOTFILES_DIR" reset --hard origin/main >&2
                         else
-                            echo "Skipped. Run manually: git -C $DOTFILES_DIR reset --hard origin/main"
+                            echo "Skipped. Run manually: git -C $DOTFILES_DIR reset --hard origin/main" >&2
                         fi
                     fi
                 fi
             fi
         fi
-        [ "$_rc_ag"  -eq 0 ] && git -C "$_agents_dir" merge --ff-only FETCH_HEAD 2>/dev/null
+        [ "$_rc_ag"  -eq 0 ] && git -C "$_agents_dir" merge --ff-only FETCH_HEAD 1>&2 2>/dev/null
         _xi=0
         for _xpid in "${_xpids[@]}"; do
-            wait "$_xpid" 2>/dev/null && git -C "${_xdirs[$_xi]}" merge --ff-only FETCH_HEAD 2>/dev/null
+            wait "$_xpid" 2>/dev/null && git -C "${_xdirs[$_xi]}" merge --ff-only FETCH_HEAD 1>&2 2>/dev/null
             _xi=$((_xi+1))
         done
         unset _xi

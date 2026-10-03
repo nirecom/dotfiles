@@ -6,7 +6,7 @@
 # - Real PATH resolution of `ssh` to Windows OpenSSH at source time in a live Git Bash session
 # - Real ssh.exe/network prompt-blocking behavior (subprocess coverage stubs `git`, not `ssh`)
 # - Real multi-session dedup: the guard matrix pins OSDIST/PID/ZSH_VERSION instead of racing shells
-# - Real TTY/pty behaviour for the #335 Claude Code guard: `-t 1` is symbolically rewritten to a pinned predicate, so neither a real terminal nor a real Claude Code Bash-tool shell is exercised. This also leaves the "guard is not overbroad" direction (CLAUDECODE set + stdout IS a terminal => still fetches) unprovable end-to-end: Git Bash here has no script/expect/socat, winpty demands a tty on its own stdin, and /dev/ptmx|/dev/ttyS*|/dev/windows all report `[ -t 1 ]` false — so only the symbolic rows tty-with-claudecode-set-fetch / cc-value-metachar-tty-fetch / cc-value-with-space-tty-fetch cover it
+# - Real TTY/pty behaviour for the #335 Claude Code guard: `-t 1` is symbolically rewritten to a pinned predicate, so neither a real terminal nor a real Claude Code Bash-tool shell is exercised. This also leaves the "guard is not overbroad" direction (CLAUDECODE set + stdout IS a terminal => still fetches) unprovable end-to-end: Git Bash here has no script/expect/socat, winpty demands a tty on its own stdin, and /dev/ptmx|/dev/ttyS*|/dev/windows all report `[ -t 1 ]` false — so only the symbolic rows tty-with-claudecode-set-fetch / cc-value-metachar-tty-fetch / cc-value-with-space-tty-fetch cover it. Same pty limit for #338: the interactive diverged branch (`[[ -t 0 ]]` + read, L314-L322) cannot run dynamically; only static check S2 covers its `>&2` redirects
 # - #335 WSL-bridge scenario: Windows-native Claude Code does not propagate CLAUDECODE into a WSL shell (agents repo docs/ops.md:244-250, rules/test/claude-e2e.md:14-27), so the skip is unexercised there; WSL-native installs propagate it and are out of scope for this note
 # Closest-to-action mitigation: gap checked at WORKFLOW_USER_VERIFIED preflight via bin/check-verification-gate.sh category: installer.
 
@@ -81,6 +81,8 @@ echo "=== #333: .profile_common startup fetch on Windows Git Bash ==="
 . "$PART_DIR/mutation-and-subprocess.sh"
 # shellcheck source=./fix-profile-common-startup-fetch/full-pipeline-integration.sh
 . "$PART_DIR/full-pipeline-integration.sh"
+# shellcheck source=./fix-profile-common-startup-fetch/merge-stdout-quiet.sh
+. "$PART_DIR/merge-stdout-quiet.sh"
 
 echo ""
 echo "=== Results ==="
