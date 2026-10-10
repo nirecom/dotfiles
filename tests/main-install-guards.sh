@@ -3,12 +3,13 @@
 # TDD: Tests for platform guards in install.sh files across dotfiles, private-repo, and agents.
 # These tests are expected to FAIL until the platform guard implementation is in place.
 # Syntax tests (S-group) should PASS immediately as the source files are valid bash.
-# Tests: install.sh platform guards (dotfiles, private-repo, agents)
+# Tests: install.sh
+# Covers: install.sh platform guards (dotfiles, private-repo, agents)
 # Tags: install-guard, platform-guard, scope:common
 
 DOTFILES_DIR="c:/git/dotfiles"
 PRIVATE_DIR="${DOTFILES_PRIVATE_DIR:-}"
-AGENTS_DIR="c:/git/agents"
+TARGET_CHECKOUT_ROOT="c:/git/agents"
 
 PASS=0
 FAIL=0
@@ -63,7 +64,7 @@ else
     fail "S2: private-repo/install.sh bash syntax"
 fi
 
-if run_with_timeout 120 bash -n "$AGENTS_DIR/install.sh" 2>/dev/null; then
+if run_with_timeout 120 bash -n "$TARGET_CHECKOUT_ROOT/install.sh" 2>/dev/null; then
     ok "S3: agents/install.sh bash syntax"
 else
     fail "S3: agents/install.sh bash syntax"
@@ -76,7 +77,7 @@ echo ""
 # ---------------------------------------------------------------------------
 echo "--- G: Guard presence (static grep) ---"
 
-for repo_label in "dotfiles:$DOTFILES_DIR" "private-repo:$PRIVATE_DIR" "agents:$AGENTS_DIR"; do
+for repo_label in "dotfiles:$DOTFILES_DIR" "private-repo:$PRIVATE_DIR" "agents:$TARGET_CHECKOUT_ROOT"; do
     label="${repo_label%%:*}"
     path="${repo_label#*:}"
     script="$path/install.sh"
@@ -162,12 +163,12 @@ test_guard "B11: private-repo Darwin"          "$PRIVATE_DIR/install.sh" "Darwin
 test_guard "B12: private-repo MINGW%special"   "$PRIVATE_DIR/install.sh" "MINGW%special"   "yes"
 
 # agents/install.sh behavioral tests
-test_guard "B13: agents MINGW64_NT-10.0" "$AGENTS_DIR/install.sh" "MINGW64_NT-10.0" "yes"
-test_guard "B14: agents MSYS_NT-10.0"    "$AGENTS_DIR/install.sh" "MSYS_NT-10.0"    "yes"
-test_guard "B15: agents CYGWIN_NT-10.0"  "$AGENTS_DIR/install.sh" "CYGWIN_NT-10.0"  "yes"
-test_guard "B16: agents Linux"           "$AGENTS_DIR/install.sh" "Linux"            "no"
-test_guard "B17: agents Darwin"          "$AGENTS_DIR/install.sh" "Darwin"           "no"
-test_guard "B18: agents MINGW%special"   "$AGENTS_DIR/install.sh" "MINGW%special"    "yes"
+test_guard "B13: agents MINGW64_NT-10.0" "$TARGET_CHECKOUT_ROOT/install.sh" "MINGW64_NT-10.0" "yes"
+test_guard "B14: agents MSYS_NT-10.0"    "$TARGET_CHECKOUT_ROOT/install.sh" "MSYS_NT-10.0"    "yes"
+test_guard "B15: agents CYGWIN_NT-10.0"  "$TARGET_CHECKOUT_ROOT/install.sh" "CYGWIN_NT-10.0"  "yes"
+test_guard "B16: agents Linux"           "$TARGET_CHECKOUT_ROOT/install.sh" "Linux"            "no"
+test_guard "B17: agents Darwin"          "$TARGET_CHECKOUT_ROOT/install.sh" "Darwin"           "no"
+test_guard "B18: agents MINGW%special"   "$TARGET_CHECKOUT_ROOT/install.sh" "MINGW%special"    "yes"
 
 echo ""
 
@@ -176,7 +177,7 @@ echo ""
 # ---------------------------------------------------------------------------
 echo "--- I: Idempotency ---"
 
-for repo_label in "dotfiles:$DOTFILES_DIR" "private-repo:$PRIVATE_DIR" "agents:$AGENTS_DIR"; do
+for repo_label in "dotfiles:$DOTFILES_DIR" "private-repo:$PRIVATE_DIR" "agents:$TARGET_CHECKOUT_ROOT"; do
     label="${repo_label%%:*}"
     path="${repo_label#*:}"
     script="$path/install.sh"

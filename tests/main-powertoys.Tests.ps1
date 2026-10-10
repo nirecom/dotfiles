@@ -1,3 +1,5 @@
+# Tests: install/win/powertoys.ps1
+# Tags: powertoys, winget, static, pwsh-required, scope:common
 # Tests for install/win/powertoys.ps1
 # Validates script existence, syntax, winget installation, and Keyboard Manager config deployment
 
@@ -65,47 +67,47 @@ Describe "PowerToys install script (Windows)" {
 
 Describe "PowerToys Keyboard Manager config files" {
     BeforeAll {
-        $ConfigDir = Join-Path $PSScriptRoot "..\config\win\powertoys\keyboard-manager"
+        $KeyboardManagerDir = Join-Path $PSScriptRoot "..\config\win\powertoys\keyboard-manager"
     }
 
     Context "Normal cases" {
         It "default.json exists" {
-            Test-Path (Join-Path $ConfigDir "default.json") | Should -Be $true
+            Test-Path (Join-Path $KeyboardManagerDir "default.json") | Should -Be $true
         }
 
         It "settings.json exists" {
-            Test-Path (Join-Path $ConfigDir "settings.json") | Should -Be $true
+            Test-Path (Join-Path $KeyboardManagerDir "settings.json") | Should -Be $true
         }
 
         It "default.json contains valid JSON" {
-            $json = Get-Content (Join-Path $ConfigDir "default.json") -Raw
+            $json = Get-Content (Join-Path $KeyboardManagerDir "default.json") -Raw
             { $json | ConvertFrom-Json } | Should -Not -Throw
         }
 
         It "settings.json contains valid JSON" {
-            $json = Get-Content (Join-Path $ConfigDir "settings.json") -Raw
+            $json = Get-Content (Join-Path $KeyboardManagerDir "settings.json") -Raw
             { $json | ConvertFrom-Json } | Should -Not -Throw
         }
 
         It "default.json contains remapShortcuts section" {
-            $json = Get-Content (Join-Path $ConfigDir "default.json") -Raw | ConvertFrom-Json
+            $json = Get-Content (Join-Path $KeyboardManagerDir "default.json") -Raw | ConvertFrom-Json
             $json.remapShortcuts | Should -Not -BeNullOrEmpty
         }
 
         It "default.json has global shortcut remappings" {
-            $json = Get-Content (Join-Path $ConfigDir "default.json") -Raw | ConvertFrom-Json
+            $json = Get-Content (Join-Path $KeyboardManagerDir "default.json") -Raw | ConvertFrom-Json
             $json.remapShortcuts.global.Count | Should -BeGreaterThan 0
         }
     }
 
     Context "Edge cases" {
         It "default.json has no app-specific remappings (global only)" {
-            $json = Get-Content (Join-Path $ConfigDir "default.json") -Raw | ConvertFrom-Json
+            $json = Get-Content (Join-Path $KeyboardManagerDir "default.json") -Raw | ConvertFrom-Json
             $json.remapShortcuts.appSpecific.Count | Should -Be 0
         }
 
         It "default.json has no key remappings (shortcuts only)" {
-            $json = Get-Content (Join-Path $ConfigDir "default.json") -Raw | ConvertFrom-Json
+            $json = Get-Content (Join-Path $KeyboardManagerDir "default.json") -Raw | ConvertFrom-Json
             $json.remapKeys.inProcess.Count | Should -Be 0
         }
     }

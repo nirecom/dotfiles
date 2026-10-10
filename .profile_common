@@ -223,7 +223,7 @@ elif type keychain >/dev/null 2>&1; then
     unset _ssh_keys
 fi
 
-# Optional: agents profile (sibling repo, defines AGENTS_CONFIG_DIR, AGENTS_DIR)
+# Optional: agents profile (sibling repo, defines AGENTS_MAIN_ROOT)
 # Sourced here — after SSH entity resolution (Windows OpenSSH PATH / keychain
 # above) completes — so profile-snippet.sh's own ssh/git env exports do not
 # race with, or get overridden by, the platform SSH setup above it.
