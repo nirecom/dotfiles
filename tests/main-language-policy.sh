@@ -1,12 +1,13 @@
 #!/bin/bash
 # Test: language policy changes — rules moved from public to my-private-repo
-# Tests: language.md symlink wiring, install scripts language policy
+# Tests: .config/git/ignore
+# Covers: language.md symlink wiring, install scripts language policy
 # Tags: language-policy, symlink, scope:common
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PRIVATE_DIR="${DOTFILES_PRIVATE_DIR:-}"
-AGENTS_DIR="$DOTFILES_DIR/../agents"
+TARGET_CHECKOUT_ROOT="$DOTFILES_DIR/../agents"
 
 [ -n "$PRIVATE_DIR" ] || { echo "SKIP: DOTFILES_PRIVATE_DIR not set"; exit 0; }
 
@@ -91,7 +92,7 @@ assert_true "private install.ps1 has -Full param" \
 
 # 10. agents repo .gitignore excludes rules/language.md (private file)
 assert_true "agents .gitignore contains rules/language.md entry" \
-    "grep -qE '^rules/language\.md\$' '$AGENTS_DIR/.gitignore'"
+    "grep -qE '^rules/language\.md\$' '$TARGET_CHECKOUT_ROOT/.gitignore'"
 
 # 11. linux installer defines AGENTS_RULES_DIR
 assert_true "linux installer defines AGENTS_RULES_DIR" \
@@ -166,7 +167,7 @@ else
 fi
 
 # 13. agents .gitignore has exactly 1 line matching rules/language.md
-count=$(grep -c 'rules/language\.md' "$AGENTS_DIR/.gitignore" 2>/dev/null || true)
+count=$(grep -c 'rules/language\.md' "$TARGET_CHECKOUT_ROOT/.gitignore" 2>/dev/null || true)
 count=${count:-0}
 count=$(echo "$count" | tr -d '[:space:]')
 if [ "$count" -eq 1 ]; then
