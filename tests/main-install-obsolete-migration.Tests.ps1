@@ -1,3 +1,5 @@
+# Tests: install/win/uninstall-obsolete.ps1
+# Tags: install-obsolete, migration, fixture, pwsh-required, scope:common
 # Test: install-obsolete.ps1 — old dotfiles directory cleanup after migration
 # Verifies the Remove-MigratedSource logic used in install-obsolete.ps1
 # (cleanup of ~/dotfiles, ~/my-private-repo after migration to C:\git\)
@@ -86,10 +88,10 @@ Describe "startup fetch list rename — fetch-repos -> fetch-repos.txt" {
 
     BeforeEach {
         $script:FakeHome = Join-Path $TestDrive "home-$(Get-Random)"
-        $script:ConfigDir = Join-Path $script:FakeHome ".config\dotfiles"
-        New-Item -ItemType Directory -Path $script:ConfigDir -Force | Out-Null
-        $script:Legacy = Join-Path $script:ConfigDir "fetch-repos"
-        $script:Current = Join-Path $script:ConfigDir "fetch-repos.txt"
+        $script:DotfilesUserDir = Join-Path $script:FakeHome ".config\dotfiles"
+        New-Item -ItemType Directory -Path $script:DotfilesUserDir -Force | Out-Null
+        $script:Legacy = Join-Path $script:DotfilesUserDir "fetch-repos"
+        $script:Current = Join-Path $script:DotfilesUserDir "fetch-repos.txt"
     }
 
     Context "A. Block extraction" {
