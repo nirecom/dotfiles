@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-08-31T06:08:16.991Z",
+  "worktree_path": "C:\\git\\worktrees\\333-fix-profile-common-windows-git\\dotfiles",
+  "branch": "fix/333-fix-profile-common-windows-git",
+  "backup_dir": "C:\\git\\dotfiles\\.worktree-backup\\fix\\333-fix-profile-common-windows-git",
+  "file_count": 1,
+  "total_size_bytes": 1688,
+  "files": [
+    {
+      "path": "WORKTREE_NOTES.md",
+      "size_bytes": 1688,
+      "mtime_iso": "2026-08-31T05:55:46.631Z",
+      "sha256": "3bb59d4601e85015f6d00ac23ea719f5b2ba58ac763dc259dc015191430ec3ef"
+    }
+  ],
+  "docker_impact": {
+    "checked": true,
+    "containers": [],
+    "stopped_count": 0
+  },
+  "issues": []
+}

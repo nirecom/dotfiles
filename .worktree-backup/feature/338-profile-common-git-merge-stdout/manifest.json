@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-10-03T13:54:35.971Z",
+  "worktree_path": "C:\\git\\worktrees\\338-profile-common-git-merge-stdout\\dotfiles",
+  "branch": "feature/338-profile-common-git-merge-stdout",
+  "backup_dir": "C:\\git\\dotfiles\\.worktree-backup\\feature\\338-profile-common-git-merge-stdout",
+  "file_count": 5,
+  "total_size_bytes": 169832,
+  "files": [
+    {
+      "path": ".codegraph/.gitignore",
+      "size_bytes": 229,
+      "mtime_iso": "2026-10-03T11:28:18.850Z",
+      "sha256": "47c0dacebca9f56c9020b68584470dfc51f07650a3719904e98f4b447a5dd003"
+    },
+    {
+      "path": ".codegraph/codegraph.db",
+      "size_bytes": 163840,
+      "mtime_iso": "2026-10-03T11:28:19.120Z",
+      "sha256": "1c558164c11e62e423a767dd0e7a925e4aa21daf40fb8f5d4c00e319a971311e"
+    },
+    {
+      "path": ".codegraph/daemon.log",
+      "size_bytes": 4194,
+      "mtime_iso": "2026-10-03T12:08:36.483Z",
+      "sha256": "c7c07e7b22dd4d2ddd7fe1c9529568d48cdef93031ad40e1d7ed625edc88f195"
+    },
+    {
+      "path": ".codegraph/daemon.pid",
+      "size_bytes": 130,
+      "mtime_iso": "2026-10-03T12:08:36.378Z",
+      "sha256": "2333374e7340a90608dfdab57426dba88f94d2220ea2de608c9d8ad91cb01cc7"
+    },
+    {
+      "path": "WORKTREE_NOTES.md",
+      "size_bytes": 1439,
+      "mtime_iso": "2026-10-03T12:07:45.562Z",
+      "sha256": "f0420bfe26f656c57fa4f0041e46209543ca2e569929444d9bf6236a1876f836"
+    }
+  ],
+  "docker_impact": {
+    "checked": true,
+    "containers": [],
+    "stopped_count": 0
+  },
+  "issues": []
+}
