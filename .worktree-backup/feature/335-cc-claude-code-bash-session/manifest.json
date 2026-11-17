@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-09-02T07:02:02.369Z",
+  "worktree_path": "C:\\git\\worktrees\\335-cc-claude-code-bash-session\\dotfiles",
+  "branch": "feature/335-cc-claude-code-bash-session",
+  "backup_dir": "C:\\git\\dotfiles\\.worktree-backup\\feature\\335-cc-claude-code-bash-session",
+  "file_count": 1,
+  "total_size_bytes": 1465,
+  "files": [
+    {
+      "path": "WORKTREE_NOTES.md",
+      "size_bytes": 1465,
+      "mtime_iso": "2026-09-02T06:45:07.196Z",
+      "sha256": "61a5b710fe7dc23cd09af6c26966c1fd4b53f047458b3326ac7707c36a832516"
+    }
+  ],
+  "docker_impact": {
+    "checked": true,
+    "containers": [],
+    "stopped_count": 0
+  },
+  "issues": []
+}
